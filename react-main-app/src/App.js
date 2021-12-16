@@ -1,6 +1,6 @@
 import './App.css';
 import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
-import { useHistory } from 'react-router-dom';    //Helps us redirect to other pages
+import { useHistory, useParams } from 'react-router-dom';    //Helps us redirect to other pages
 
 import 'bootstrap/dist/css/bootstrap.min.css';  //Boostrap Import 1/2
 import 'bootstrap/dist/js/bootstrap.bundle.min';  //Boostrap Import 2/2
@@ -27,6 +27,12 @@ function Home(){
     {pId: 3, pName:'Alpiste Bulto 25 kg', pDescription:'Bulto de Alpiste c/25 Kg', pQuantity:1, pWeightType:'Bulto'},
   ]
 
+  const transaction_data=[
+    { tId:1, tpId:1, date:'12/24/2021', vId:1, purchaseInvoiceId:1, purchaseWeight:23, purchasePrice:4322, saleInvoiceId: null, saleWeight:null, salePrice:null},
+    { tId:2, tpId:1, date:'12/29/2021', vId:1, purchaseInvoiceId:12, purchaseWeight:44, purchasePrice:4322, saleInvoiceId: null, saleWeight:null, salePrice:null},
+    { tId:3, tpId:1, date:'12/31/2021', vId:null, purchaseInvoiceId:null, purchaseWeight:null, purchasePrice:null, saleInvoiceId: 244, saleWeight:67, salePrice:5000},
+  ]
+
   const vendor_data=[
     {vId: 1, vName:'Chisemex', vRFC:'MELM8305281H0', vNumOfTransactions:32, vAddress:'N/A'},
     {vId: 2, vName:'Distribuidora De Productos Deshidratados SA de CV', vRFC:'JEFC8305281H0', vNumOfTransactions:12, vAddress:'N/A'},
@@ -36,6 +42,8 @@ function Home(){
 
   const [data,setData]=useState(product_data);
   const [vData, setvData]=useState(vendor_data);
+  const [tData, settData]=useState(transaction_data);
+
 
   const history=useHistory();
   
@@ -43,18 +51,18 @@ function Home(){
   function itemTableRowClicked(e){
     console.log(e.target.id);
     console.log("YOU CLICKED ME");
-    //let path=`/item/:${e.target.id}`;
-    let path=`/item`;
-    history.push(path);
+    let path=`/item/${e.target.id}`;
+    //let path=`/item`;
+    history.push(path, {pData: data, tData:tData});
 
   }
 
   function vendorTableRowClicked(e){
     console.log(e.target.id);
     console.log("YOU CLICKED ME");
-    //let path=`/item/:${e.target.id}`;
-    let path=`/vendor`;
-    history.push(path);
+    let path=`/vendor/${e.target.id}`;
+    //let path=`/vendor`;
+    history.push(path, {vData:vData, tData:tData});
   }
 
   function addVendorBtn(){
@@ -218,8 +226,8 @@ function App() {
       <div className="Application">
         <Switch>    {/*Makes sure we are only on one route at a time*/}
           <Route exact path='/' component={Home} />
-          <Route exact path='/item' component={ItemInfo} />
-          <Route exact path='/vendor' component={VendorInfo} />
+          <Route exact path='/item/:pId' component={ItemInfo} />
+          <Route exact path='/vendor/:vId_global' component={VendorInfo} />
           <Route exact path='/addVendor' component={AddVendor}/>
           <Route exact path='/addProduct' component={AddProduct}/>
         </Switch>

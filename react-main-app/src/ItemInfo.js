@@ -1,10 +1,20 @@
-import React from 'react'
+import React, {useState} from 'react'
+import { useParams } from 'react-router-dom';    //Helps us redirect to other pages
 
-function ItemInfo(){
+function ItemInfo(props){
+
+    let {pId}= useParams();
+    //want to have [data] array on this page to access it hopefully like this 
+        //console.log(data) and see the array on the console
 
     function addNewDataRow(){
         console.log("ADD new Data Row");
     }
+
+    let product_data=props.location.state.pData[(pId-1)];
+    let transaction_data=props.location.state.tData;
+
+    const [tData, settData]=useState(transaction_data);
 
     return (
         <div className="Application">
@@ -49,15 +59,21 @@ function ItemInfo(){
             </header>
             <div className="container">
                     <div className='row'>
-                        <h1>Nombre del Producto</h1>
-                        <h4>[Peso]</h4>
+                        <div className='col'>
+                            <h1>{product_data.pName}</h1>
+                            <h4>{product_data.pWeightType}</h4>
+                        </div>
+                        <div className='col-3' id='right-align' >
+                            <h4>Product Id: {pId}</h4>
+                        </div>
+                        
                     </div>
                     <div className='row'>
                         <div className='col-9'>
 
                         </div>
-                        <div className='col'>
-                            <h5>Cantidad disponible: [cantidad]</h5>
+                        <div className='col' id='right-align'>
+                            <h5>Cantidad disponible: {product_data.pQuantity}</h5>
                         </div>
                     </div>
                     <div className='fair-spacing'/>
@@ -73,6 +89,7 @@ function ItemInfo(){
                         <table className="table table-striped">
                             <thead>
                                 <tr>
+                                <th scope="col">tId</th>
                                 <th scope="col">Fecha</th>
                                 <th scope="col">Proveedor</th>
                                 <th scope="col"># Factura</th>
@@ -84,43 +101,34 @@ function ItemInfo(){
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr className='table-row'>
-                                    <th scope="row">26</th>
-                                    <td>Chile Guajillo</td>
-                                    <td>6682.36</td>
-                                    <td>12/12/2021</td>
-                                    <td>data</td>
-                                    <td>data</td>
-                                    <td>data</td>
-                                    <td>
-                                        data
-                                        <img src='https://www.pngrepo.com/download/122147/rounded-delete-button-with-minus.png' className='delete-btn'/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">2</th>
-                                    <td>Hoja p/Tamal Chisemex</td>
-                                    <td>3,024</td>
-                                    <td>09/28/2021</td>
-                                    <td>data</td>
-                                    <td>data</td>
-                                    <td>data</td>
-                                    <td>data</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">3</th>
-                                    <td>Alpistle Bulto 25kg</td>
-                                    <td>0</td>
-                                    <td>12/24/2021</td>
-                                    <td>data</td>
-                                    <td>data</td>
-                                    <td>data</td>
-                                    <td>data</td>
-                                </tr>
+                                {transaction_data.map(({tId,tpId, date,vId,purchaseInvoiceId, purchaseWeight, purchasePrice,saleInvoiceId,saleWeight, salePrice} ) => //Data driven display of rows in data 
+                                     pId==({tpId}.tpId).toString() ?
+                                    
+                                    
+                                    <tr className='table-row'>
+                                        <th scope="row">{tId}</th>
+                                        <td>{date}</td>
+                                        <td>{vId}</td>
+                                        <td>{purchaseInvoiceId}</td>
+                                        <td>{purchaseWeight}</td>
+                                        <td>{purchasePrice}</td>
+                                        <td>{saleInvoiceId}</td>
+                                        <td>{saleWeight}</td>
+                                        <td>
+                                            {salePrice}
+                                            {/*<img src='https://www.pngrepo.com/download/122147/rounded-delete-button-with-minus.png' className='delete-btn'/>*/}
+                                        </td>
+                                    </tr>
+                                    :
+                                    
+                                    <></>
+                                    
+                                )}
                                 <tr onClick={addNewDataRow}>
                                     <th scope="row">
                                         <img src='https://static.thenounproject.com/png/1649999-200.png' id='add-data-btn'/>
                                     </th>
+                                    <td></td>
                                     <td></td>
                                     <td></td>
                                     <td></td>

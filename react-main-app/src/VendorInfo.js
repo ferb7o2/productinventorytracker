@@ -1,7 +1,12 @@
 import React from "react";
+import {useParams} from 'react-router-dom';
 
-function CustomerInfo(){
+function CustomerInfo(props){
 
+    let {vId_global}= useParams();
+
+    let vendor_data=props.location.state.vData[(vId_global-1)];
+    let transaction_data=props.location.state.tData;
 
     return (
         <div className="Application">
@@ -46,22 +51,38 @@ function CustomerInfo(){
             </header>
             <div className="container">
                     <div className='row'>
-                        <h1>Nombre del Distribuidor</h1>
-                        <h4>[direccion]</h4>
-                        <h4>RFC: [rfc info]</h4>
+                        <div className="col">
+                            <h1>{vendor_data.vName}</h1>
+                            <h4>{vendor_data.vAddress}</h4>
+                            <h4>RFC: {vendor_data.vRFC}</h4>
+                        </div>
+                        <div className="col-3" id='right-align'>
+                            <h4>Distribuidor Id: {vId_global}</h4>
+                        </div>
+                        
                     </div>
                     <div className='row'>
                         <div className='col-9'>
 
                         </div>
                         <div className='col'>
-                            <h5>Total de Compras: [cantidad]</h5>
+                            <h5>Total de Compras: {vendor_data.vNumOfTransactions}</h5>
                         </div>
                     </div>
                     <div className='fair-spacing'/>
                     <div className='row'>
                         <table className="table table-striped">
                             <thead>
+                                {transaction_data.map(({tId,tpId, date,vId,purchaseInvoiceId, purchaseWeight, purchasePrice,saleInvoiceId,saleWeight, salePrice})=>
+                                ({vId}.vId)!== null?
+
+                                vId_global==({vId}.vId).toString() ?
+            <div>console.log("YES")</div> //////////////////////////////////////////////////////////////////////
+                                :
+                                <div>console.log("NO")</div>
+                                :
+                                <></>
+                                )}
                                 <tr>
                                 <th scope="col" id='[transaction-id]'>Transaccion Id</th>
                                 <th scope="col">Fecha</th>
