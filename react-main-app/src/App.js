@@ -18,31 +18,43 @@ import AddVendor from './addVendor';
 import AddProduct from './addProduct'; 
 
 
+//context
+import { DataProvider } from './contexts/dataContext';
+
+import { useStateContext } from './contexts/dataContext';
+
 
 function Home(){
 
-  const product_data=[
+  const[ProductData, setProductData]= useStateContext()[0];
+  const [vData, setvData]=useStateContext()[2];
+
+  //console.log(ProductData);
+  
+ 
+
+  /*const product_data=[
     {pId: 1, pName:'Chile Guajillo', pDescription:' 1 Kg Chile Guajillo', pQuantity:1, pWeightType:'Kg'},
     {pId: 2, pName:'Hoja p/tamal Chisemex', pDescription:'Bulto Hoja p/Tamal c/24 pzs', pQuantity:1, pWeightType:'Bulto'},
     {pId: 3, pName:'Alpiste Bulto 25 kg', pDescription:'Bulto de Alpiste c/25 Kg', pQuantity:1, pWeightType:'Bulto'},
-  ]
+  ]*/
 
-  const transaction_data=[
+  /*const transaction_data=[
     { tId:1, tpId:1, date:'12/24/2021', vId:1, purchaseInvoiceId:1, purchaseWeight:23, purchasePrice:4322, saleInvoiceId: null, saleWeight:null, salePrice:null},
     { tId:2, tpId:1, date:'12/29/2021', vId:1, purchaseInvoiceId:12, purchaseWeight:44, purchasePrice:4322, saleInvoiceId: null, saleWeight:null, salePrice:null},
     { tId:3, tpId:1, date:'12/31/2021', vId:null, purchaseInvoiceId:null, purchaseWeight:null, purchasePrice:null, saleInvoiceId: 244, saleWeight:67, salePrice:5000},
-  ]
+  ]*/
 
-  const vendor_data=[
+  /*const vendor_data=[
     {vId: 1, vName:'Chisemex', vRFC:'MELM8305281H0', vNumOfTransactions:32, vAddress:'N/A'},
     {vId: 2, vName:'Distribuidora De Productos Deshidratados SA de CV', vRFC:'JEFC8305281H0', vNumOfTransactions:12, vAddress:'N/A'},
     {vId: 3, vName:'Alfredo Lopez', vRFC:'LANJ8305281H0', vNumOfTransactions:94, vAddress:'Calera de Victor Rosales Zacatecas'}
-  ]
+  ]*/
 
 
-  const [data,setData]=useState(product_data);
-  const [vData, setvData]=useState(vendor_data);
-  const [tData, settData]=useState(transaction_data);
+ // const [data,setData]=useState(product_data);
+  //const [vData, setvData]=useState(vendor_data);
+  //const [tData, settData]=useState(transaction_data);
 
 
   const history=useHistory();
@@ -53,7 +65,7 @@ function Home(){
     console.log("YOU CLICKED ME");
     let path=`/item/${e.target.id}`;
     //let path=`/item`;
-    history.push(path, {pData: data, tData:tData});
+    history.push(path);
 
   }
 
@@ -62,7 +74,7 @@ function Home(){
     console.log("YOU CLICKED ME");
     let path=`/vendor/${e.target.id}`;
     //let path=`/vendor`;
-    history.push(path, {vData:vData, tData:tData});
+    history.push(path);
   }
 
   function addVendorBtn(){
@@ -158,12 +170,12 @@ function Home(){
                 </tr>
               </thead>
               <tbody>
-                {data.map(({pId, pName, pQuantity,pWeightType}) => //Data driven display of rows in data 
+                {ProductData.map(({pId, pName, pQuantity,pWeightType},i) => //Data driven display of rows in data 
                     <tr onClick={itemTableRowClicked}>
-                      <th scope="row" id={pId}>{pId}</th>
-                      <td>{pName}</td>
-                      <td>{pQuantity}</td>
-                      <td>{pWeightType}</td>
+                      <th scope="row" id={i}>{pId}</th>
+                      <td id={i}>{pName}</td>
+                      <td id={i}>{pQuantity}</td>
+                      <td id={i}>{pWeightType}</td>
                     </tr>
                 )}
               </tbody>
@@ -196,8 +208,8 @@ function Home(){
                 {vData.map(({vId, vName, vNumOfTransactions}) => //Data driven display of rows in data 
                   <tr onClick={vendorTableRowClicked}>
                     <th scope="row" id={vId}>{vId}</th>
-                    <td>{vName}</td>
-                    <td>{vNumOfTransactions}</td>
+                    <td id={vId}>{vName}</td>
+                    <td id={vId}>{vNumOfTransactions}</td>
                   </tr>
                 )}
               </tbody>
@@ -224,13 +236,15 @@ function App() {
   return (
     <Router>
       <div className="Application">
-        <Switch>    {/*Makes sure we are only on one route at a time*/}
-          <Route exact path='/' component={Home} />
-          <Route exact path='/item/:pId' component={ItemInfo} />
-          <Route exact path='/vendor/:vId_global' component={VendorInfo} />
-          <Route exact path='/addVendor' component={AddVendor}/>
-          <Route exact path='/addProduct' component={AddProduct}/>
-        </Switch>
+        <DataProvider>
+          <Switch>    {/*Makes sure we are only on one route at a time*/}
+            <Route exact path='/' component={Home} />
+            <Route exact path='/item/:pId' component={ItemInfo} />
+            <Route exact path='/vendor/:vId_global' component={VendorInfo} />
+            <Route exact path='/addVendor' component={AddVendor}/>
+            <Route exact path='/addProduct' component={AddProduct}/>
+          </Switch>
+        </DataProvider>
       </div>
     </Router>
   );

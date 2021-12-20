@@ -1,20 +1,26 @@
 import React, {useState} from 'react'
 import { useParams } from 'react-router-dom';    //Helps us redirect to other pages
 
+import { useStateContext } from './contexts/dataContext';
+
 function ItemInfo(props){
 
-    let {pId}= useParams();
-    //want to have [data] array on this page to access it hopefully like this 
-        //console.log(data) and see the array on the console
+    
+
+    //console.log(TransactionData);
+
+    let {pId} = useParams();
+    const[ProductData, setProductData]= useStateContext()[0];
+    const [transaction_data, settData]= useStateContext()[1];
 
     function addNewDataRow(){
         console.log("ADD new Data Row");
     }
 
-    let product_data=props.location.state.pData[(pId-1)];
-    let transaction_data=props.location.state.tData;
+    //let product_data=props.location.state.pData[(pId-1)];
+    //let transaction_data=props.location.state.tData;
 
-    const [tData, settData]=useState(transaction_data);
+    
 
     return (
         <div className="Application">
@@ -60,11 +66,11 @@ function ItemInfo(props){
             <div className="container">
                     <div className='row'>
                         <div className='col'>
-                            <h1>{product_data.pName}</h1>
-                            <h4>{product_data.pWeightType}</h4>
+                            <h1>{ProductData[pId].pName}</h1>
+                            <h4>{ProductData[pId].pWeightType}</h4>
                         </div>
                         <div className='col-3' id='right-align' >
-                            <h4>Product Id: {pId}</h4>
+                            <h4>Product Id: {ProductData[pId].pId}</h4>
                         </div>
                         
                     </div>
@@ -73,7 +79,7 @@ function ItemInfo(props){
 
                         </div>
                         <div className='col' id='right-align'>
-                            <h5>Cantidad disponible: {product_data.pQuantity}</h5>
+                            <h5>Cantidad disponible: {ProductData[pId].pQuantity}</h5>
                         </div>
                     </div>
                     <div className='fair-spacing'/>
@@ -102,7 +108,7 @@ function ItemInfo(props){
                             </thead>
                             <tbody>
                                 {transaction_data.map(({tId,tpId, date,vId,purchaseInvoiceId, purchaseWeight, purchasePrice,saleInvoiceId,saleWeight, salePrice} ) => //Data driven display of rows in data 
-                                     pId==({tpId}.tpId).toString() ?
+                                     ProductData[pId].pId==({tpId}.tpId).toString() ?
                                     
                                     
                                     <tr className='table-row'>

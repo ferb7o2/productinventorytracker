@@ -1,12 +1,19 @@
 import React from "react";
 import {useParams} from 'react-router-dom';
 
+import {useStateContext} from './contexts/dataContext'
+
 function CustomerInfo(props){
+
+    
 
     let {vId_global}= useParams();
 
-    let vendor_data=props.location.state.vData[(vId_global-1)];
-    let transaction_data=props.location.state.tData;
+    let tempIndex=parseInt((vId_global),10);
+
+    const[vendor_dataFIRST, setProductDataFIRST]= useStateContext()[2];
+    let vendor_data=vendor_dataFIRST[(tempIndex-1)];
+    const[transaction_data, settData]= useStateContext()[1];
 
     return (
         <div className="Application">
@@ -76,10 +83,8 @@ function CustomerInfo(props){
                                 {transaction_data.map(({tId,tpId, date,vId,purchaseInvoiceId, purchaseWeight, purchasePrice,saleInvoiceId,saleWeight, salePrice})=>
                                 ({vId}.vId)!== null?
 
-                                vId_global==({vId}.vId).toString() ?
-            <div>console.log("YES")</div> //////////////////////////////////////////////////////////////////////
-                                :
-                                <div>console.log("NO")</div>
+                                    vId_global==({vId}.vId).toString() ? <div>console.log("YES")</div> : <div>console.log("NO")</div>
+
                                 :
                                 <></>
                                 )}

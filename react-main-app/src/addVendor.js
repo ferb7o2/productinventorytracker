@@ -1,6 +1,32 @@
 import React from "react";
+import $ from 'jquery';
+
+import {useStateContext} from './contexts/dataContext'
 
 function AddVendor(){
+
+    const[VendorData, setVendorData]= useStateContext()[2];
+
+
+    function registerVendor(e){
+        e.preventDefault();
+
+        if($('#vendorNameField').val().length!==0)
+        {
+            if($('#vendorRFCField').val().length!==0)
+            {
+                    setVendorData([...VendorData, {vId: 1, vName:$('#vendorNameField').val(), vRFC:$('#vendorRFCField').val(), vNumOfTransactions:0, vAddress:$('#vendorAddressField').val()},])
+            }
+            else
+                console.log("Error-RFC cannot be blank")
+        }
+        else
+            console.log("Error- name cannot be blank")
+
+
+
+        console.log(VendorData);
+    }
 
     return(
         <div className="Application">
@@ -52,27 +78,27 @@ function AddVendor(){
                     <div className='row'>
                         <form>
                             <div class="form-group row">
-                                <label for="inputEmail3" class="col-sm-2 col-form-label">Nombre</label>
+                                <label for="vendorNameField" class="col-sm-2 col-form-label">Nombre</label>
                                 <div class="col-sm-10">
-                                <input type="email" class="form-control" id="inputEmail3" placeholder="Nombre de Negocio"/>
+                                <input type="text" class="form-control" id="vendorNameField" placeholder="Nombre de Negocio"/>
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label for="inputPassword3" class="col-sm-2 col-form-label">RFC</label>
+                                <label for="vendorRFCField" class="col-sm-2 col-form-label">RFC</label>
                                 <div class="col-sm-10">
-                                <input type="password" class="form-control" id="inputPassword3" placeholder="RFC"/>
+                                <input type="text" class="form-control" id="vendorRFCField" placeholder="RFC"/>
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label for="inputPassword3" class="col-sm-2 col-form-label">Direccion</label>
+                                <label for="vendorAddressField" class="col-sm-2 col-form-label">Direccion</label>
                                 <div class="col-sm-10">
-                                <input type="password" class="form-control" id="inputPassword3" placeholder="Direccion (opcional)"/>
+                                <input type="text" class="form-control" id="vendorAddressField" placeholder="Direccion (opcional)"/>
                                 </div>
                             </div>
                             <div className="fair-spacing"/>
                             <div class="form-group row">
                                 <div class="col-sm-10">
-                                <button type="submit" class="btn btn-primary">Registrar</button>
+                                <button type="submit" class="btn btn-primary" onClick={registerVendor}>Registrar</button>
                                 </div>
                             </div>
                         </form>
