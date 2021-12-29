@@ -2,23 +2,90 @@ import React, {useState} from 'react'
 import { useParams } from 'react-router-dom';    //Helps us redirect to other pages
 
 import { useStateContext } from './contexts/dataContext';
+import { useHistory} from 'react-router-dom';
+import $ from 'jquery';
 
 function ItemInfo(props){
 
     
-
+    const history=useHistory();
+    const goBack=()=>{
+        history.goBack();
+    }
     //console.log(TransactionData);
 
     let {pId} = useParams();
+   //let fakePid=pId;
     const[ProductData, setProductData]= useStateContext()[0];
     const [transaction_data, settData]= useStateContext()[1];
+    const[VendorData, setVendorData]= useStateContext()[2];
 
     function addNewDataRow(){
-        console.log("ADD new Data Row");
+        $('#btnUpdate').removeAttr('hidden');
+        settData([...transaction_data,{ tId:9, tpId:1, date:'12/31/2021', vId:null, purchaseInvoiceId:null, purchaseWeight:null, purchasePrice:null, saleInvoiceId: null, saleWeight:null, salePrice:null},]);
+    }
+
+    function nameForId(vIdPassed)
+    {
+        if(vIdPassed>0 && vIdPassed!=null)
+            return ( VendorData.find(({vId},i) => vIdPassed===vId).vName);
     }
 
     //let product_data=props.location.state.pData[(pId-1)];
     //let transaction_data=props.location.state.tData;
+
+    function changeInvoiceId(e,lastValue,toChangeId)
+    {
+        
+        if(e.keyCode==13 || e.keyCode==9)   //if enter or tab is pressed
+        {
+            console.log("entered");
+            //console.log(e.target.value);
+            settData(
+                transaction_data.map((val,i) => val.tId==toChangeId ? { tId:val.tId, tpId:val.tpId, date:val.date, vId:val.vId, purchaseInvoiceId: e.target.value,
+                     purchaseWeight:val.purchaseWeight, purchasePrice:val.purchasePrice, saleInvoiceId: val.saleInvoiceId, saleWeight:val.saleWeight, salePrice:val.salePrice} : val));
+
+            $('#'+e.target.getAttribute('id')).prop('disabled',true);
+            $('#'+e.target.getAttribute('id')).prop('disabled',false);  //lose focus out of the textbox
+        }
+        
+
+        $('#'+e.target.getAttribute('id')).focusout(() => { //if enter is not pressed, and user left textfield revert changes -> (reset value to default [original])
+            e.target.value=lastValue;
+        })
+        
+        console.log(transaction_data);
+        
+    }
+
+    function changePurchaseWeight(e,lastValue,toChangeId)
+    {
+        
+        if(e.keyCode==13 || e.keyCode==9)   //if enter or tab is pressed
+        {
+            console.log("entered");
+            //console.log(e.target.value);
+            settData(
+                transaction_data.map((val,i) => val.tId==toChangeId ? { tId:val.tId, tpId:val.tpId, date:val.date, vId:val.vId, purchaseInvoiceId: val.purchaseInvoiceId,
+                     purchaseWeight:parseInt(e.target.value), purchasePrice:val.purchasePrice, saleInvoiceId: val.saleInvoiceId, saleWeight:val.saleWeight, salePrice:val.salePrice} : val));
+
+            $('#'+e.target.getAttribute('id')).prop('disabled',true);
+            $('#'+e.target.getAttribute('id')).prop('disabled',false);  //lose focus out of the textbox
+        }
+
+        $('#'+e.target.getAttribute('id')).focusout(() => { //if enter is not pressed, and user left textfield revert changes -> (reset value to default [original])
+            e.target.value=lastValue;
+        })
+        
+        console.log(transaction_data);
+        
+    }
+
+
+    let realIndex=0;
+    realIndex=ProductData.find((val,i) => pId==val.pId);    //go through JSON and list by pId and not by [index]
+    console.log('yes' +pId);
+    console.log('realIndex -> '+realIndex.pId);
 
     
 
@@ -52,9 +119,9 @@ function ItemInfo(props){
                 </nav> 
                 <div className='row'>
                     <div className='col'>
-                        <a href='/'>
-                            <img src='https://cdn3.iconfinder.com/data/icons/user-interface-731/32/Left_Chevron-512.png' id='left-back-btn'></img>
-                        </a>
+                        
+                            <img src='https://cdn3.iconfinder.com/data/icons/user-interface-731/32/Left_Chevron-512.png' id='left-back-btn' onClick={goBack}></img>
+                        
                     </div>
                     <div className='col'>
                         <a href='/'>
@@ -66,11 +133,12 @@ function ItemInfo(props){
             <div className="container">
                     <div className='row'>
                         <div className='col'>
-                            <h1>{ProductData[pId].pName}</h1>
-                            <h4>{ProductData[pId].pWeightType}</h4>
+                            <h1 >{realIndex.pName}</h1>
+                            <h4>{realIndex.pDescription}</h4>
+                            <h4>{realIndex.pWeightType}</h4>
                         </div>
-                        <div className='col-3' id='right-align' >
-                            <h4>Product Id: {ProductData[pId].pId}</h4>
+                        <div className='col-3 d-flex justify-content-end'>
+                            <h4>Product Id: {realIndex.pId}</h4>
                         </div>
                         
                     </div>
@@ -78,8 +146,8 @@ function ItemInfo(props){
                         <div className='col-9'>
 
                         </div>
-                        <div className='col' id='right-align'>
-                            <h5>Cantidad disponible: {ProductData[pId].pQuantity}</h5>
+                        <div className='col d-flex justify-content-end'>
+                            <h5>Cantidad disponible: {realIndex.pQuantity}</h5>
                         </div>
                     </div>
                     <div className='fair-spacing'/>
@@ -108,31 +176,94 @@ function ItemInfo(props){
                             </thead>
                             <tbody>
                                 {transaction_data.map(({tId,tpId, date,vId,purchaseInvoiceId, purchaseWeight, purchasePrice,saleInvoiceId,saleWeight, salePrice} ) => //Data driven display of rows in data 
-                                     ProductData[pId].pId==({tpId}.tpId).toString() ?
+                                     realIndex.pId==({tpId}.tpId).toString() ?
                                     
                                     
                                     <tr className='table-row'>
                                         <th scope="row">{tId}</th>
-                                        <td>{date}</td>
-                                        <td>{vId}</td>
-                                        <td>{purchaseInvoiceId}</td>
-                                        <td>{purchaseWeight}</td>
-                                        <td>{purchasePrice}</td>
-                                        <td>{saleInvoiceId}</td>
-                                        <td>{saleWeight}</td>
-                                        <td>
-                                            {salePrice}
-                                            {/*<img src='https://www.pngrepo.com/download/122147/rounded-delete-button-with-minus.png' className='delete-btn'/>*/}
-                                        </td>
+                                        <td><input type='text' id={'row'+tId+'date'} className='tableInput tableDate' defaultValue={date}/></td>
+                                        
+                                        {
+                                            purchaseInvoiceId!=null?    //if the row only uses Purchase Side, disable all actions on right side (Sale) of table
+                                        <>
+                                            <td><input type='text' id={'row'+tId+'vId'} className='tableInput' defaultValue={nameForId(vId)}></input></td>
+                                            <td>
+                                                <div className='tableData'>
+                                                    <input type='text' id={'row'+tId+'purchaseInvoiceId'} className='tableInput' defaultValue={purchaseInvoiceId} onKeyDown={e =>{changeInvoiceId(e,purchaseInvoiceId,tId)}}/>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className='tableData'>
+                                                    <input type='text' id={'row'+tId+'purchaseWeight'} className='tableInput' defaultValue={purchaseWeight} onKeyDown={e =>{changePurchaseWeight(e,purchaseWeight,tId)}}  />
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className='tableData'>
+                                                    <input type='text' id={'row'+tId+'purchasePrice'} className='tableInput' defaultValue={purchasePrice}/>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className='tableData'>
+                                                    <input type='text' id={'row'+tId+'saleInvoiceId'} className='tableInput' defaultValue={saleInvoiceId} disabled/>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className='tableData'>
+                                                    <input type='text' id={'row'+tId+'saleWeight'} className='tableInput' defaultValue={saleWeight} disabled/>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className='tableData'>
+                                                    <input type='text' id={'row'+tId+'salePrice'} className='tableInput' defaultValue={salePrice} disabled/>
+                                                {/*<img src='https://www.pngrepo.com/download/122147/rounded-delete-button-with-minus.png' className='delete-btn'/>*/}
+                                                </div>
+                                            </td>
+                                        </>
+                                        :   //else if it only uses the right side (Sale) reverse
+                                        <>
+                                            <td><input type='text' id={'row'+tId+'vId'} className='tableInput' defaultValue={nameForId(vId)} disabled/></td>
+                                            <td>
+                                                <div className='tableData'>
+                                                    <input type='text' id={'row'+tId+'purchaseInvoiceId'} className='tableInput' defaultValue={purchaseInvoiceId} onKeyDown={e =>{changeInvoiceId(e,purchaseInvoiceId,tId)}} disabled/>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className='tableData'>
+                                                    <input type='text' id={'row'+tId+'purchaseWeight'} className='tableInput' defaultValue={purchaseWeight} onKeyDown={e =>{changePurchaseWeight(e,purchaseWeight,tId)}} disabled/>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className='tableData'>
+                                                    <input type='text' id={'row'+tId+'purchasePrice'} className='tableInput' defaultValue={purchasePrice} disabled/>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className='tableData'>
+                                                    <input type='text' id={'row'+tId+'saleInvoiceId'} className='tableInput' defaultValue={saleInvoiceId}/>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className='tableData'>
+                                                    <input type='text' id={'row'+tId+'saleWeight'} className='tableInput' defaultValue={saleWeight}/>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className='tableData'>
+                                                    <input type='text' id={'row'+tId+'salePrice'} className='tableInput' defaultValue={salePrice}/>
+                                                {/*<img src='https://www.pngrepo.com/download/122147/rounded-delete-button-with-minus.png' className='delete-btn'/>*/}
+                                                </div>
+                                            </td>
+                                        </>
+                                        }
                                     </tr>
                                     :
                                     
                                     <></>
                                     
                                 )}
-                                <tr onClick={addNewDataRow}>
+                                <tr>
                                     <th scope="row">
-                                        <img src='https://static.thenounproject.com/png/1649999-200.png' id='add-data-btn'/>
+                                        <img src='https://static.thenounproject.com/png/1649999-200.png' id='add-data-btn' onClick={addNewDataRow}/>
                                     </th>
                                     <td></td>
                                     <td></td>
@@ -141,7 +272,7 @@ function ItemInfo(props){
                                     <td></td>
                                     <td></td>
                                     <td></td>
-                                    <td></td>
+                                    <td><button type="button" className="btn btn-outline-dark" id='btnUpdate' hidden>Actualizar</button></td>
                                 </tr>
                             </tbody>
                         </table>

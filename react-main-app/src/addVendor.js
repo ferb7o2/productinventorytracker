@@ -1,27 +1,43 @@
 import React from "react";
 import $ from 'jquery';
+import{useHistory} from 'react-router-dom'
 
 import {useStateContext} from './contexts/dataContext'
 
 function AddVendor(){
+
+    const history=useHistory();
+    const goBack=()=>{
+        history.goBack();
+    }
 
     const[VendorData, setVendorData]= useStateContext()[2];
 
 
     function registerVendor(e){
         e.preventDefault();
+        let uppercaseRFC='';
 
         if($('#vendorNameField').val().length!==0)
         {
             if($('#vendorRFCField').val().length!==0)
             {
-                    setVendorData([...VendorData, {vId: 1, vName:$('#vendorNameField').val(), vRFC:$('#vendorRFCField').val(), vNumOfTransactions:0, vAddress:$('#vendorAddressField').val()},])
+                    uppercaseRFC=$('#vendorRFCField').val().toUpperCase();
+                    setVendorData([...VendorData, {vId: 1, vName:$('#vendorNameField').val(), vRFC:uppercaseRFC, vNumOfTransactions:0, vAddress:$('#vendorAddressField').val()},]);
+                    history.goBack();
             }
             else
-                console.log("Error-RFC cannot be blank")
+            {
+                $('#error-vendor').removeAttr('hidden');
+                $('#error-vendor').text("Error - el RFC de el DISTRIBUIDOR no puede estar vacio")
+            }
+               
         }
         else
-            console.log("Error- name cannot be blank")
+        {
+            $('#error-vendor').removeAttr('hidden');
+            $('#error-vendor').text("Error - el NOMBRE de el DISTRIBUIDOR no puede estar vacio");
+        }
 
 
 
@@ -31,6 +47,9 @@ function AddVendor(){
     return(
         <div className="Application">
             <header>
+                <div class="alert alert-danger" role="alert" id='error-vendor' onClick={()=>{$('#error-vendor').attr('hidden',true)}} hidden>
+                    This is a danger alert—check it out!
+                </div>
                 <nav className="navbar navbar-dark bg-dark">
                     <div className="container-fluid">
                     <a className="navbar-brand" href="#">Facturacion Mexico [2021 Año]</a>
