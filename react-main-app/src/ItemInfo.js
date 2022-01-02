@@ -20,9 +20,71 @@ function ItemInfo(props){
     const [transaction_data, settData]= useStateContext()[1];
     const[VendorData, setVendorData]= useStateContext()[2];
 
-    function addNewDataRow(){
+    function displayInputFields(){
         $('#btnUpdate').removeAttr('hidden');
-        settData([...transaction_data,{ tId:9, tpId:1, date:'12/31/2021', vId:null, purchaseInvoiceId:null, purchaseWeight:null, purchasePrice:null, saleInvoiceId: null, saleWeight:null, salePrice:null},]);
+        $('#input-new-data-row').removeAttr('hidden');
+    }
+
+    function inputCheck()
+    {
+        //if vendor information is filled, then it will be a purchase transaction
+            //hence, disable all Sale input fields to prevent user confusion
+        if($('#input-row-vId').val().length>1)  //'>1' is to prevent completely empty input but no more change case
+        {
+            //delete any previous information on sale fields, if any
+            $('#input-row-saleInvoiceId').val('');
+            $('#input-row-saleWeight').val('');
+            $('#input-row-salePrice').val('');
+            //disable all sale fields
+            $('#input-row-saleInvoiceId').attr('disabled',true);
+            $('#input-row-saleWeight').attr('disabled',true);
+            $('#input-row-salePrice').attr('disabled',true);
+
+
+    
+        }
+        else if($('#input-row-saleInvoiceId').val().length>1)  //if purchase Informationis filled,
+                                                                //do same steps but with PURCHASE input fields
+        {
+            //delete any previous information on PURCHASE fields, if any
+            $('#input-row-vId').val('');
+            $('#input-row-purchaseInvoiceId').val('');
+            $('#input-row-purchaseWeight').val('');
+            $('#input-row-purchasePrice').val('');
+            
+            //disable all PURCHASE fields
+            $('#input-row-vId').attr('disabled',true);
+            $('#input-row-purchaseInvoiceId').attr('disabled',true);
+            $('#input-row-purchaseWeight').attr('disabled',true);
+            $('#input-row-purchasePrice').attr('disabled',true);
+        }
+        else    //if both fields are empty (may have erased and tries to fill opposite field)
+        {
+            //enable all input fields 
+            $('#input-row-saleInvoiceId').attr('disabled',false);
+            $('#input-row-saleWeight').attr('disabled',false);
+            $('#input-row-salePrice').attr('disabled',false);
+            $('#input-row-vId').attr('disabled',false);
+            $('#input-row-purchaseInvoiceId').attr('disabled',false);
+            $('#input-row-purchaseWeight').attr('disabled',false);
+            $('#input-row-purchasePrice').attr('disabled',false);
+
+        }
+    }
+
+    function addNewDataRow(){
+
+    
+        //-------->Check for valid [non-empty] PURCHASE info data
+        //------------->Display proper error messages if failed check
+        
+        
+        //-------->Check for valid [non-empty] SALE info data
+        //------------->Display proper error messages if failed check
+
+        //settData([...transaction_data,{ tId:9, tpId:1, date:'12/31/2021', vId:null, purchaseInvoiceId:null,
+         //purchaseWeight:null, purchasePrice:null, saleInvoiceId: null, saleWeight:null, salePrice:null},]);
+        
     }
 
     function nameForId(vIdPassed)
@@ -261,9 +323,55 @@ function ItemInfo(props){
                                     <></>
                                     
                                 )}
+
+
+                                <tr className='table-row' id='input-new-data-row' hidden>
+                                        <th scope="row">
+                                            {'->'}
+                                        </th>
+                                            <td>
+                                                <input type='text' id='input-row-date' className='tableInput tableDate' defaultValue={'Today'}/>
+                                            </td>
+                                            <td>
+                                                <input type='text' id='input-row-vId' className='tableInput' onKeyDown={inputCheck}/>
+                                            </td>
+                                            <td>
+                                                <div className='tableData'>
+                                                    <input type='text' id='input-row-purchaseInvoiceId' className='tableInput'/>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className='tableData'>
+                                                    <input type='text' id='input-row-purchaseWeight' className='tableInput'/>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className='tableData'>
+                                                    <input type='text' id='input-row-purchasePrice' className='tableInput'/>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className='tableData'>
+                                                    <input type='text' id='input-row-saleInvoiceId' className='tableInput' onKeyDown={inputCheck}/>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className='tableData'>
+                                                    <input type='text' id='input-row-saleWeight' className='tableInput'/>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className='tableData'>
+                                                    <input type='text' id='input-row-salePrice' className='tableInput'/>
+                                                </div>
+                                            </td>
+                                </tr>
+                                <tr hidden></tr>   {/* just a hidden element to not break the color scheme on the next table row*/}
+
+                                
                                 <tr>
                                     <th scope="row">
-                                        <img src='https://static.thenounproject.com/png/1649999-200.png' id='add-data-btn' onClick={addNewDataRow}/>
+                                        <img src='https://static.thenounproject.com/png/1649999-200.png' id='add-data-btn' onClick={displayInputFields}/>
                                     </th>
                                     <td></td>
                                     <td></td>
@@ -272,7 +380,7 @@ function ItemInfo(props){
                                     <td></td>
                                     <td></td>
                                     <td></td>
-                                    <td><button type="button" className="btn btn-outline-dark" id='btnUpdate' hidden>Actualizar</button></td>
+                                    <td><button type="button" className="btn btn-outline-dark" id='btnUpdate' onClick={addNewDataRow} hidden>Actualizar</button></td>
                                 </tr>
                             </tbody>
                         </table>
