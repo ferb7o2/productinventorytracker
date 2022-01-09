@@ -251,15 +251,15 @@ function Home(){
 
 function App() {
   return (
-    <Router>
+    <Router basename={process.env.PUBLIC_URL}>
       <div className="Application">
         <DataProvider>
           <Switch>    {/*Makes sure we are only on one route at a time*/}
-            <Route exact path='/ProductInventoryTracker/' component={Home} />
-            <Route exact path='/ProductInventoryTracker/item/:pId' component={ItemInfo} />
-            <Route exact path='/ProductInventoryTracker/vendor/:vId_global' component={VendorInfo} />
-            <Route exact path='/ProductInventoryTracker/addVendor' component={AddVendor}/>
-            <Route exact path='/ProductInventoryTracker/addProduct' component={AddProduct}/>
+            <Route exact path='/' component={Home} />
+            <Route exact path='/item/:pId' component={ItemInfo} />
+            <Route exact path='/vendor/:vId_global' component={VendorInfo} />
+            <Route exact path='/addVendor' component={AddVendor}/>
+            <Route exact path='/addProduct' component={AddProduct}/>
           </Switch>
         </DataProvider>
       </div>

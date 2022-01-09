@@ -1,8 +1,8 @@
 {
-  "homepage": "https://josejaramillo04.github.io/ProductInventoryTracker",
+  "homepage": "https://josejaramillo04.github.io/productinventorytracker",
   "name": "react-main-app",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^11.2.7",

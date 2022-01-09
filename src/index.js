@@ -6,7 +6,7 @@ import reportWebVitals from './reportWebVitals';
 import {BrowserRouter} from 'react-router-dom'    //for moving between pages
 
 ReactDOM.render(
-  <BrowserRouter>
+  <BrowserRouter >
     <App />
   </BrowserRouter>,
   document.getElementById('root')
