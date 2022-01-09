@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "/JoseJaramillo04/ProductInventoryTracker/static/css/main.2a5f9ca8.chunk.css",
+    "main.js": "/JoseJaramillo04/ProductInventoryTracker/static/js/main.6a4bad96.chunk.js",
+    "main.js.map": "/JoseJaramillo04/ProductInventoryTracker/static/js/main.6a4bad96.chunk.js.map",
+    "runtime-main.js": "/JoseJaramillo04/ProductInventoryTracker/static/js/runtime-main.6eddb08d.js",
+    "runtime-main.js.map": "/JoseJaramillo04/ProductInventoryTracker/static/js/runtime-main.6eddb08d.js.map",
+    "static/css/2.0a9ec390.chunk.css": "/JoseJaramillo04/ProductInventoryTracker/static/css/2.0a9ec390.chunk.css",
+    "static/js/2.e32fe962.chunk.js": "/JoseJaramillo04/ProductInventoryTracker/static/js/2.e32fe962.chunk.js",
+    "static/js/2.e32fe962.chunk.js.map": "/JoseJaramillo04/ProductInventoryTracker/static/js/2.e32fe962.chunk.js.map",
+    "static/js/3.77972104.chunk.js": "/JoseJaramillo04/ProductInventoryTracker/static/js/3.77972104.chunk.js",
+    "static/js/3.77972104.chunk.js.map": "/JoseJaramillo04/ProductInventoryTracker/static/js/3.77972104.chunk.js.map",
+    "index.html": "/JoseJaramillo04/ProductInventoryTracker/index.html",
+    "static/css/2.0a9ec390.chunk.css.map": "/JoseJaramillo04/ProductInventoryTracker/static/css/2.0a9ec390.chunk.css.map",
+    "static/css/main.2a5f9ca8.chunk.css.map": "/JoseJaramillo04/ProductInventoryTracker/static/css/main.2a5f9ca8.chunk.css.map",
+    "static/js/2.e32fe962.chunk.js.LICENSE.txt": "/JoseJaramillo04/ProductInventoryTracker/static/js/2.e32fe962.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.6eddb08d.js",
+    "static/css/2.0a9ec390.chunk.css",
+    "static/js/2.e32fe962.chunk.js",
+    "static/css/main.2a5f9ca8.chunk.css",
+    "static/js/main.6a4bad96.chunk.js"
+  ]
+}
