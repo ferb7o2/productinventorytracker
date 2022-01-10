@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/productinventorytracker/static/css/main.2a5f9ca8.chunk.css",
-    "main.js": "/productinventorytracker/static/js/main.9ce89a4d.chunk.js",
-    "main.js.map": "/productinventorytracker/static/js/main.9ce89a4d.chunk.js.map",
+    "main.js": "/productinventorytracker/static/js/main.f6fa1b7d.chunk.js",
+    "main.js.map": "/productinventorytracker/static/js/main.f6fa1b7d.chunk.js.map",
     "runtime-main.js": "/productinventorytracker/static/js/runtime-main.ebdc1228.js",
     "runtime-main.js.map": "/productinventorytracker/static/js/runtime-main.ebdc1228.js.map",
     "static/css/2.0a9ec390.chunk.css": "/productinventorytracker/static/css/2.0a9ec390.chunk.css",
@@ -20,6 +20,6 @@
     "static/css/2.0a9ec390.chunk.css",
     "static/js/2.346b1949.chunk.js",
     "static/css/main.2a5f9ca8.chunk.css",
-    "static/js/main.9ce89a4d.chunk.js"
+    "static/js/main.f6fa1b7d.chunk.js"
   ]
 }
