@@ -65,7 +65,7 @@ function Home(){
   function itemTableRowClicked(e){
     console.log(e.target.id);
     console.log("YOU CLICKED ME");
-    let path=`/item/${e.target.id}`;
+    let path=`/productinventorytracker/item/${e.target.id}`;
     //let path=`/item`;
     history.push(path);
 
@@ -81,13 +81,13 @@ function Home(){
 
   function addVendorBtn(){
     //let path=`/item/:${e.target.id}`;
-    let path=`/addVendor`;
+    let path=`/productinventorytracker/addVendor`;
     history.push(path);
   }
 
   function addProductBtn(){
     //let path=`/item/:${e.target.id}`;
-    let path=`/addProduct`;
+    let path=`/productinventorytracker/addProduct`;
     history.push(path);
   }
   
@@ -251,15 +251,15 @@ function Home(){
 
 function App() {
   return (
-    <Router basename={process.env.PUBLIC_URL}>
+    <Router /*basename={process.env.PUBLIC_URL}*/>
       <div className="Application">
         <DataProvider>
           <Switch>    {/*Makes sure we are only on one route at a time*/}
-            <Route exact path='/' component={Home} />
-            <Route exact path='/item/:pId' component={ItemInfo} />
-            <Route exact path='/vendor/:vId_global' component={VendorInfo} />
-            <Route exact path='/addVendor' component={AddVendor}/>
-            <Route exact path='/addProduct' component={AddProduct}/>
+            <Route exact path='/productinventorytracker/' component={Home} />
+            <Route exact path='/productinventorytracker/item/:pId' component={ItemInfo} />
+            <Route exact path='/productinventorytracker/vendor/:vId_global' component={VendorInfo} />
+            <Route exact path='/productinventorytracker/addVendor' component={AddVendor}/>
+            <Route exact path='/productinventorytracker/addProduct' component={AddProduct}/>
           </Switch>
         </DataProvider>
       </div>
