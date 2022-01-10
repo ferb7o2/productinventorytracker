@@ -3,12 +3,12 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import {BrowserRouter} from 'react-router-dom'    //for moving between pages
+import {BrowserRouter, HashRouter} from 'react-router-dom'    //for moving between pages
 
 ReactDOM.render(
-  <BrowserRouter >
+  <HashRouter>
     <App />
-  </BrowserRouter>,
+  </HashRouter>,
   document.getElementById('root')
 );
 

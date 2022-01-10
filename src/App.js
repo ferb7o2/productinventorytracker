@@ -1,5 +1,5 @@
 import './App.css';
-import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
+import {BrowserRouter as Router, HashRouter, Route, Switch} from 'react-router-dom';
 import { useHistory, useParams } from 'react-router-dom';    //Helps us redirect to other pages
 
 import 'bootstrap/dist/css/bootstrap.min.css';  //Boostrap Import 1/2
@@ -251,7 +251,7 @@ function Home(){
 
 function App() {
   return (
-    <Router basename={process.env.PUBLIC_URL}>
+    <HashRouter basename={process.env.PUBLIC_URL}>
       <div className="Application">
         <DataProvider>
           <Switch>    {/*Makes sure we are only on one route at a time*/}
@@ -263,7 +263,7 @@ function App() {
           </Switch>
         </DataProvider>
       </div>
-    </Router>
+    </HashRouter>
   );
 }
 
