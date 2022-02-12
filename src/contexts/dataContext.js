@@ -613,13 +613,17 @@ export const DataProvider = ({children}) => {
 
       const [ProductData,setProductData]=useState(product_data);
 
-      const transaction_data=[
-        { tId:1, tpId:1, date:'12/24/2021', vId:1, purchaseInvoiceId:1, purchaseWeight:23, purchasePrice:4322, saleInvoiceId: null, saleWeight:null, salePrice:null},
-        { tId:2, tpId:1, date:'12/29/2021', vId:1, purchaseInvoiceId:12, purchaseWeight:44, purchasePrice:4322, saleInvoiceId: null, saleWeight:null, salePrice:null},
-        { tId:3, tpId:1, date:'12/31/2021', vId:null, purchaseInvoiceId:null, purchaseWeight:null, purchasePrice:null, saleInvoiceId: 244, saleWeight:67, salePrice:5000},
+      const Ptransaction_data=[
+        { PtId:1, tpId:1, date:'12/24/2021', vId:1, purchaseInvoiceId:1, purchaseWeight:23, purchasePrice:4322},
+        { PtId:2, tpId:1, date:'12/29/2021', vId:1, purchaseInvoiceId:12, purchaseWeight:44, purchasePrice:4322}
       ]
 
-      const [TransactionData, setTransactionData]=useState(transaction_data);
+      const Stransaction_data=[
+        {stId:1, spId:1, date:'12/29/2021', saleInvoiceId: 244, saleWeight:67, salePrice:5000},
+      ]
+
+      const [PTransactionData, setPTransactionData]=useState(Ptransaction_data);
+      const [STransactionData, setSTransactionData]=useState(Stransaction_data);
 
       const vendor_data=/*[
         {vId: 1, vName:'Chisemex', vRFC:'MELM8305281H0', vNumOfTransactions:32, vAddress:'N/A'},
@@ -1234,7 +1238,7 @@ export const DataProvider = ({children}) => {
       const [VendorData, setVendorData]=useState(vendor_data);
 
       return (
-          <DataContext.Provider value ={[[ProductData,setProductData], [TransactionData, setTransactionData],[VendorData, setVendorData]]}>
+          <DataContext.Provider value ={[[ProductData,setProductData], [PTransactionData, setPTransactionData],[VendorData, setVendorData],[STransactionData,setSTransactionData]]}>
               {children}
           </DataContext.Provider>
       );
