@@ -733,6 +733,15 @@ export const DataProvider = ({ children }) => {
 			purchaseWeight: 44,
 			purchasePrice: 4322,
 		},
+		{
+			PtId: 3,
+			tpId: 2,
+			date: "12/29/2021",
+			vId: 2,
+			purchaseInvoiceId: 12,
+			purchaseWeight: 44,
+			purchasePrice: 4322,
+		},
 	];
 
 	const Stransaction_data = [
