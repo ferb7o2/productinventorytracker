@@ -440,9 +440,7 @@ function ItemInfo(props) {
 											</td>
 										</tr>
 									) : (
-										{
-											/*empty*/
-										}
+										<></>
 									)
 							)}
 							<tr className="table-row" id="input-new-data-row" hidden>
@@ -592,9 +590,7 @@ function ItemInfo(props) {
 											</td>
 										</tr>
 									) : (
-										{
-											/*empty*/
-										}
+										<></>
 									)
 							)}
 							<tr className="table-row" id="input-new-data-row-sale" hidden>
