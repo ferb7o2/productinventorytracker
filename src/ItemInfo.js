@@ -2,30 +2,36 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom"; //Helps us redirect to other pages
 
 import { useStateContext } from "./contexts/dataContext";
-import { useHistory } from "react-router-dom";
-import $, { error } from "jquery";
+//import { useHistory } from "react-router-dom";
+import $ from "jquery";
 
 //get Date
 import * as moment from "moment";
 
+//Components
+import { NavBar } from "./components/NavBar";
+import { Footer } from "./components/Footer";
+
 function ItemInfo(props) {
-	const history = useHistory();
-	const goBack = () => {
+	//const history = useHistory();
+	/*const goBack = () => {
 		history.goBack();
-	};
+	};*/
 	//console.log(TransactionData);
 
 	let { pId } = useParams();
 
+	pId = parseInt(pId, 10);
+
 	//Import data from Context API
-	const [ProductData, setProductData] = useStateContext()[0];
+	const [ProductData /*, setProductData*/] = useStateContext()[0];
 	const [Ptransaction_data, setPtData] = useStateContext()[1];
-	const [VendorData, setVendorData] = useStateContext()[2];
+	const [VendorData /*, setVendorData*/] = useStateContext()[2];
 	const [InventoryTotal, setInventoryTotal] = useState(0);
 	const [Stransaction_data, setStData] = useStateContext()[3];
 
 	let realIndex = 0;
-	realIndex = ProductData.find((val, i) => pId == val.pId); //go through JSON and list by pId and not by [index]
+	realIndex = ProductData.find((val, i) => pId === val.pId); //go through JSON and list by pId and not by [index]
 	console.log("yes" + pId);
 	console.log("realIndex -> " + realIndex.pId);
 
@@ -49,7 +55,7 @@ function ItemInfo(props) {
 		}
 
 		InventoryTotalSum(realIndex.pId);
-	}, []);
+	}, [Ptransaction_data, Stransaction_data, realIndex.pId]); //edit out
 
 	function displayPURCHASEInputFields() {
 		$("#input-row-vId").val("");
@@ -74,8 +80,9 @@ function ItemInfo(props) {
 	}
 
 	const isNumber = new RegExp("^[0-9]+$");
+
 	function isNotEmpty(parameter) {
-		if (parameter.val() != 0) return true;
+		if (parameter.val().length !== 0) return true;
 		else return false;
 	}
 
@@ -97,11 +104,11 @@ function ItemInfo(props) {
 						...Stransaction_data,
 						{
 							stId: "",
-							spId: parseInt(pId,10),
+							spId: parseInt(pId, 10),
 							date: $("#input-row-sale-date").val(),
 							saleInvoiceId: $("#input-row-saleInvoiceId").val(),
 							saleWeight: parseInt($("#input-row-saleWeight").val(), 10),
-							salePrice: parseInt($("#input-row-salePrice").val(),10),
+							salePrice: parseInt($("#input-row-salePrice").val(), 10),
 						},
 					]);
 
@@ -139,18 +146,18 @@ function ItemInfo(props) {
 
 		//-------->Check for valid [non-empty] PURCHASE info data
 		//------------->Display proper error messages if failed check
-		if ($("#input-row-vId").val() != 0) {
+		if (isNotEmpty($("#input-row-vId"))) {
 			let vendorId = $("[list='vendors']").val(); //get the vendor from the [datalist] dropdown
 			vendorId = idForName(vendorId); //Convert to proper db data
 
 			//If non-empty
-			if ($("#input-row-purchaseInvoiceId").val() != 0) {
+			if (isNotEmpty($("#input-row-purchaseInvoiceId"))) {
 				if (
-					$("#input-row-purchaseWeight").val() != 0 &&
+					isNotEmpty($("#input-row-purchaseWeight")) &&
 					isNumber.test($("#input-row-purchaseWeight").val())
 				) {
 					if (
-						$("#input-row-purchasePrice").val() != 0 &&
+						isNotEmpty($("#input-row-purchasePrice")) &&
 						isNumber.test($("#input-row-purchasePrice").val())
 					) {
 						//then all data is valid, we can add into array
@@ -197,6 +204,11 @@ function ItemInfo(props) {
 				errorTemplate.text("Error - El numero de factura no puede estar vacío");
 				errorTemplate.attr("hidden", false);
 			}
+		} else {
+			errorTemplate.text(
+				"Error - el recuadro del proveedor no puede estar vacío"
+			);
+			errorTemplate.attr("hidden", false);
 		}
 		/*
         else
@@ -249,11 +261,11 @@ function ItemInfo(props) {
 
 	function changeInvoiceId(e, lastValue, toChangeId) {
 		let newVal = e.target.value;
-		if (e.keyCode == 13 || e.keyCode == 9) {
+		if (e.keyCode === 13 || e.keyCode === 9) {
 			//if enter or tab is pressed
 			setPtData(
 				Ptransaction_data.map((val, i) =>
-					val.PtId == toChangeId
+					val.PtId === toChangeId
 						? {
 								PtId: val.PtId,
 								tpId: val.tpId,
@@ -275,13 +287,13 @@ function ItemInfo(props) {
 	}
 
 	function changePurchaseWeight(e, lastValue, toChangeId) {
-		if (e.keyCode == 13 || e.keyCode == 9) {
+		if (e.keyCode === 13 || e.keyCode === 9) {
 			//if enter or tab is pressed
 			console.log("entered");
 			//console.log(e.target.value);
 			setPtData(
 				Ptransaction_data.map((val, i) =>
-					val.tId == toChangeId
+					val.tId === toChangeId
 						? {
 								tId: val.tId,
 								tpId: val.tpId,
@@ -309,7 +321,7 @@ function ItemInfo(props) {
 		<div className="Application">
 			<header>
 				<div
-					class="alert alert-danger"
+					className="alert alert-danger"
 					role="alert"
 					id="error-template"
 					onClick={() => {
@@ -319,64 +331,7 @@ function ItemInfo(props) {
 				>
 					This is a danger alert—check it out!
 				</div>
-				<nav className="navbar navbar-dark bg-dark">
-					<div className="container-fluid">
-						<a className="navbar-brand" href="#">
-							Facturacion Mexico [2021 Año]
-						</a>
-						<a> HEY</a>
-						<button
-							className="navbar-toggler"
-							type="button"
-							data-bs-toggle="collapse"
-							data-bs-target="#navbarNav"
-							aria-controls="navbarNav"
-							aria-expanded="false"
-							aria-label="Toggle navigation"
-						>
-							<span className="navbar-toggler-icon"></span>
-						</button>
-						<div className="collapse navbar-collapse" id="navbarNav">
-							<ul className="navbar-nav">
-								<li className="nav-item">
-									<a className="nav-link active" aria-current="page" href="#">
-										Home
-									</a>
-								</li>
-								<li className="nav-item">
-									<a className="nav-link" href="#">
-										Features
-									</a>
-								</li>
-								<li className="nav-item">
-									<a className="nav-link" href="#">
-										Pricing
-									</a>
-								</li>
-								<li className="nav-item">
-									<a className="nav-link disabled">Disabled</a>
-								</li>
-							</ul>
-						</div>
-					</div>
-				</nav>
-				<div className="row">
-					<div className="col">
-						<img
-							src="https://cdn3.iconfinder.com/data/icons/user-interface-731/32/Left_Chevron-512.png"
-							id="left-back-btn"
-							onClick={goBack}
-						></img>
-					</div>
-					<div className="col">
-						<a href="/">
-							<img
-								src="https://icons-for-free.com/iconfiles/png/512/arrow+right+chevron+chevronrightcircle+circle+right+right-1320185732004907921.png"
-								id="right-back-btn"
-							></img>
-						</a>
-					</div>
-				</div>
+				<NavBar />
 			</header>
 			<div className="container">
 				<div className="row">
@@ -409,12 +364,8 @@ function ItemInfo(props) {
 								<th scope="col">Fecha</th>
 								<th scope="col">Proveedor</th>
 								<th scope="col"># Factura</th>
-								<th scope="col">
-									Peso <bold>(Kg)</bold>
-								</th>
-								<th scope="col">
-									Precio <bold>(MXN)</bold>
-								</th>
+								<th scope="col">Peso (Kg)</th>
+								<th scope="col">Precio (MXN)</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -430,9 +381,9 @@ function ItemInfo(props) {
 										purchasePrice,
 									} //Data driven display of rows in data
 								) =>
-									realIndex.pId == { tpId }.tpId.toString() ? ( //if the current page's product id and the db's product id match
+									realIndex.pId === { tpId }.tpId ? ( //if the current page's product id and the db's product id match
 										//then  the db's row is supposed to be here, display it
-										<tr className="table-row">
+										<tr key={PtId} className="table-row">
 											<th scope="row">{PtId}</th>
 											<td>
 												<input
@@ -489,7 +440,9 @@ function ItemInfo(props) {
 											</td>
 										</tr>
 									) : (
-										<></>
+										{
+											/*empty*/
+										}
 									)
 							)}
 							<tr className="table-row" id="input-new-data-row" hidden>
@@ -512,7 +465,7 @@ function ItemInfo(props) {
 
 									<datalist id="vendors">
 										{VendorData.map(({ vId, vName, vNumOfTransactions }) => (
-											<option value={vName} id={vId} />
+											<option key={vId} value={vName} id={vId} />
 										))}
 									</datalist>
 								</td>
@@ -544,7 +497,7 @@ function ItemInfo(props) {
 									</div>
 								</td>
 							</tr>
-							<tr hidden></tr>{" "}
+							<tr hidden></tr>
 							{/* just a hidden element to not break the color scheme on the next table row*/}
 							<tr>
 								<th scope="row">
@@ -553,6 +506,7 @@ function ItemInfo(props) {
 										id="add-data-btn"
 										className="add-data-btn"
 										onClick={displayPURCHASEInputFields}
+										alt="add new purchase entry button"
 									/>
 								</th>
 								<td></td>
@@ -584,9 +538,7 @@ function ItemInfo(props) {
 								<th scope="col">Fecha</th>
 								<th scope="col"># Invoice</th>
 								<th scope="col">Peso (kg)</th>
-								<th scope="col">
-									Precio <bold>(MXN)</bold>
-								</th>
+								<th scope="col">Precio (MXN)</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -594,8 +546,8 @@ function ItemInfo(props) {
 								(
 									{ stId, spId, date, saleInvoiceId, saleWeight, salePrice } //Data driven display of rows in data
 								) =>
-									realIndex.pId == { spId }.spId.toString() ? (
-										<tr className="table-row">
+									realIndex.pId === { spId }.spId ? (
+										<tr key={stId} className="table-row">
 											<th scope="row">{stId}</th>
 											<td>
 												<input
@@ -640,7 +592,9 @@ function ItemInfo(props) {
 											</td>
 										</tr>
 									) : (
-										<></>
+										{
+											/*empty*/
+										}
 									)
 							)}
 							<tr className="table-row" id="input-new-data-row-sale" hidden>
@@ -679,7 +633,7 @@ function ItemInfo(props) {
 									</div>
 								</td>
 							</tr>
-							<tr hidden></tr>{" "}
+							<tr hidden></tr>
 							{/* just a hidden element to not break the color scheme on the next table row*/}
 							<tr>
 								<th scope="row">
@@ -688,6 +642,7 @@ function ItemInfo(props) {
 										id="add-sale-data-btn"
 										className="add-data-btn"
 										onClick={displaySALEInputFields}
+										alt="add new purchase entry button"
 									/>
 								</th>
 								<td></td>
@@ -709,6 +664,8 @@ function ItemInfo(props) {
 					</table>
 				</div>
 			</div>
+
+			<Footer />
 		</div>
 	);
 }
