@@ -16,7 +16,7 @@ function MainScreen() {
 	return (
 		<div className="Application">
 			<div className="container">
-				<div className="row">
+				<div className="row fair-spacing">
 					<div className="col">
 						<iframe
 							src="https://embed.lottiefiles.com/animation/98495"
@@ -39,6 +39,19 @@ function MainScreen() {
 							</button>
 						</div>
 					</div>
+				</div>
+				<div className="row">
+					<p id="salesInfo">
+						<a href="https://www.google.com/search?q=sanangel+productos+mexicanos+llc&rlz=1C1ONGR_enUS962US962&oq=sana&aqs=chrome.1.69i60j69i59j69i57j69i59l2j0i271l2j69i60.2432j0j1&sourceid=chrome&ie=UTF-8">
+							SanAngel Productos Mexicanos LLC
+						</a>
+					</p>
+				</div>
+				<div className="row">
+					<p id="salesInfo">2501 W. Military Hwy</p>
+				</div>
+				<div className="row">
+					<p id="salesInfo">Ste B-15, McAllen TX 78503</p>
 				</div>
 				<div className="row">
 					<p id="salesInfo">
