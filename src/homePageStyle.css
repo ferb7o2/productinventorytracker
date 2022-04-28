@@ -141,3 +141,37 @@
 	height: 30px;
 	padding: 0px 5px 0px 5px;
 }
+
+.underConstruction {
+	width: 700px;
+	height: 700px;
+}
+
+#underDevTitle {
+	font-size: 80px;
+	margin: auto;
+	text-align: center;
+	padding-top: 100px;
+}
+
+#underDevDescription {
+	font-size: 30px;
+	text-align: center;
+	padding-top: 20px;
+	padding-bottom: 40px;
+}
+
+#underDevBtn {
+	width: auto;
+	height: auto;
+	align-self: center;
+	margin: auto;
+	font-size: 25px;
+}
+#salesInfo {
+	width: auto;
+	height: auto;
+	align-self: center;
+	margin: auto;
+	font-size: 45px;
+}

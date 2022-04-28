@@ -6,7 +6,7 @@ export class NavBar extends Component {
 			<div>
 				<nav className="navbar navbar-dark bg-dark">
 					<div className="container-fluid">
-						<a className="navbar-brand" href="/">
+						<a className="navbar-brand" href="/main">
 							Facturacion Mexico 2022
 						</a>
 						<button

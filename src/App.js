@@ -29,6 +29,7 @@ import { useStateContext } from "./contexts/dataContext";
 //Components
 import { NavBar } from "./components/NavBar";
 import { Footer } from "./components/Footer";
+import MainScreen from "./MainScreen";
 
 function Home() {
 	const [ProductData /*, setProductData*/] = useStateContext()[0];
@@ -284,7 +285,8 @@ function App() {
 					<Switch>
 						{" "}
 						{/*Makes sure we are only on one route at a time*/}
-						<Route exact path="/" component={Home} />
+						<Route exact path="/" component={MainScreen} />
+						<Route exact path="/main" component={Home} />
 						<Route exact path="/item/:pId" component={ItemInfo} />
 						<Route exact path="/vendor/:vId_global" component={VendorInfo} />
 						<Route exact path="/addVendor" component={AddVendor} />
