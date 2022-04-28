@@ -14,11 +14,12 @@ import "./homePageStyle.css";
 import React, { /*useEffect,*/ useState } from "react";
 //import {Routes, Route, Link} from 'react-router-dom'  //for moving between pages
 
-//Import external pages in folder
+//Import external pages in folder (Screens)
 import ItemInfo from "./ItemInfo";
 import VendorInfo from "./VendorInfo";
 import AddVendor from "./addVendor";
 import AddProduct from "./addProduct";
+import Login from "./screens/Login";
 
 //context
 import { DataProvider } from "./contexts/dataContext";
@@ -288,6 +289,7 @@ function App() {
 						<Route exact path="/vendor/:vId_global" component={VendorInfo} />
 						<Route exact path="/addVendor" component={AddVendor} />
 						<Route exact path="/addProduct" component={AddProduct} />
+						<Route exact path="/login" component={Login} />
 					</Switch>
 				</DataProvider>
 			</div>
