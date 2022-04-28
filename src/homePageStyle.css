@@ -148,14 +148,14 @@
 }
 
 #underDevTitle {
-	font-size: 62px;
-	margin: auto;
+	font-size: 60px;
+
 	text-align: center;
 	padding-top: 50px;
 }
 
 #underDevDescription {
-	font-size: 30px;
+	font-size: 28px;
 	text-align: center;
 	padding-top: 20px;
 	padding-bottom: 40px;
