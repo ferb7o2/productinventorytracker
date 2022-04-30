@@ -34,3 +34,157 @@ export const listOurBusinessInfos = /* GraphQL */ `
 		}
 	}
 `;
+export const getProductData = /* GraphQL */ `
+	query GetProductData($id: ID!) {
+		getProductData(id: $id) {
+			pId
+			name
+			description
+			weightType
+			id
+			createdAt
+			updatedAt
+		}
+	}
+`;
+export const listProductData = /* GraphQL */ `
+	query ListProductData(
+		$filter: ModelProductDataFilterInput
+		$limit: Int
+		$nextToken: String
+	) {
+		listProductData(filter: $filter, limit: $limit, nextToken: $nextToken) {
+			items {
+				pId
+				name
+				description
+				weightType
+				id
+				createdAt
+				updatedAt
+			}
+			nextToken
+		}
+	}
+`;
+export const getPurchaseTransactionData2022 = /* GraphQL */ `
+	query GetPurchaseTransactionData2022($id: ID!) {
+		getPurchaseTransactionData2022(id: $id) {
+			id
+			pId
+			date
+			vId
+			purchaseInvoiceId
+			purchaseWeight
+			purchasePrice
+			createdAt
+			updatedAt
+		}
+	}
+`;
+export const listPurchaseTransactionData2022s = /* GraphQL */ `
+	query ListPurchaseTransactionData2022s(
+		$filter: ModelPurchaseTransactionData2022FilterInput
+		$limit: Int
+		$nextToken: String
+	) {
+		listPurchaseTransactionData2022s(
+			filter: $filter
+			limit: $limit
+			nextToken: $nextToken
+		) {
+			items {
+				id
+				pId
+				date
+				vId
+				purchaseInvoiceId
+				purchaseWeight
+				purchasePrice
+				createdAt
+				updatedAt
+			}
+			nextToken
+		}
+	}
+`;
+export const getSaleTransactionData2022 = /* GraphQL */ `
+	query GetSaleTransactionData2022($id: ID!) {
+		getSaleTransactionData2022(id: $id) {
+			id
+			pId
+			date
+			saleInvoiceId
+			saleWeight
+			salePrice
+			createdAt
+			updatedAt
+		}
+	}
+`;
+export const listSaleTransactionData2022s = /* GraphQL */ `
+	query ListSaleTransactionData2022s(
+		$filter: ModelSaleTransactionData2022FilterInput
+		$limit: Int
+		$nextToken: String
+	) {
+		listSaleTransactionData2022s(
+			filter: $filter
+			limit: $limit
+			nextToken: $nextToken
+		) {
+			items {
+				id
+				pId
+				date
+				saleInvoiceId
+				saleWeight
+				salePrice
+				createdAt
+				updatedAt
+			}
+			nextToken
+		}
+	}
+`;
+export const getVendorData = /* GraphQL */ `
+	query GetVendorData($id: ID!) {
+		getVendorData(id: $id) {
+			vId
+			name
+			rfc
+			address
+			city
+			state
+			country
+			zipCode
+			id
+			createdAt
+			updatedAt
+		}
+	}
+`;
+export const listVendorData = /* GraphQL */ `
+	query ListVendorData(
+		$filter: ModelVendorDataFilterInput
+		$limit: Int
+		$nextToken: String
+	) {
+		listVendorData(filter: $filter, limit: $limit, nextToken: $nextToken) {
+			items {
+				vId
+				name
+				rfc
+				address
+				city
+				state
+				country
+				zipCode
+				id
+				createdAt
+				updatedAt
+			}
+			nextToken
+		}
+	}
+`;

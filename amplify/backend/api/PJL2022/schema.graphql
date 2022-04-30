@@ -9,3 +9,40 @@ type OurBusinessInfo @model {
 	address: String
 	rfc: String
 }
+
+type ProductData @model {
+	pId: ID!
+	name: String!
+	description: String!
+	weightType: String!
+}
+
+type PurchaseTransactionData2022 @model {
+	id: ID!
+	pId: String!
+	date: AWSDate!
+	vId: String!
+	purchaseInvoiceId: String!
+	purchaseWeight: Float!
+	purchasePrice: Float!
+}
+
+type SaleTransactionData2022 @model {
+	id: ID!
+	pId: String!
+	date: AWSDate!
+	saleInvoiceId: String!
+	saleWeight: Float!
+	salePrice: Float!
+}
+
+type VendorData @model {
+	vId: ID!
+	name: String!
+	rfc: String
+	address: String
+	city: String
+	state: String
+	country: String
+	zipCode: String
+}
