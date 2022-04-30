@@ -1,0 +1,5 @@
+{
+  "AppSyncApiName": "PJL2022",
+  "DynamoDBBillingMode": "PAY_PER_REQUEST",
+  "DynamoDBEnableServerSideEncryption": false
+}
