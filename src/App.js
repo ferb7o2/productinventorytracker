@@ -11,7 +11,7 @@ import "bootstrap/dist/js/bootstrap.bundle.min"; //Boostrap Import 2/2
 import "./homePageStyle.css";
 
 //import {Helmet} from "react-helmet"; //Helps us update metadata, <head> and child <title tag>s
-import React, { /*useEffect,*/ useState } from "react";
+import React, { /*useEffect,*/ useEffect, useState } from "react";
 //import {Routes, Route, Link} from 'react-router-dom'  //for moving between pages
 
 //Import external pages in folder (Screens)
@@ -20,6 +20,16 @@ import VendorInfo from "./VendorInfo";
 import AddVendor from "./addVendor";
 import AddProduct from "./addProduct";
 import Login from "./screens/Login";
+
+//Database- AMPLIFY
+import Amplify, { API, graphqlOperation } from "aws-amplify";
+import awsconfig from "./aws-exports";
+//import { AmplifySignOut, withAuthenticator } from "@aws-amplify/ui-react";
+import {
+	listOurBusinessInfos,
+	getOurBusinessInfo,
+	listProductData,
+} from "./graphql/queries";
 
 //context
 import { DataProvider } from "./contexts/dataContext";
@@ -31,11 +41,38 @@ import { NavBar } from "./components/NavBar";
 import { Footer } from "./components/Footer";
 import MainScreen from "./MainScreen";
 
+Amplify.configure(awsconfig);
+
 function Home() {
-	const [ProductData /*, setProductData*/] = useStateContext()[0];
+	const [ProductData, setProductData] = useStateContext()[0];
 	const [vData /*, setvData*/] = useStateContext()[2];
 	const [searchTermProduct, setSearchTermProduct] = useState("");
 	const [searchTermVendor, setSearchTermVendor] = useState("");
+
+	const [ourBusinessInfo, setOurBusinessInfo] = useState([]);
+
+	const fetchMainBusinessInfo = async () => {
+		try {
+			console.log("flag");
+			const businessData = await API.graphql(
+				graphqlOperation(listOurBusinessInfos)
+			);
+			console.log("HERE");
+
+			let productDatas = await API.graphql(graphqlOperation(listProductData));
+			console.log(productDatas.data.listProductData.items);
+			//setProductData(productData);
+
+			//console.log(businessData.data.listOurBusinessInfos.items[0]);
+			setOurBusinessInfo(businessData.data.listOurBusinessInfos.items[0]);
+		} catch (error) {
+			console.log("error on fetchMainBusinessInfo() ", error);
+		}
+	};
+
+	useEffect(() => {
+		fetchMainBusinessInfo();
+	}, []);
 
 	//console.log(ProductData);
 
@@ -107,14 +144,14 @@ function Home() {
 					</div>
 					<div className="col-7">
 						<div className="row">
-							<h2>Pastor Jaramillo Lopez [2005 founding date]</h2>
+							<h2>{ourBusinessInfo.name}</h2>
 						</div>
 						<div className="row">
-							<p className="address-tag">Ave. 5 de Mayo 712 Nte.</p>
+							<p className="address-tag">{ourBusinessInfo.address}</p>
 							<p className="address-tag">
-								Calera de Víctor Rosales, Zacatecas 98500
+								Calera de Víctor Rosales, Zacatecas 98500 [hardcoded]
 							</p>
-							<p className="address-tag">RFC: [RFC data]</p>
+							<p className="address-tag">RFC: {ourBusinessInfo.rfc}</p>
 						</div>
 					</div>
 					<div className="col ">

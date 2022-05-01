@@ -1,3 +1,6 @@
+Resources:
+https://www.youtube.com/watch?v=kqi4gPfdVHY&list=LL&index=1 How to add and use Amplify API for database
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
