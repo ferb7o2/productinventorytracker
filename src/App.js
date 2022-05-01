@@ -25,7 +25,11 @@ import Login from "./screens/Login";
 import Amplify, { API, graphqlOperation } from "aws-amplify";
 import awsconfig from "./aws-exports";
 //import { AmplifySignOut, withAuthenticator } from "@aws-amplify/ui-react";
-import { listOurBusinessInfos, getOurBusinessInfo } from "./graphql/queries";
+import {
+	listOurBusinessInfos,
+	getOurBusinessInfo,
+	listProductData,
+} from "./graphql/queries";
 
 //context
 import { DataProvider } from "./contexts/dataContext";
@@ -40,7 +44,7 @@ import MainScreen from "./MainScreen";
 Amplify.configure(awsconfig);
 
 function Home() {
-	const [ProductData /*, setProductData*/] = useStateContext()[0];
+	const [ProductData, setProductData] = useStateContext()[0];
 	const [vData /*, setvData*/] = useStateContext()[2];
 	const [searchTermProduct, setSearchTermProduct] = useState("");
 	const [searchTermVendor, setSearchTermVendor] = useState("");
@@ -54,6 +58,10 @@ function Home() {
 				graphqlOperation(listOurBusinessInfos)
 			);
 			console.log("HERE");
+
+			let productDatas = await API.graphql(graphqlOperation(listProductData));
+			console.log(productDatas.data.listProductData.items);
+			//setProductData(productData);
 
 			//console.log(businessData.data.listOurBusinessInfos.items[0]);
 			setOurBusinessInfo(businessData.data.listOurBusinessInfos.items[0]);

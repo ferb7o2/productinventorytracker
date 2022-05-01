@@ -11,7 +11,7 @@ type OurBusinessInfo @model {
 }
 
 type ProductData @model {
-	pId: ID!
+	id: ID!
 	name: String!
 	description: String!
 	weightType: String!
@@ -37,7 +37,7 @@ type SaleTransactionData2022 @model {
 }
 
 type VendorData @model {
-	vId: ID!
+	id: ID!
 	name: String!
 	rfc: String
 	address: String

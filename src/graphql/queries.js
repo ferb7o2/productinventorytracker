@@ -37,13 +37,10 @@ export const listOurBusinessInfos = /* GraphQL */ `
 export const getProductData = /* GraphQL */ `
 	query GetProductData($id: ID!) {
 		getProductData(id: $id) {
-			pId
+			id
 			name
 			description
 			weightType
-			id
-			createdAt
-			updatedAt
 		}
 	}
 `;
@@ -55,13 +52,10 @@ export const listProductData = /* GraphQL */ `
 	) {
 		listProductData(filter: $filter, limit: $limit, nextToken: $nextToken) {
 			items {
-				pId
+				id
 				name
 				description
 				weightType
-				id
-				createdAt
-				updatedAt
 			}
 			nextToken
 		}
@@ -150,7 +144,7 @@ export const listSaleTransactionData2022s = /* GraphQL */ `
 export const getVendorData = /* GraphQL */ `
 	query GetVendorData($id: ID!) {
 		getVendorData(id: $id) {
-			vId
+			id
 			name
 			rfc
 			address
@@ -158,7 +152,6 @@ export const getVendorData = /* GraphQL */ `
 			state
 			country
 			zipCode
-			id
 			createdAt
 			updatedAt
 		}
@@ -172,7 +165,7 @@ export const listVendorData = /* GraphQL */ `
 	) {
 		listVendorData(filter: $filter, limit: $limit, nextToken: $nextToken) {
 			items {
-				vId
+				id
 				name
 				rfc
 				address
@@ -180,7 +173,6 @@ export const listVendorData = /* GraphQL */ `
 				state
 				country
 				zipCode
-				id
 				createdAt
 				updatedAt
 			}

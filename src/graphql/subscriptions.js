@@ -40,11 +40,10 @@ export const onDeleteOurBusinessInfo = /* GraphQL */ `
 export const onCreateProductData = /* GraphQL */ `
   subscription OnCreateProductData {
     onCreateProductData {
-      pId
+      id
       name
       description
       weightType
-      id
       createdAt
       updatedAt
     }
@@ -53,11 +52,10 @@ export const onCreateProductData = /* GraphQL */ `
 export const onUpdateProductData = /* GraphQL */ `
   subscription OnUpdateProductData {
     onUpdateProductData {
-      pId
+      id
       name
       description
       weightType
-      id
       createdAt
       updatedAt
     }
@@ -66,11 +64,10 @@ export const onUpdateProductData = /* GraphQL */ `
 export const onDeleteProductData = /* GraphQL */ `
   subscription OnDeleteProductData {
     onDeleteProductData {
-      pId
+      id
       name
       description
       weightType
-      id
       createdAt
       updatedAt
     }
@@ -166,7 +163,7 @@ export const onDeleteSaleTransactionData2022 = /* GraphQL */ `
 export const onCreateVendorData = /* GraphQL */ `
   subscription OnCreateVendorData {
     onCreateVendorData {
-      vId
+      id
       name
       rfc
       address
@@ -174,7 +171,6 @@ export const onCreateVendorData = /* GraphQL */ `
       state
       country
       zipCode
-      id
       createdAt
       updatedAt
     }
@@ -183,7 +179,7 @@ export const onCreateVendorData = /* GraphQL */ `
 export const onUpdateVendorData = /* GraphQL */ `
   subscription OnUpdateVendorData {
     onUpdateVendorData {
-      vId
+      id
       name
       rfc
       address
@@ -191,7 +187,6 @@ export const onUpdateVendorData = /* GraphQL */ `
       state
       country
       zipCode
-      id
       createdAt
       updatedAt
     }
@@ -200,7 +195,7 @@ export const onUpdateVendorData = /* GraphQL */ `
 export const onDeleteVendorData = /* GraphQL */ `
   subscription OnDeleteVendorData {
     onDeleteVendorData {
-      vId
+      id
       name
       rfc
       address
@@ -208,7 +203,6 @@ export const onDeleteVendorData = /* GraphQL */ `
       state
       country
       zipCode
-      id
       createdAt
       updatedAt
     }

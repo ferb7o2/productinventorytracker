@@ -52,11 +52,10 @@ export const createProductData = /* GraphQL */ `
     $condition: ModelProductDataConditionInput
   ) {
     createProductData(input: $input, condition: $condition) {
-      pId
+      id
       name
       description
       weightType
-      id
       createdAt
       updatedAt
     }
@@ -68,11 +67,10 @@ export const updateProductData = /* GraphQL */ `
     $condition: ModelProductDataConditionInput
   ) {
     updateProductData(input: $input, condition: $condition) {
-      pId
+      id
       name
       description
       weightType
-      id
       createdAt
       updatedAt
     }
@@ -84,11 +82,10 @@ export const deleteProductData = /* GraphQL */ `
     $condition: ModelProductDataConditionInput
   ) {
     deleteProductData(input: $input, condition: $condition) {
-      pId
+      id
       name
       description
       weightType
-      id
       createdAt
       updatedAt
     }
@@ -205,7 +202,7 @@ export const createVendorData = /* GraphQL */ `
     $condition: ModelVendorDataConditionInput
   ) {
     createVendorData(input: $input, condition: $condition) {
-      vId
+      id
       name
       rfc
       address
@@ -213,7 +210,6 @@ export const createVendorData = /* GraphQL */ `
       state
       country
       zipCode
-      id
       createdAt
       updatedAt
     }
@@ -225,7 +221,7 @@ export const updateVendorData = /* GraphQL */ `
     $condition: ModelVendorDataConditionInput
   ) {
     updateVendorData(input: $input, condition: $condition) {
-      vId
+      id
       name
       rfc
       address
@@ -233,7 +229,6 @@ export const updateVendorData = /* GraphQL */ `
       state
       country
       zipCode
-      id
       createdAt
       updatedAt
     }
@@ -245,7 +240,7 @@ export const deleteVendorData = /* GraphQL */ `
     $condition: ModelVendorDataConditionInput
   ) {
     deleteVendorData(input: $input, condition: $condition) {
-      vId
+      id
       name
       rfc
       address
@@ -253,7 +248,6 @@ export const deleteVendorData = /* GraphQL */ `
       state
       country
       zipCode
-      id
       createdAt
       updatedAt
     }
