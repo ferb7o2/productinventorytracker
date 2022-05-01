@@ -12,6 +12,9 @@ import * as moment from "moment";
 import { NavBar } from "./components/NavBar";
 import { Footer } from "./components/Footer";
 
+import Amplify, { API, graphqlOperation } from "aws-amplify";
+import { getOurBusinessInfo, getProductData } from "./graphql/queries";
+
 function ItemInfo(props) {
 	//const history = useHistory();
 	/*const goBack = () => {
@@ -20,20 +23,37 @@ function ItemInfo(props) {
 	//console.log(TransactionData);
 
 	let { pId } = useParams();
-
 	pId = parseInt(pId, 10);
 
 	//Import data from Context API
-	const [ProductData /*, setProductData*/] = useStateContext()[0];
+	const [ProductData, setProductData] = useState([]);
 	const [Ptransaction_data, setPtData] = useStateContext()[1];
 	const [VendorData /*, setVendorData*/] = useStateContext()[2];
 	const [InventoryTotal, setInventoryTotal] = useState(0);
 	const [Stransaction_data, setStData] = useStateContext()[3];
 
+	const fetchProductInfo = async (pId) => {
+		try {
+			//console.log("flag");
+			const productData = await API.graphql(
+				graphqlOperation(getProductData, { id: pId })
+			);
+
+			console.log(productData.data.getProductData);
+			setProductData(productData.data.getProductData);
+		} catch (error) {
+			console.log("error on fetchMainBusinessInfo() ", error);
+		}
+	};
+
+	useEffect(() => {
+		fetchProductInfo(pId);
+	}, []);
+
 	let realIndex = 0;
-	realIndex = ProductData.find((val, i) => pId === val.pId); //go through JSON and list by pId and not by [index]
-	console.log("yes" + pId);
-	console.log("realIndex -> " + realIndex.pId);
+	//realIndex = ProductData.find((val, i) => pId === val.pId); //go through JSON and list by pId and not by [index]
+	//console.log("yes" + pId);
+	//console.log("realIndex -> " + realIndex.pId);
 
 	useEffect(() => {
 		function InventoryTotalSum(IndexPar) {
@@ -104,7 +124,7 @@ function ItemInfo(props) {
 						...Stransaction_data,
 						{
 							stId: "",
-							spId: parseInt(pId, 10),
+							//spId: parseInt(pId, 10),
 							date: $("#input-row-sale-date").val(),
 							saleInvoiceId: $("#input-row-saleInvoiceId").val(),
 							saleWeight: parseInt($("#input-row-saleWeight").val(), 10),
@@ -165,7 +185,7 @@ function ItemInfo(props) {
 							...Ptransaction_data,
 							{
 								tId: 9,
-								tpId: parseInt(pId, 10),
+								//tpId: parseInt(pId, 10),
 								date: $("#input-row-date").val(),
 								vId: vendorId,
 								purchaseInvoiceId: $("#input-row-purchaseInvoiceId").val(),
@@ -336,12 +356,12 @@ function ItemInfo(props) {
 			<div className="container">
 				<div className="row">
 					<div className="col">
-						<h1>{realIndex.pName}</h1>
-						<h4>{realIndex.pDescription}</h4>
-						<h4>{realIndex.pWeightType}</h4>
+						<h1>{ProductData.name}</h1>
+						<h4>{ProductData.description}</h4>
+						<h4>{ProductData.weightType}</h4>
 					</div>
 					<div className="col-3 d-flex justify-content-end">
-						<h4>Product Id: {realIndex.pId}</h4>
+						<h4>Product Id: {ProductData.id}</h4>
 					</div>
 				</div>
 				<div className="row">

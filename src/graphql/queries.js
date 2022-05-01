@@ -8,6 +8,9 @@ export const getOurBusinessInfo = /* GraphQL */ `
 			name
 			address
 			rfc
+			city
+			state
+			zipCode
 			createdAt
 			updatedAt
 		}
@@ -29,6 +32,9 @@ export const listOurBusinessInfos = /* GraphQL */ `
 				name
 				address
 				rfc
+				city
+				state
+				zipCode
 			}
 			nextToken
 		}
@@ -173,8 +179,6 @@ export const listVendorData = /* GraphQL */ `
 				state
 				country
 				zipCode
-				createdAt
-				updatedAt
 			}
 			nextToken
 		}

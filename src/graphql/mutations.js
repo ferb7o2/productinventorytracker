@@ -11,6 +11,9 @@ export const createOurBusinessInfo = /* GraphQL */ `
       name
       address
       rfc
+      city
+      state
+      zipCode
       createdAt
       updatedAt
     }
@@ -26,6 +29,9 @@ export const updateOurBusinessInfo = /* GraphQL */ `
       name
       address
       rfc
+      city
+      state
+      zipCode
       createdAt
       updatedAt
     }
@@ -41,6 +47,9 @@ export const deleteOurBusinessInfo = /* GraphQL */ `
       name
       address
       rfc
+      city
+      state
+      zipCode
       createdAt
       updatedAt
     }

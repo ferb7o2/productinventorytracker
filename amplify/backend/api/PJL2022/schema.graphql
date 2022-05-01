@@ -8,6 +8,9 @@ type OurBusinessInfo @model {
 	name: String!
 	address: String
 	rfc: String
+	city: String
+	state: String
+	zipCode: String
 }
 
 type ProductData @model {
