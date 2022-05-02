@@ -236,7 +236,7 @@ function ItemInfo(props) {
 
 		//-------->Check for valid [non-empty] PURCHASE info data
 		//------------->Display proper error messages if failed check
-		if (isNotEmpty($("#input-row-vId")) && vendorId != "error") {
+		if (isNotEmpty($("#input-row-vId")) && vendorId !== "error") {
 			//Convert to proper db data
 
 			//If non-empty
@@ -370,6 +370,7 @@ function ItemInfo(props) {
 		var errorTemplate = $("#error-template");
 		errorTemplate.attr("hidden", true); //keep it hidden
 		let newVal = e.target.value;
+		if (newVal === lastValue) return;
 		try {
 			const changeInvoiceId = await API.graphql(
 				graphqlOperation(updatePurchaseTransactionData2022, {
@@ -411,6 +412,7 @@ function ItemInfo(props) {
 
 		try {
 			let newVal = parseFloat(e.target.value);
+			if (newVal == lastValue) return;
 			const changeInvoiceId = await API.graphql(
 				graphqlOperation(updatePurchaseTransactionData2022, {
 					input: { id: toChangeId, purchaseWeight: newVal },
@@ -444,6 +446,7 @@ function ItemInfo(props) {
 
 		try {
 			let newVal = parseFloat(e.target.value);
+			if (newVal == lastValue) return;
 			const changeInvoiceId = await API.graphql(
 				graphqlOperation(updatePurchaseTransactionData2022, {
 					input: { id: toChangeId, purchasePrice: newVal },
@@ -477,6 +480,7 @@ function ItemInfo(props) {
 
 		try {
 			let newVal = e.target.value;
+			if (newVal === lastValue) return;
 			const changeInvoiceId = await API.graphql(
 				graphqlOperation(updatePurchaseTransactionData2022, {
 					input: { id: toChangeId, date: newVal },
@@ -500,6 +504,41 @@ function ItemInfo(props) {
 		} catch (error) {
 			console.log("error on changeInvoiceId() ", error);
 			errorTemplate.text("Error - al actualizar la fecha");
+			errorTemplate.attr("hidden", false);
+		}
+	};
+
+	const changeVendor = async (e, lastValue, toChangeId) => {
+		var errorTemplate = $("#error-template");
+		errorTemplate.attr("hidden", true); //keep it hidden
+
+		try {
+			let newVal = idForName(e.target.value);
+			if (newVal === lastValue && newVal !== "error") return;
+			const changeInvoiceId = await API.graphql(
+				graphqlOperation(updatePurchaseTransactionData2022, {
+					input: { id: toChangeId, vId: newVal },
+				})
+			);
+			console.log("HERERERERRERERERE");
+			setPtData(
+				Ptransaction_data.map((val, i) =>
+					val.id === toChangeId
+						? {
+								id: val.id,
+								pId: val.id,
+								date: val.date,
+								vId: newVal,
+								purchaseInvoiceId: val.purchaseInvoiceId,
+								purchaseWeight: val.purchaseWeight,
+								purchasePrice: val.purchasePrice,
+						  }
+						: val
+				)
+			);
+		} catch (error) {
+			console.log("error on changeInvoiceId() ", error);
+			errorTemplate.text("Error - al actualizar el proveedor");
 			errorTemplate.attr("hidden", false);
 		}
 	};
@@ -593,6 +632,10 @@ function ItemInfo(props) {
 												className="tableInput"
 												defaultValue={nameForId(vId)}
 												list="vendors"
+												onBlur={(e) => {
+													changeVendor(e, vId, id);
+												}}
+												onKeyDown={(e) => focusOut(e)}
 											/>
 											<datalist id="vendors">
 												{VendorData.map(({ id, name }) => (
