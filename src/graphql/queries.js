@@ -77,8 +77,6 @@ export const getPurchaseTransactionData2022 = /* GraphQL */ `
 			purchaseInvoiceId
 			purchaseWeight
 			purchasePrice
-			createdAt
-			updatedAt
 		}
 	}
 `;
@@ -101,8 +99,6 @@ export const listPurchaseTransactionData2022s = /* GraphQL */ `
 				purchaseInvoiceId
 				purchaseWeight
 				purchasePrice
-				createdAt
-				updatedAt
 			}
 			nextToken
 		}
@@ -140,8 +136,6 @@ export const listSaleTransactionData2022s = /* GraphQL */ `
 				saleInvoiceId
 				saleWeight
 				salePrice
-				createdAt
-				updatedAt
 			}
 			nextToken
 		}

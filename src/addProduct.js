@@ -6,10 +6,10 @@ import { useHistory } from "react-router-dom";
 //Components
 import { NavBar } from "./components/NavBar";
 
-function AddProduct() {
-	//Inherits the Product data associative array from the CONTEXT (context API)
-	const [ProductData, setProductData] = useStateContext()[0];
+import Amplify, { API, graphqlOperation } from "aws-amplify";
+import { createProductData } from "./graphql/mutations";
 
+function AddProduct() {
 	//Variables for keeping up with Page's Navigation
 	const history = useHistory();
 
@@ -39,7 +39,7 @@ function AddProduct() {
 	//Triggered when (register) product button is pressed
 	//Checks that product name is non-NULL && non-empty
 	//Checks that if Bulk checkbox option is pressed, there exists a non-empty numeric value on the textBox
-	function registerProduct(e) {
+	const registerProduct = async (e) => {
 		e.preventDefault();
 		//console.log(ProductData);
 
@@ -58,21 +58,22 @@ function AddProduct() {
 					if (/^[0-9]+(?:\.[0-9]+)?$/.test($("#inputQuantityType").val())) {
 						//REGEX - check if value on (kg) field is a number
 						//if non-empty && a valid number, add the new product to our Product data (associative) array
-						setProductData([
-							...ProductData,
-							{
-								pId: 101,
-								pName: $("#productNameField").val(),
-								pDescription:
-									$("#productDescriptionField").val() +
-									" Bulto/Caja de " +
-									$("#inputQuantityType").val() +
-									" Kg",
-								pQuantity: 0,
-								pWeightType: "Bulto",
-							},
-						]);
-						history.goBack(); //and return to the home screen
+						try {
+							const result = await API.graphql(
+								graphqlOperation(createProductData, {
+									input: {
+										name: $("#productNameField").val(),
+										description: $("#productDescriptionField").val(),
+										weightType: "Bulto/Caja",
+									},
+								})
+							);
+							history.goBack();
+						} catch (error) {
+							console.log("ERROR -> ", error);
+						}
+
+						//and return to the home screen
 					} //if not a valid number
 					else {
 						$("#error-product").removeAttr("hidden"); //display error banner - Not a valid number
@@ -89,21 +90,24 @@ function AddProduct() {
 				}
 			} //if (kg) checkbox is selected
 			else {
-				//add Product to array
-				setProductData([
-					...ProductData,
-					{
-						pId: 101,
-						pName: $("#productNameField").val(),
-						pDescription: $("#productDescriptionField").val(),
-						pQuantity: 0,
-						pWeightType: "Kg",
-					},
-				]);
-				history.goBack(); //and return to the home screen
+				//add Product to DB
+				try {
+					const result = await API.graphql(
+						graphqlOperation(createProductData, {
+							input: {
+								name: $("#productNameField").val(),
+								description: $("#productDescriptionField").val(),
+								weightType: "Kg",
+							},
+						})
+					);
+					history.goBack();
+				} catch (error) {
+					console.log("ERROR -> ", error);
+				}
 			}
 		}
-	}
+	};
 
 	return (
 		<div className="Application">

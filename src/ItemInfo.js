@@ -13,7 +13,18 @@ import { NavBar } from "./components/NavBar";
 import { Footer } from "./components/Footer";
 
 import Amplify, { API, graphqlOperation } from "aws-amplify";
-import { getOurBusinessInfo, getProductData } from "./graphql/queries";
+import {
+	getOurBusinessInfo,
+	getProductData,
+	getPurchaseTransactionData2022,
+	listPurchaseTransactionData2022s,
+	listSaleTransactionData2022s,
+	listVendorData,
+} from "./graphql/queries";
+import {
+	createPurchaseTransactionData2022,
+	createSaleTransactionData2022,
+} from "./graphql/mutations";
 
 function ItemInfo(props) {
 	//const history = useHistory();
@@ -23,14 +34,14 @@ function ItemInfo(props) {
 	//console.log(TransactionData);
 
 	let { pId } = useParams();
-	pId = parseInt(pId, 10);
 
 	//Import data from Context API
 	const [ProductData, setProductData] = useState([]);
-	const [Ptransaction_data, setPtData] = useStateContext()[1];
-	const [VendorData /*, setVendorData*/] = useStateContext()[2];
+	const [prePTransactionData, setPTData] = useState([]);
+	const [Ptransaction_data, setPtData] = useState([]);
+	const [VendorData, setVendorData] = useState([]);
 	const [InventoryTotal, setInventoryTotal] = useState(0);
-	const [Stransaction_data, setStData] = useStateContext()[3];
+	const [Stransaction_data, setStData] = useState([]);
 
 	const fetchProductInfo = async (pId) => {
 		try {
@@ -46,17 +57,76 @@ function ItemInfo(props) {
 		}
 	};
 
-	useEffect(() => {
+	const fetchPTransactionData = async () => {
+		try {
+			const pTransactionData = await API.graphql(
+				graphqlOperation(listPurchaseTransactionData2022s)
+			);
+
+			console.log(pTransactionData.data.listPurchaseTransactionData2022s.items);
+			return pTransactionData.data.listPurchaseTransactionData2022s.items;
+		} catch (error) {
+			console.log("error on fetchPTransactionData() ", error);
+		}
+	};
+
+	const fetchVendorData = async () => {
+		try {
+			const vendorData = await API.graphql(graphqlOperation(listVendorData));
+
+			console.log(vendorData.data.listVendorData.items);
+			setVendorData(vendorData.data.listVendorData.items);
+		} catch (error) {
+			console.log("error on fetchVendorData() ", error);
+		}
+	};
+
+	const fetchSaleTData = async () => {
+		try {
+			const saleData = await API.graphql(
+				graphqlOperation(listSaleTransactionData2022s)
+			);
+
+			return saleData.data.listSaleTransactionData2022s.items;
+
+			//setVendorData(vendorData.data.listVendorData.items);
+		} catch (error) {
+			console.log("error on fetchVendorData() ", error);
+		}
+	};
+
+	useEffect(async () => {
 		fetchProductInfo(pId);
+		let rawDataPTD = await fetchPTransactionData();
+		fetchVendorData();
+
+		let data = [];
+
+		for (let i = 0; i < rawDataPTD.length; ++i) {
+			if (rawDataPTD[i].pId === pId) {
+				data.push(rawDataPTD[i]);
+			}
+		}
+		setPtData(data);
+
+		let rawDataSTD = await fetchSaleTData();
+		data = [];
+
+		for (let i = 0; i < rawDataSTD.length; ++i) {
+			if (rawDataSTD[i].pId === pId) {
+				data.push(rawDataSTD[i]);
+			}
+		}
+
+		setStData(data);
 	}, []);
 
 	let realIndex = 0;
-	//realIndex = ProductData.find((val, i) => pId === val.pId); //go through JSON and list by pId and not by [index]
-	//console.log("yes" + pId);
-	//console.log("realIndex -> " + realIndex.pId);
 
 	useEffect(() => {
 		function InventoryTotalSum(IndexPar) {
+			console.log(Ptransaction_data.length, "LENGTH");
+			setInventoryTotal(0);
 			for (let i = 0; i < Ptransaction_data.length; i++) {
 				if (IndexPar === Ptransaction_data[i].tpId) {
 					setInventoryTotal(
@@ -99,14 +169,14 @@ function ItemInfo(props) {
 		$("#btnSaleUpdate").removeAttr("hidden");
 	}
 
-	const isNumber = new RegExp("^[0-9]+$");
+	const isNumber = new RegExp("^[0-9]*.[0-9]*");
 
 	function isNotEmpty(parameter) {
 		if (parameter.val().length !== 0) return true;
 		else return false;
 	}
 
-	function addNewSALEDataRow() {
+	const addNewSALEDataRow = async () => {
 		//Make a pointer of that Error Template HTML tag since we will be using it alot
 		var errorTemplate = $("#error-template");
 		errorTemplate.attr("hidden", true); //keep it hidden
@@ -120,22 +190,26 @@ function ItemInfo(props) {
 					isNotEmpty($("#input-row-salePrice")) &&
 					isNumber.test($("#input-row-salePrice").val())
 				) {
-					setStData([
-						...Stransaction_data,
-						{
-							stId: "",
-							//spId: parseInt(pId, 10),
-							date: $("#input-row-sale-date").val(),
-							saleInvoiceId: $("#input-row-saleInvoiceId").val(),
-							saleWeight: parseInt($("#input-row-saleWeight").val(), 10),
-							salePrice: parseInt($("#input-row-salePrice").val(), 10),
-						},
-					]);
+					try {
+						const result = await API.graphql(
+							graphqlOperation(createSaleTransactionData2022, {
+								input: {
+									pId: pId,
+									date: $("#input-row-sale-date").val(),
+									saleInvoiceId: $("#input-row-saleInvoiceId").val(),
+									saleWeight: parseFloat($("#input-row-saleWeight").val()),
+									salePrice: parseFloat($("#input-row-salePrice").val()),
+								},
+							})
+						);
 
-					setInventoryTotal(
-						(prevState) =>
-							prevState + parseInt($("#input-row-saleWeight").val())
-					);
+						setStData([
+							...Stransaction_data,
+							result.data.createSaleTransactionData2022,
+						]);
+					} catch (error) {
+						console.log("ERROR Adding into PurchaseTransaction DB -> ", error);
+					}
 
 					$("#input-new-data-row-sale").attr("hidden", true);
 					$("#btnSaleUpdate").attr("hidden", true);
@@ -157,9 +231,9 @@ function ItemInfo(props) {
 			);
 			errorTemplate.attr("hidden", false);
 		}
-	}
+	};
 
-	function addNewPURCHASEDataRow() {
+	const addNewPURCHASEDataRow = async () => {
 		//Make a pointer of that Error Template HTML tag since we will be using it alot
 		var errorTemplate = $("#error-template");
 		errorTemplate.attr("hidden", true); //keep it hidden
@@ -167,43 +241,56 @@ function ItemInfo(props) {
 		//-------->Check for valid [non-empty] PURCHASE info data
 		//------------->Display proper error messages if failed check
 		if (isNotEmpty($("#input-row-vId"))) {
-			let vendorId = $("[list='vendors']").val(); //get the vendor from the [datalist] dropdown
-			vendorId = idForName(vendorId); //Convert to proper db data
+			let vendorId = 0; //$("[list='vendors']").val(); //get the vendor from the [datalist] dropdown
+			//vendorId = idForName(vendorId); //Convert to proper db data
 
 			//If non-empty
 			if (isNotEmpty($("#input-row-purchaseInvoiceId"))) {
 				if (
 					isNotEmpty($("#input-row-purchaseWeight")) &&
-					isNumber.test($("#input-row-purchaseWeight").val())
+					isNumber.test($("#input-row-purchaseWeight").val()) &&
+					parseFloat($("#input-row-purchaseWeight").val()) > 0
 				) {
 					if (
 						isNotEmpty($("#input-row-purchasePrice")) &&
-						isNumber.test($("#input-row-purchasePrice").val())
+						isNumber.test($("#input-row-purchasePrice").val()) &&
+						parseFloat($("#input-row-purchasePrice").val()) > 0
 					) {
 						//then all data is valid, we can add into array
-						setPtData([
-							...Ptransaction_data,
-							{
-								tId: 9,
-								//tpId: parseInt(pId, 10),
-								date: $("#input-row-date").val(),
-								vId: vendorId,
-								purchaseInvoiceId: $("#input-row-purchaseInvoiceId").val(),
-								purchaseWeight: parseInt(
-									$("#input-row-purchaseWeight").val(),
-									10
-								),
-								purchasePrice: parseInt(
-									$("#input-row-purchasePrice").val(),
-									10
-								),
-							},
-						]);
 
-						setInventoryTotal(
-							(prevState) =>
-								prevState + parseInt($("#input-row-purchaseWeight").val())
-						);
+						try {
+							const result = await API.graphql(
+								graphqlOperation(createPurchaseTransactionData2022, {
+									input: {
+										pId: pId,
+										date: $("#input-row-date").val(),
+										vId: vendorId,
+										purchaseInvoiceId: $("#input-row-purchaseInvoiceId").val(),
+										purchaseWeight: parseFloat(
+											$("#input-row-purchaseWeight").val()
+										),
+										purchasePrice: parseFloat(
+											$("#input-row-purchasePrice").val()
+										),
+									},
+								})
+							);
+
+							setPtData([
+								...Ptransaction_data,
+								result.data.createPurchaseTransactionData2022,
+							]);
+
+							console.log(
+								"RESULKT",
+								result.data.createPurchaseTransactionData2022
+							);
+						} catch (error) {
+							console.log(
+								"ERROR Adding into PurchaseTransaction DB -> ",
+								error
+							);
+						}
 
 						$("#input-new-data-row").attr("hidden", true);
 						$("#btnUpdate").attr("hidden", true);
@@ -267,16 +354,18 @@ function ItemInfo(props) {
         }
         //settData([...transaction_data,{ tId:9, tpId:1, date:'12/31/2021', vId:null, purchaseInvoiceId:null,
          //purchaseWeight:null, purchasePrice:null, saleInvoiceId: null, saleWeight:null, salePrice:null},]);*/
-	}
+	};
 
 	function nameForId(vIdPassed) {
-		if (vIdPassed > 0 && vIdPassed != null)
-			return VendorData.find(({ vId }, i) => vIdPassed === vId).vName;
+		if (VendorData.length != 0) {
+			if (vIdPassed >= 0 && vIdPassed != null)
+				return VendorData.find(({ id }, i) => vIdPassed === id).name;
+		} else return "";
 	}
 
 	function idForName(vNamePassed) {
 		if (vNamePassed != null)
-			return VendorData.find(({ vName }, i) => vNamePassed === vName).vId;
+			return VendorData.find(({ vName }, i) => vNamePassed === vName).id;
 	}
 
 	function changeInvoiceId(e, lastValue, toChangeId) {
@@ -392,85 +481,83 @@ function ItemInfo(props) {
 							{Ptransaction_data.map(
 								(
 									{
-										PtId,
-										tpId,
+										id,
+										pId,
 										date,
 										vId,
 										purchaseInvoiceId,
 										purchaseWeight,
 										purchasePrice,
 									} //Data driven display of rows in data
-								) =>
-									realIndex.pId === { tpId }.tpId ? ( //if the current page's product id and the db's product id match
-										//then  the db's row is supposed to be here, display it
-										<tr key={PtId} className="table-row">
-											<th scope="row">{PtId}</th>
-											<td>
-												<input
-													type="text"
-													id={"row" + PtId + "date"}
-													className="tableInput tableDate"
-													defaultValue={date}
-												/>
-											</td>
+								) => (
+									<tr key={id} className="table-row">
+										<th scope="row">
+											{id.length === 1 ? id[0] : id[0] + id[1] + id[2] + id[3]}
+										</th>
+										<td>
+											<input
+												type="text"
+												id={"row" + id + "date"}
+												className="tableInput tableDate"
+												defaultValue={date}
+											/>
+										</td>
 
-											<td>
+										<td>
+											<input
+												type="text"
+												id={"row" + id + "vId"}
+												className="tableInput"
+												defaultValue={nameForId(vId)}
+											></input>
+										</td>
+										<td>
+											<div className="tableData">
 												<input
 													type="text"
-													id={"row" + PtId + "vId"}
+													id={"row" + id + "purchaseInvoiceId"}
 													className="tableInput"
-													defaultValue={nameForId(vId)}
-												></input>
-											</td>
-											<td>
-												<div className="tableData">
-													<input
-														type="text"
-														id={"row" + PtId + "purchaseInvoiceId"}
-														className="tableInput"
-														defaultValue={purchaseInvoiceId}
-														onKeyDown={(e) => {
-															changeInvoiceId(e, purchaseInvoiceId, PtId);
-														}}
-													/>
-												</div>
-											</td>
-											<td>
-												<div className="tableData">
-													<input
-														type="text"
-														id={"row" + PtId + "purchaseWeight"}
-														className="tableInput"
-														defaultValue={purchaseWeight}
-														onKeyDown={(e) => {
-															changePurchaseWeight(e, purchaseWeight, PtId);
-														}}
-													/>
-												</div>
-											</td>
-											<td>
-												<div className="tableData">
-													<input
-														type="text"
-														id={"row" + PtId + "purchasePrice"}
-														className="tableInput"
-														defaultValue={purchasePrice}
-													/>
-												</div>
-											</td>
-										</tr>
-									) : (
-										<></>
-									)
+													defaultValue={purchaseInvoiceId}
+													onKeyDown={(e) => {
+														changeInvoiceId(e, purchaseInvoiceId, id);
+													}}
+												/>
+											</div>
+										</td>
+										<td>
+											<div className="tableData">
+												<input
+													type="text"
+													id={"row" + id + "purchaseWeight"}
+													className="tableInput"
+													defaultValue={purchaseWeight}
+													onKeyDown={(e) => {
+														changePurchaseWeight(e, purchaseWeight, id);
+													}}
+												/>
+											</div>
+										</td>
+										<td>
+											<div className="tableData">
+												<input
+													type="text"
+													id={"row" + id + "purchasePrice"}
+													className="tableInput"
+													defaultValue={purchasePrice}
+												/>
+											</div>
+										</td>
+									</tr>
+								)
 							)}
 							<tr className="table-row" id="input-new-data-row" hidden>
-								<th scope="row">{"->"}</th>
+								<th scope="row"></th>
 								<td>
 									<input
 										type="text"
 										id="input-row-date"
 										className="tableInput tableDate"
-										defaultValue={moment().format("MM/DD/YYYY")}
+										defaultValue={moment().format("YYYY-MM-DD")}
 									/>
 								</td>
 								<td>
@@ -562,65 +649,64 @@ function ItemInfo(props) {
 						<tbody>
 							{Stransaction_data.map(
 								(
-									{ stId, spId, date, saleInvoiceId, saleWeight, salePrice } //Data driven display of rows in data
-								) =>
-									realIndex.pId === { spId }.spId ? (
-										<tr key={stId} className="table-row">
-											<th scope="row">{stId}</th>
-											<td>
-												<input
-													type="text"
-													id={"row" + stId + "date"}
-													className="tableInput tableDate"
-													defaultValue={date}
-												/>
-											</td>
+									{ id, pId, date, saleInvoiceId, saleWeight, salePrice } //Data driven display of rows in data
+								) => (
+									<tr key={"s" + id} className="table-row">
+										<th scope="row">
+											{id.length === 1 ? id[0] : id[0] + id[1] + id[2] + id[3]}
+										</th>
+										<td>
+											<input
+												type="text"
+												id={"row" + id + "date"}
+												className="tableInput tableDate"
+												defaultValue={date}
+											/>
+										</td>
 
-											<td>
+										<td>
+											<input
+												type="text"
+												id={"row" + id + "saleInvoiceId"}
+												className="tableInput"
+												defaultValue={saleInvoiceId}
+											></input>
+										</td>
+										<td>
+											<div className="tableData">
 												<input
 													type="text"
-													id={"row" + stId + "saleInvoiceId"}
+													id={"row" + id + "saleWeight"}
 													className="tableInput"
-													defaultValue={saleInvoiceId}
-												></input>
-											</td>
-											<td>
-												<div className="tableData">
-													<input
-														type="text"
-														id={"row" + stId + "saleWeight"}
-														className="tableInput"
-														defaultValue={
-															saleWeight
-														} /*onKeyDown={e =>{changeInvoiceId(e,purchaseInvoiceId,tId)}}*/
-													/>
-												</div>
-											</td>
-											<td>
-												<div className="tableData">
-													<input
-														type="text"
-														id={"row" + stId + "salePrice"}
-														className="tableInput"
-														defaultValue={
-															salePrice
-														} /*onKeyDown={e =>{changePurchaseWeight(e,purchaseWeight,tId)}}*/
-													/>
-												</div>
-											</td>
-										</tr>
-									) : (
-										<></>
-									)
+													defaultValue={
+														saleWeight
+													} /*onKeyDown={e =>{changeInvoiceId(e,purchaseInvoiceId,tId)}}*/
+												/>
+											</div>
+										</td>
+										<td>
+											<div className="tableData">
+												<input
+													type="text"
+													id={"row" + id + "salePrice"}
+													className="tableInput"
+													defaultValue={
+														salePrice
+													} /*onKeyDown={e =>{changePurchaseWeight(e,purchaseWeight,tId)}}*/
+												/>
+											</div>
+										</td>
+									</tr>
+								)
 							)}
 							<tr className="table-row" id="input-new-data-row-sale" hidden>
-								<th scope="row">{"->"}</th>
+								<th scope="row"></th>
 								<td>
 									<input
 										type="text"
 										id="input-row-sale-date"
 										className="tableInput tableDate"
-										defaultValue={moment().format("MM/DD/YYYY")}
+										defaultValue={moment().format("YYYY-MM-DD")}
 									/>
 								</td>
 								<td>

@@ -234,7 +234,7 @@ function Home() {
 								}).map(({ id, name, weightType }) => (
 									<tr key={id} onClick={itemTableRowClicked}>
 										<th scope="row" id={id}>
-											{id}
+											{id[0]}
 										</th>
 										<td id={id}>{name}</td>
 										<td id={id}>{weightType}</td>
