@@ -8,6 +8,9 @@ export const getOurBusinessInfo = /* GraphQL */ `
 			name
 			address
 			rfc
+			city
+			state
+			zipCode
 			createdAt
 			updatedAt
 		}
@@ -29,6 +32,9 @@ export const listOurBusinessInfos = /* GraphQL */ `
 				name
 				address
 				rfc
+				city
+				state
+				zipCode
 			}
 			nextToken
 		}
@@ -71,8 +77,6 @@ export const getPurchaseTransactionData2022 = /* GraphQL */ `
 			purchaseInvoiceId
 			purchaseWeight
 			purchasePrice
-			createdAt
-			updatedAt
 		}
 	}
 `;
@@ -95,8 +99,6 @@ export const listPurchaseTransactionData2022s = /* GraphQL */ `
 				purchaseInvoiceId
 				purchaseWeight
 				purchasePrice
-				createdAt
-				updatedAt
 			}
 			nextToken
 		}
@@ -134,8 +136,6 @@ export const listSaleTransactionData2022s = /* GraphQL */ `
 				saleInvoiceId
 				saleWeight
 				salePrice
-				createdAt
-				updatedAt
 			}
 			nextToken
 		}
@@ -173,8 +173,6 @@ export const listVendorData = /* GraphQL */ `
 				state
 				country
 				zipCode
-				createdAt
-				updatedAt
 			}
 			nextToken
 		}

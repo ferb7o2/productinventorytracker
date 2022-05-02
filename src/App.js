@@ -29,6 +29,7 @@ import {
 	listOurBusinessInfos,
 	getOurBusinessInfo,
 	listProductData,
+	listVendorData,
 } from "./graphql/queries";
 
 //context
@@ -44,8 +45,8 @@ import MainScreen from "./MainScreen";
 Amplify.configure(awsconfig);
 
 function Home() {
-	const [ProductData, setProductData] = useStateContext()[0];
-	const [vData /*, setvData*/] = useStateContext()[2];
+	const [ProductData, setProductData] = useState([]);
+	const [vData, setvData] = useState([]);
 	const [searchTermProduct, setSearchTermProduct] = useState("");
 	const [searchTermVendor, setSearchTermVendor] = useState("");
 
@@ -53,18 +54,21 @@ function Home() {
 
 	const fetchMainBusinessInfo = async () => {
 		try {
-			console.log("flag");
+			//console.log("flag");
 			const businessData = await API.graphql(
 				graphqlOperation(listOurBusinessInfos)
 			);
-			console.log("HERE");
+			setOurBusinessInfo(businessData.data.listOurBusinessInfos.items[0]);
 
 			let productDatas = await API.graphql(graphqlOperation(listProductData));
-			console.log(productDatas.data.listProductData.items);
-			//setProductData(productData);
+			//console.log(productDatas.data.listProductData.items);
+			setProductData(productDatas.data.listProductData.items);
+
+			const vendor_data = await API.graphql(graphqlOperation(listVendorData));
+			//console.log(vendor_data.data.listVendorData.items);
+			setvData(vendor_data.data.listVendorData.items);
 
 			//console.log(businessData.data.listOurBusinessInfos.items[0]);
-			setOurBusinessInfo(businessData.data.listOurBusinessInfos.items[0]);
 		} catch (error) {
 			console.log("error on fetchMainBusinessInfo() ", error);
 		}
@@ -149,7 +153,8 @@ function Home() {
 						<div className="row">
 							<p className="address-tag">{ourBusinessInfo.address}</p>
 							<p className="address-tag">
-								Calera de Víctor Rosales, Zacatecas 98500 [hardcoded]
+								{ourBusinessInfo.city}, {ourBusinessInfo.state}{" "}
+								{ourBusinessInfo.zipCode}
 							</p>
 							<p className="address-tag">RFC: {ourBusinessInfo.rfc}</p>
 						</div>
@@ -213,7 +218,6 @@ function Home() {
 								<tr>
 									<th scope="col"># Producto</th>
 									<th scope="col">Producto</th>
-									<th scope="col">Disponible</th>
 									<th scope="col">Tipo</th>
 								</tr>
 							</thead>
@@ -221,27 +225,21 @@ function Home() {
 								{ProductData.filter((val) => {
 									if (searchTermProduct === "") return val;
 									else if (
-										val.pName
+										val.name
 											.toLowerCase()
 											.includes(searchTermProduct.toLowerCase())
 									)
 										return val;
 									else return null;
-								}).map(
-									(
-										{ pId, pName, pQuantity, pWeightType },
-										i //Data driven display of rows in data
-									) => (
-										<tr key={pId} onClick={itemTableRowClicked}>
-											<th scope="row" id={pId}>
-												{pId}
-											</th>
-											<td id={pId}>{pName}</td>
-											<td id={pId}>{pQuantity}</td>
-											<td id={pId}>{pWeightType}</td>
-										</tr>
-									)
-								)}
+								}).map(({ id, name, weightType }) => (
+									<tr key={id} onClick={itemTableRowClicked}>
+										<th scope="row" id={id}>
+											{id[0]}
+										</th>
+										<td id={id}>{name}</td>
+										<td id={id}>{weightType}</td>
+									</tr>
+								))}
 							</tbody>
 						</table>
 					</div>
@@ -275,7 +273,6 @@ function Home() {
 								<tr>
 									<th scope="col"># Distribuidor</th>
 									<th scope="col">Nombre</th>
-									<th scope="col">Compras</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -283,7 +280,7 @@ function Home() {
 									.filter((val) => {
 										if (searchTermVendor === "") return val;
 										else if (
-											val.vName
+											val.name
 												.toLowerCase()
 												.includes(searchTermVendor.toLowerCase())
 										)
@@ -292,14 +289,13 @@ function Home() {
 									})
 									.map(
 										(
-											{ vId, vName, vNumOfTransactions } //Data driven display of rows in data
+											{ id, name } //Data driven display of rows in data
 										) => (
-											<tr key={vId} onClick={vendorTableRowClicked}>
-												<th scope="row" id={vId}>
-													{vId}
+											<tr key={id} onClick={vendorTableRowClicked}>
+												<th scope="row" id={id}>
+													{id}
 												</th>
-												<td id={vId}>{vName}</td>
-												<td id={vId}>{vNumOfTransactions}</td>
+												<td id={id}>{name}</td>
 											</tr>
 										)
 									)}
