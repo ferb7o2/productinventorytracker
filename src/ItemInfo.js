@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom"; //Helps us redirect to other pages
 
 import { useStateContext } from "./contexts/dataContext";
-//import { useHistory } from "react-router-dom";
 import $ from "jquery";
 
 //get Date
@@ -28,12 +27,6 @@ import {
 } from "./graphql/mutations";
 
 function ItemInfo(props) {
-	//const history = useHistory();
-	/*const goBack = () => {
-		history.goBack();
-	};*/
-	//console.log(TransactionData);
-
 	let { pId } = useParams();
 
 	//Import data from Context API
@@ -374,19 +367,15 @@ function ItemInfo(props) {
 	}
 
 	const changeInvoiceId = async (e, lastValue, toChangeId) => {
+		var errorTemplate = $("#error-template");
+		errorTemplate.attr("hidden", true); //keep it hidden
 		let newVal = e.target.value;
-		//if (e.keyCode === 13 || e.keyCode === 9) {
-		//if enter or tab is pressed
-
 		try {
 			const changeInvoiceId = await API.graphql(
 				graphqlOperation(updatePurchaseTransactionData2022, {
 					input: { id: toChangeId, purchaseInvoiceId: newVal },
 				})
 			);
-
-			//console.log(vendorData.data.listVendorData.items);
-			//setVendorData(vendorData.data.listVendorData.items);
 			setPtData(
 				Ptransaction_data.map((val, i) =>
 					val.id === toChangeId
@@ -404,11 +393,8 @@ function ItemInfo(props) {
 			);
 		} catch (error) {
 			console.log("error on changeInvoiceId() ", error);
-		}
-
-		if (e.keyCode === 13 || e.keyCode === 9) {
-			$("#" + e.target.getAttribute("id")).prop("disabled", true);
-			$("#" + e.target.getAttribute("id")).prop("disabled", false); //lose focus out of the textbox
+			errorTemplate.text("Error - al actualizar el numero de Invoice");
+			errorTemplate.attr("hidden", false);
 		}
 	};
 
@@ -419,36 +405,104 @@ function ItemInfo(props) {
 		}
 	}
 
-	function changePurchaseWeight(e, lastValue, toChangeId) {
-		if (e.keyCode === 13 || e.keyCode === 9) {
-			//if enter or tab is pressed
-			console.log("entered");
-			//console.log(e.target.value);
+	const changePurchaseWeight = async (e, lastValue, toChangeId) => {
+		var errorTemplate = $("#error-template");
+		errorTemplate.attr("hidden", true); //keep it hidden
+
+		try {
+			let newVal = parseFloat(e.target.value);
+			const changeInvoiceId = await API.graphql(
+				graphqlOperation(updatePurchaseTransactionData2022, {
+					input: { id: toChangeId, purchaseWeight: newVal },
+				})
+			);
 			setPtData(
 				Ptransaction_data.map((val, i) =>
-					val.tId === toChangeId
+					val.id === toChangeId
 						? {
-								tId: val.tId,
-								tpId: val.tpId,
+								id: val.id,
+								pId: val.id,
 								date: val.date,
 								vId: val.vId,
 								purchaseInvoiceId: val.purchaseInvoiceId,
-								purchaseWeight: parseInt(e.target.value),
+								purchaseWeight: newVal,
 								purchasePrice: val.purchasePrice,
-								saleInvoiceId: val.saleInvoiceId,
-								saleWeight: val.saleWeight,
-								salePrice: val.salePrice,
 						  }
 						: val
 				)
 			);
-
-			$("#" + e.target.getAttribute("id")).prop("disabled", true);
-			$("#" + e.target.getAttribute("id")).prop("disabled", false); //lose focus out of the textbox
+		} catch (error) {
+			console.log("error on changeInvoiceId() ", error);
+			errorTemplate.text("Error - al actualizar el Peso");
+			errorTemplate.attr("hidden", false);
 		}
+	};
 
-		console.log(Ptransaction_data);
-	}
+	const changePurchasePrice = async (e, lastValue, toChangeId) => {
+		var errorTemplate = $("#error-template");
+		errorTemplate.attr("hidden", true); //keep it hidden
+
+		try {
+			let newVal = parseFloat(e.target.value);
+			const changeInvoiceId = await API.graphql(
+				graphqlOperation(updatePurchaseTransactionData2022, {
+					input: { id: toChangeId, purchasePrice: newVal },
+				})
+			);
+			setPtData(
+				Ptransaction_data.map((val, i) =>
+					val.id === toChangeId
+						? {
+								id: val.id,
+								pId: val.id,
+								date: val.date,
+								vId: val.vId,
+								purchaseInvoiceId: val.purchaseInvoiceId,
+								purchaseWeight: val.purchaseWeight,
+								purchasePrice: newVal,
+						  }
+						: val
+				)
+			);
+		} catch (error) {
+			console.log("error on changeInvoiceId() ", error);
+			errorTemplate.text("Error - al actualizar el Precio");
+			errorTemplate.attr("hidden", false);
+		}
+	};
+
+	const changePurchaseDate = async (e, lastValue, toChangeId) => {
+		var errorTemplate = $("#error-template");
+		errorTemplate.attr("hidden", true); //keep it hidden
+
+		try {
+			let newVal = e.target.value;
+			const changeInvoiceId = await API.graphql(
+				graphqlOperation(updatePurchaseTransactionData2022, {
+					input: { id: toChangeId, date: newVal },
+				})
+			);
+			setPtData(
+				Ptransaction_data.map((val, i) =>
+					val.id === toChangeId
+						? {
+								id: val.id,
+								pId: val.id,
+								date: newVal,
+								vId: val.vId,
+								purchaseInvoiceId: val.purchaseInvoiceId,
+								purchaseWeight: val.purchaseWeight,
+								purchasePrice: val.purchasePrice,
+						  }
+						: val
+				)
+			);
+		} catch (error) {
+			console.log("error on changeInvoiceId() ", error);
+			errorTemplate.text("Error - al actualizar la fecha");
+			errorTemplate.attr("hidden", false);
+		}
+	};
 
 	return (
 		<div className="Application">
@@ -525,6 +579,10 @@ function ItemInfo(props) {
 												id={"row" + id + "date"}
 												className="tableInput tableDate"
 												defaultValue={date}
+												onBlur={(e) => {
+													changePurchaseDate(e, date, id);
+												}}
+												onKeyDown={(e) => focusOut(e)}
 											/>
 										</td>
 
@@ -552,7 +610,7 @@ function ItemInfo(props) {
 													onBlur={(e) => {
 														changeInvoiceId(e, purchaseInvoiceId, id);
 													}}
-													onKeyDown={(e, id) => focusOut(e)}
+													onKeyDown={(e) => focusOut(e)}
 												/>
 											</div>
 										</td>
@@ -563,9 +621,10 @@ function ItemInfo(props) {
 													id={"row" + id + "purchaseWeight"}
 													className="tableInput"
 													defaultValue={purchaseWeight}
-													onKeyDown={(e) => {
+													onBlur={(e) => {
 														changePurchaseWeight(e, purchaseWeight, id);
 													}}
+													onKeyDown={(e) => focusOut(e)}
 												/>
 											</div>
 										</td>
@@ -576,6 +635,10 @@ function ItemInfo(props) {
 													id={"row" + id + "purchasePrice"}
 													className="tableInput"
 													defaultValue={purchasePrice}
+													onBlur={(e) => {
+														changePurchasePrice(e, purchaseWeight, id);
+													}}
+													onKeyDown={(e) => focusOut(e)}
 												/>
 											</div>
 										</td>
