@@ -237,12 +237,13 @@ function ItemInfo(props) {
 		//Make a pointer of that Error Template HTML tag since we will be using it alot
 		var errorTemplate = $("#error-template");
 		errorTemplate.attr("hidden", true); //keep it hidden
+		let vendorId = 0;
+		vendorId = idForName($("#input-row-vId").val());
 
 		//-------->Check for valid [non-empty] PURCHASE info data
 		//------------->Display proper error messages if failed check
-		if (isNotEmpty($("#input-row-vId"))) {
-			let vendorId = 0; //$("[list='vendors']").val(); //get the vendor from the [datalist] dropdown
-			//vendorId = idForName(vendorId); //Convert to proper db data
+		if (isNotEmpty($("#input-row-vId")) && vendorId != "error") {
+			//Convert to proper db data
 
 			//If non-empty
 			if (isNotEmpty($("#input-row-purchaseInvoiceId"))) {
@@ -313,7 +314,7 @@ function ItemInfo(props) {
 			}
 		} else {
 			errorTemplate.text(
-				"Error - el recuadro del proveedor no puede estar vacío"
+				"Error - el recuadro del proveedor no puede estar vacío / debe ser un nombre valido"
 			);
 			errorTemplate.attr("hidden", false);
 		}
@@ -364,8 +365,11 @@ function ItemInfo(props) {
 	}
 
 	function idForName(vNamePassed) {
-		if (vNamePassed != null)
-			return VendorData.find(({ vName }, i) => vNamePassed === vName).id;
+		if (vNamePassed != null) {
+			const vendor = VendorData.find(({ name }, i) => vNamePassed == name);
+			if (vendor != undefined) return vendor.id;
+		}
+		return "error";
 	}
 
 	function changeInvoiceId(e, lastValue, toChangeId) {
@@ -509,7 +513,13 @@ function ItemInfo(props) {
 												id={"row" + id + "vId"}
 												className="tableInput"
 												defaultValue={nameForId(vId)}
-											></input>
+												list="vendors"
+											/>
+											<datalist id="vendors">
+												{VendorData.map(({ id, name }) => (
+													<option key={id} value={name} id={id} />
+												))}
+											</datalist>
 										</td>
 										<td>
 											<div className="tableData">
@@ -569,8 +579,8 @@ function ItemInfo(props) {
 									/>
 
 									<datalist id="vendors">
-										{VendorData.map(({ vId, vName, vNumOfTransactions }) => (
-											<option key={vId} value={vName} id={vId} />
+										{VendorData.map(({ id, name }) => (
+											<option key={id} value={name} id={id} />
 										))}
 									</datalist>
 								</td>
