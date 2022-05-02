@@ -24,6 +24,7 @@ import {
 import {
 	createPurchaseTransactionData2022,
 	createSaleTransactionData2022,
+	updatePurchaseTransactionData2022,
 } from "./graphql/mutations";
 
 function ItemInfo(props) {
@@ -372,16 +373,26 @@ function ItemInfo(props) {
 		return "error";
 	}
 
-	function changeInvoiceId(e, lastValue, toChangeId) {
+	const changeInvoiceId = async (e, lastValue, toChangeId) => {
 		let newVal = e.target.value;
-		if (e.keyCode === 13 || e.keyCode === 9) {
-			//if enter or tab is pressed
+		//if (e.keyCode === 13 || e.keyCode === 9) {
+		//if enter or tab is pressed
+
+		try {
+			const changeInvoiceId = await API.graphql(
+				graphqlOperation(updatePurchaseTransactionData2022, {
+					input: { id: toChangeId, purchaseInvoiceId: newVal },
+				})
+			);
+
+			//console.log(vendorData.data.listVendorData.items);
+			//setVendorData(vendorData.data.listVendorData.items);
 			setPtData(
 				Ptransaction_data.map((val, i) =>
-					val.PtId === toChangeId
+					val.id === toChangeId
 						? {
-								PtId: val.PtId,
-								tpId: val.tpId,
+								id: val.id,
+								pId: val.id,
 								date: val.date,
 								vId: val.vId,
 								purchaseInvoiceId: newVal,
@@ -391,9 +402,18 @@ function ItemInfo(props) {
 						: val
 				)
 			);
+		} catch (error) {
+			console.log("error on changeInvoiceId() ", error);
+		}
 
-			e.target.value = newVal;
+		if (e.keyCode === 13 || e.keyCode === 9) {
+			$("#" + e.target.getAttribute("id")).prop("disabled", true);
+			$("#" + e.target.getAttribute("id")).prop("disabled", false); //lose focus out of the textbox
+		}
+	};
 
+	function focusOut(e) {
+		if (e.keyCode === 13 || e.keyCode === 9) {
 			$("#" + e.target.getAttribute("id")).prop("disabled", true);
 			$("#" + e.target.getAttribute("id")).prop("disabled", false); //lose focus out of the textbox
 		}
@@ -460,7 +480,9 @@ function ItemInfo(props) {
 				<div className="row">
 					<div className="col-9"></div>
 					<div className="col d-flex justify-content-end">
-						<h5>Cantidad disponible: {InventoryTotal}</h5>
+						<h5>
+							Cantidad disponible: {parseFloat(InventoryTotal).toFixed(3)}
+						</h5>
 					</div>
 				</div>
 				<div className="fair-spacing" />
@@ -486,7 +508,6 @@ function ItemInfo(props) {
 								(
 									{
 										id,
-										pId,
 										date,
 										vId,
 										purchaseInvoiceId,
@@ -496,7 +517,7 @@ function ItemInfo(props) {
 								) => (
 									<tr key={id} className="table-row">
 										<th scope="row">
-											{id.length === 1 ? id[0] : id[0] + id[1] + id[2] + id[3]}
+											{id.length === 1 ? id[0] : id.slice(0, 4)}
 										</th>
 										<td>
 											<input
@@ -528,9 +549,10 @@ function ItemInfo(props) {
 													id={"row" + id + "purchaseInvoiceId"}
 													className="tableInput"
 													defaultValue={purchaseInvoiceId}
-													onKeyDown={(e) => {
+													onBlur={(e) => {
 														changeInvoiceId(e, purchaseInvoiceId, id);
 													}}
+													onKeyDown={(e, id) => focusOut(e)}
 												/>
 											</div>
 										</td>
@@ -663,7 +685,7 @@ function ItemInfo(props) {
 								) => (
 									<tr key={"s" + id} className="table-row">
 										<th scope="row">
-											{id.length === 1 ? id[0] : id[0] + id[1] + id[2] + id[3]}
+											{id.length === 1 ? id[0] : id.slice(0, 4)}
 										</th>
 										<td>
 											<input

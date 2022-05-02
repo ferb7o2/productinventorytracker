@@ -9,7 +9,7 @@ export class Footer extends Component {
 				<footer className="bg-dark text-center text-white">
 					<div className="text-center p-3">
 						© 2022 Copyright: <a href="./"> </a>
-						<a className="text-white" href="/">
+						<a className="text-white" href="https://github.com/JoseJaramillo04">
 							{" "}
 							Fernando Jaramillo
 						</a>

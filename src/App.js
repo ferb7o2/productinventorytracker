@@ -234,7 +234,7 @@ function Home() {
 								}).map(({ id, name, weightType }) => (
 									<tr key={id} onClick={itemTableRowClicked}>
 										<th scope="row" id={id}>
-											{id[0]}
+											{id.length === 1 ? id[0] : id.slice(0, 3)}
 										</th>
 										<td id={id}>{name}</td>
 										<td id={id}>{weightType}</td>
@@ -293,7 +293,7 @@ function Home() {
 										) => (
 											<tr key={id} onClick={vendorTableRowClicked}>
 												<th scope="row" id={id}>
-													{id}
+													{id.length === 1 ? id[0] : id.slice(0, 3)}
 												</th>
 												<td id={id}>{name}</td>
 											</tr>
