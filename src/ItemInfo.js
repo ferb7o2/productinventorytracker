@@ -24,6 +24,7 @@ import {
 	createPurchaseTransactionData2022,
 	createSaleTransactionData2022,
 	updatePurchaseTransactionData2022,
+	updateSaleTransactionData2022,
 } from "./graphql/mutations";
 
 function ItemInfo(props) {
@@ -312,43 +313,6 @@ function ItemInfo(props) {
 			);
 			errorTemplate.attr("hidden", false);
 		}
-		/*
-        else
-        {
-            //-------->Check for valid [non-empty] SALE info data
-            //------------->Display proper error messages if failed check
-
-            if($('#input-row-saleInvoiceId').val()!=0)
-            {
-                if($('#input-row-saleWeight').val()!=0)
-                {
-                    if($('#input-row-salePrice').val()!=0)
-                    {
-                        settData([...transaction_data,{ tId:9, tpId:pId, date:$('#input-row-date').val(), vId:null, purchaseInvoiceId:null,
-                        purchaseWeight:null, purchasePrice:null, saleInvoiceId: $('#input-row-saleInvoiceId').val(),
-                        saleWeight:$('#input-row-saleWeight').val(), salePrice:$('#input-row-salePrice').val()},]);
-
-                        $('#input-new-data-row').attr('hidden',true);
-                        $('#btnUpdate').attr('hidden',true);
-                    }
-                    else
-                    {
-                        errorTemplate.text("Error - El precio de venta de el producto no puede estar vacío");
-                        errorTemplate.attr('hidden',false);
-                    }
-                }
-                else{
-                    errorTemplate.text("Error - El peso de venta de el producto no puede estar vacío");
-                    errorTemplate.attr('hidden',false);
-                }
-            }
-            else{
-                errorTemplate.text("Error - El # de Invoice de el producto no puede estar vacío");
-                errorTemplate.attr('hidden',false);
-            }
-        }
-        //settData([...transaction_data,{ tId:9, tpId:1, date:'12/31/2021', vId:null, purchaseInvoiceId:null,
-         //purchaseWeight:null, purchasePrice:null, saleInvoiceId: null, saleWeight:null, salePrice:null},]);*/
 	};
 
 	function nameForId(vIdPassed) {
@@ -382,7 +346,7 @@ function ItemInfo(props) {
 					val.id === toChangeId
 						? {
 								id: val.id,
-								pId: val.id,
+								pId: val.pId,
 								date: val.date,
 								vId: val.vId,
 								purchaseInvoiceId: newVal,
@@ -423,7 +387,7 @@ function ItemInfo(props) {
 					val.id === toChangeId
 						? {
 								id: val.id,
-								pId: val.id,
+								pId: val.pId,
 								date: val.date,
 								vId: val.vId,
 								purchaseInvoiceId: val.purchaseInvoiceId,
@@ -457,7 +421,7 @@ function ItemInfo(props) {
 					val.id === toChangeId
 						? {
 								id: val.id,
-								pId: val.id,
+								pId: val.pId,
 								date: val.date,
 								vId: val.vId,
 								purchaseInvoiceId: val.purchaseInvoiceId,
@@ -491,7 +455,7 @@ function ItemInfo(props) {
 					val.id === toChangeId
 						? {
 								id: val.id,
-								pId: val.id,
+								pId: val.pId,
 								date: newVal,
 								vId: val.vId,
 								purchaseInvoiceId: val.purchaseInvoiceId,
@@ -514,13 +478,16 @@ function ItemInfo(props) {
 
 		try {
 			let newVal = idForName(e.target.value);
-			if (newVal === lastValue && newVal !== "error") return;
+			if (newVal === lastValue || newVal === "error") {
+				errorTemplate.text("Error - proveedor no registrado");
+				errorTemplate.attr("hidden", false);
+				return;
+			}
 			const changeInvoiceId = await API.graphql(
 				graphqlOperation(updatePurchaseTransactionData2022, {
 					input: { id: toChangeId, vId: newVal },
 				})
 			);
-			console.log("HERERERERRERERERE");
 			setPtData(
 				Ptransaction_data.map((val, i) =>
 					val.id === toChangeId
@@ -539,6 +506,138 @@ function ItemInfo(props) {
 		} catch (error) {
 			console.log("error on changeInvoiceId() ", error);
 			errorTemplate.text("Error - al actualizar el proveedor");
+			errorTemplate.attr("hidden", false);
+		}
+	};
+
+	const changeSaleDate = async (e, lastValue, toChangeId) => {
+		var errorTemplate = $("#error-template");
+		errorTemplate.attr("hidden", true); //keep it hidden
+		let newVal = e.target.value;
+		if (newVal === lastValue) return;
+		try {
+			const changeSaleDate = await API.graphql(
+				graphqlOperation(updateSaleTransactionData2022, {
+					input: { id: toChangeId, date: newVal },
+				})
+			);
+			setStData(
+				Stransaction_data.map((val, i) =>
+					val.id === toChangeId
+						? {
+								id: val.id,
+								pId: val.pId,
+								date: newVal,
+								saleInvoiceId: val.saleInvoiceId,
+								saleWeight: val.saleWeight,
+								salePrice: val.salePrice,
+						  }
+						: val
+				)
+			);
+		} catch (error) {
+			console.log("error on changeInvoiceId() ", error);
+			errorTemplate.text("Error - al actualizar la fecha de venta");
+			errorTemplate.attr("hidden", false);
+		}
+	};
+
+	const changeSaleInvoiceId = async (e, lastValue, toChangeId) => {
+		var errorTemplate = $("#error-template");
+		errorTemplate.attr("hidden", true); //keep it hidden
+		let newVal = e.target.value;
+		if (newVal === lastValue) return;
+		try {
+			const changeSaleInvoice = await API.graphql(
+				graphqlOperation(updateSaleTransactionData2022, {
+					input: { id: toChangeId, saleInvoiceId: newVal },
+				})
+			);
+			setStData(
+				Stransaction_data.map((val, i) =>
+					val.id === toChangeId
+						? {
+								id: val.id,
+								pId: val.pId,
+								date: val.date,
+								saleInvoiceId: newVal,
+								saleWeight: val.saleWeight,
+								salePrice: val.salePrice,
+						  }
+						: val
+				)
+			);
+		} catch (error) {
+			console.log("error on changeInvoiceId() ", error);
+			errorTemplate.text("Error - al actualizar el numero de Invoice de venta");
+			errorTemplate.attr("hidden", false);
+		}
+	};
+
+	const changeSaleWeight = async (e, lastValue, toChangeId) => {
+		var errorTemplate = $("#error-template");
+		errorTemplate.attr("hidden", true); //keep it hidden
+
+		try {
+			let newVal = parseFloat(e.target.value);
+			if (newVal === parseFloat(lastValue)) return;
+
+			const changeSaleWeight = await API.graphql(
+				graphqlOperation(updateSaleTransactionData2022, {
+					input: { id: toChangeId, saleWeight: newVal },
+				})
+			);
+			setStData(
+				Stransaction_data.map((val, i) =>
+					val.id === toChangeId
+						? {
+								id: val.id,
+								pId: val.pId,
+								date: val.date,
+								saleInvoiceId: val.saleInvoiceId,
+								saleWeight: newVal,
+								salePrice: val.salePrice,
+						  }
+						: val
+				)
+			);
+		} catch (error) {
+			console.log("error on changeInvoiceId() ", error);
+			errorTemplate.text("Error - al actualizar el peso de venta");
+			errorTemplate.attr("hidden", false);
+		}
+	};
+
+	const changeSalePrice = async (e, lastValue, toChangeId) => {
+		var errorTemplate = $("#error-template");
+		errorTemplate.attr("hidden", true); //keep it hidden
+
+		try {
+			let newVal = parseFloat(e.target.value);
+			if (newVal === parseFloat(lastValue)) return;
+
+			const changeSaleWeight = await API.graphql(
+				graphqlOperation(updateSaleTransactionData2022, {
+					input: { id: toChangeId, salePrice: newVal },
+				})
+			);
+			setStData(
+				Stransaction_data.map((val, i) =>
+					val.id === toChangeId
+						? {
+								id: val.id,
+								pId: val.pId,
+								date: val.date,
+								saleInvoiceId: val.saleInvoiceId,
+								saleWeight: val.saleWeight,
+								salePrice: newVal,
+						  }
+						: val
+				)
+			);
+		} catch (error) {
+			console.log("error on changeInvoiceId() ", error);
+			errorTemplate.text("Error - al actualizar el precio de venta");
 			errorTemplate.attr("hidden", false);
 		}
 	};
@@ -796,9 +895,13 @@ function ItemInfo(props) {
 										<td>
 											<input
 												type="text"
-												id={"row" + id + "date"}
+												id={"row" + id + "Sdate"}
 												className="tableInput tableDate"
 												defaultValue={date}
+												onBlur={(e) => {
+													changeSaleDate(e, date, id);
+												}}
+												onKeyDown={(e) => focusOut(e)}
 											/>
 										</td>
 
@@ -808,7 +911,11 @@ function ItemInfo(props) {
 												id={"row" + id + "saleInvoiceId"}
 												className="tableInput"
 												defaultValue={saleInvoiceId}
-											></input>
+												onBlur={(e) => {
+													changeSaleInvoiceId(e, saleInvoiceId, id);
+												}}
+												onKeyDown={(e) => focusOut(e)}
+											/>
 										</td>
 										<td>
 											<div className="tableData">
@@ -816,9 +923,11 @@ function ItemInfo(props) {
 													type="text"
 													id={"row" + id + "saleWeight"}
 													className="tableInput"
-													defaultValue={
-														saleWeight
-													} /*onKeyDown={e =>{changeInvoiceId(e,purchaseInvoiceId,tId)}}*/
+													defaultValue={saleWeight}
+													onBlur={(e) => {
+														changeSaleWeight(e, saleWeight, id);
+													}}
+													onKeyDown={(e) => focusOut(e)}
 												/>
 											</div>
 										</td>
@@ -828,9 +937,11 @@ function ItemInfo(props) {
 													type="text"
 													id={"row" + id + "salePrice"}
 													className="tableInput"
-													defaultValue={
-														salePrice
-													} /*onKeyDown={e =>{changePurchaseWeight(e,purchaseWeight,tId)}}*/
+													defaultValue={salePrice}
+													onBlur={(e) => {
+														changeSalePrice(e, salePrice, id);
+													}}
+													onKeyDown={(e) => focusOut(e)}
 												/>
 											</div>
 										</td>
