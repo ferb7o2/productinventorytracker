@@ -55,10 +55,10 @@ function Home() {
 	const fetchMainBusinessInfo = async () => {
 		try {
 			//console.log("flag");
-			const businessData = await API.graphql(
-				graphqlOperation(listOurBusinessInfos)
-			);
-			setOurBusinessInfo(businessData.data.listOurBusinessInfos.items[0]);
+			//const businessData = await API.graphql(
+			//	graphqlOperation(listOurBusinessInfos)
+			//);
+			//setOurBusinessInfo(businessData.data.listOurBusinessInfos.items[0]);
 
 			let productDatas = await API.graphql(graphqlOperation(listProductData));
 			//console.log(productDatas.data.listProductData.items);
@@ -148,15 +148,23 @@ function Home() {
 					</div>
 					<div className="col-7">
 						<div className="row">
-							<h2>{ourBusinessInfo.name}</h2>
+							<h2>Pastor Jaramillo Lopez 2022{/*ourBusinessInfo.name*/}</h2>
 						</div>
 						<div className="row">
-							<p className="address-tag">{ourBusinessInfo.address}</p>
 							<p className="address-tag">
-								{ourBusinessInfo.city}, {ourBusinessInfo.state}{" "}
-								{ourBusinessInfo.zipCode}
+								Ave. 5 de Mayo 712 Nte.{/*ourBusinessInfo.address*/}
 							</p>
-							<p className="address-tag">RFC: {ourBusinessInfo.rfc}</p>
+							<p className="address-tag">
+								Calera de Víctor Rosales, Zacatecas 98500
+								{/*ourBusinessInfo.city +
+									", " +
+									ourBusinessInfo.state +
+									" " +
+	ourBusinessInfo.zipCode*/}
+							</p>
+							<p className="address-tag">
+								RFC: JALPXXXXXXXXXX {/*ourBusinessInfo.rfc*/}
+							</p>
 						</div>
 					</div>
 					<div className="col ">
@@ -234,7 +242,7 @@ function Home() {
 								}).map(({ id, name, weightType }) => (
 									<tr key={id} onClick={itemTableRowClicked}>
 										<th scope="row" id={id}>
-											{id[0]}
+											{id.length === 1 ? id[0] : id.slice(0, 3)}
 										</th>
 										<td id={id}>{name}</td>
 										<td id={id}>{weightType}</td>
@@ -291,9 +299,9 @@ function Home() {
 										(
 											{ id, name } //Data driven display of rows in data
 										) => (
-											<tr key={id} onClick={vendorTableRowClicked}>
+											<tr key={id} /*onClick={vendorTableRowClicked}*/>
 												<th scope="row" id={id}>
-													{id}
+													{id.length === 1 ? id[0] : id.slice(0, 3)}
 												</th>
 												<td id={id}>{name}</td>
 											</tr>
