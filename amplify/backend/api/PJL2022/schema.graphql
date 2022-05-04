@@ -16,8 +16,9 @@ type OurBusinessInfo @model {
 type ProductData @model {
 	id: ID!
 	name: String!
-	description: String!
+	description: String
 	weightType: String!
+	weightQuantity: Float!
 }
 
 type PurchaseTransactionData2022 @model {

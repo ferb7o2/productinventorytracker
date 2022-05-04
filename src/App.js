@@ -137,6 +137,9 @@ function Home() {
 			<header>
 				<NavBar />
 			</header>
+			<head>
+				<title>Facturación PJL 2022 </title>
+			</head>
 			<div className="container">
 				<div className="row">
 					<div className="col-1" id="logo">
@@ -174,7 +177,7 @@ function Home() {
 						<div className="row d-flex justify-content-end">
 							<button
 								type="button"
-								className="btn btn-primary active homePageBtn "
+								className="btn btn-outline-dark active homePageBtn "
 								data-bs-toggle="button"
 								autoComplete="off"
 								id="btn"
@@ -186,7 +189,7 @@ function Home() {
 						<div className="row d-flex justify-content-end">
 							<button
 								type="button"
-								className="btn btn-primary active homePageBtn"
+								className="btn btn-outline-dark active homePageBtn"
 								data-bs-toggle="button"
 								autoComplete="off"
 								id="btn"
