@@ -137,6 +137,9 @@ function Home() {
 			<header>
 				<NavBar />
 			</header>
+			<head>
+				<title>Facturación PJL 2022 </title>
+			</head>
 			<div className="container">
 				<div className="row">
 					<div className="col-1" id="logo">

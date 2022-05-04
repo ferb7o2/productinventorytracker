@@ -13,9 +13,7 @@ import { Footer } from "./components/Footer";
 
 import Amplify, { API, graphqlOperation } from "aws-amplify";
 import {
-	getOurBusinessInfo,
 	getProductData,
-	getPurchaseTransactionData2022,
 	listPurchaseTransactionData2022s,
 	listSaleTransactionData2022s,
 	listVendorData,
@@ -644,6 +642,9 @@ function ItemInfo(props) {
 
 	return (
 		<div className="Application">
+			<head>
+				<title>Facturación PJL - {ProductData.name}</title>
+			</head>
 			<header>
 				<div
 					className="alert alert-danger"

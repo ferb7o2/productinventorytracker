@@ -15,6 +15,9 @@ function MainScreen() {
 
 	return (
 		<div className="Application">
+			<head>
+				<title>SanAngel Productos Mexicanos</title>
+			</head>
 			<div className="container">
 				<div className="row fair-spacing">
 					<div className="col">
