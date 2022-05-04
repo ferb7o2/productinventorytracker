@@ -47,6 +47,7 @@ export const getProductData = /* GraphQL */ `
 			name
 			description
 			weightType
+			weightQuantity
 		}
 	}
 `;
@@ -62,6 +63,7 @@ export const listProductData = /* GraphQL */ `
 				name
 				description
 				weightType
+				weightQuantity
 			}
 			nextToken
 		}

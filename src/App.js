@@ -177,7 +177,7 @@ function Home() {
 						<div className="row d-flex justify-content-end">
 							<button
 								type="button"
-								className="btn btn-primary active homePageBtn "
+								className="btn btn-outline-dark active homePageBtn "
 								data-bs-toggle="button"
 								autoComplete="off"
 								id="btn"
@@ -189,7 +189,7 @@ function Home() {
 						<div className="row d-flex justify-content-end">
 							<button
 								type="button"
-								className="btn btn-primary active homePageBtn"
+								className="btn btn-outline-dark active homePageBtn"
 								data-bs-toggle="button"
 								autoComplete="off"
 								id="btn"

@@ -664,7 +664,14 @@ function ItemInfo(props) {
 					<div className="col">
 						<h1>{ProductData.name}</h1>
 						<h4>{ProductData.description}</h4>
-						<h4>{ProductData.weightType}</h4>
+						<h4>
+							{ProductData.weightType === "Kg"
+								? ProductData.weightQuantity + " " + ProductData.weightType
+								: ProductData.weightType +
+								  " " +
+								  ProductData.weightQuantity +
+								  "Kg"}
+						</h4>
 					</div>
 					<div className="col-3 d-flex justify-content-end">
 						<h4>Product Id: {ProductData.id}</h4>
@@ -674,7 +681,7 @@ function ItemInfo(props) {
 					<div className="col-9"></div>
 					<div className="col d-flex justify-content-end">
 						<h5>
-							Cantidad disponible: {parseFloat(InventoryTotal).toFixed(3)}
+							Cantidad disponible: {parseFloat(InventoryTotal).toFixed(2)}
 						</h5>
 					</div>
 				</div>

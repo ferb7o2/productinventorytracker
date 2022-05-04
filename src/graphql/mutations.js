@@ -65,6 +65,7 @@ export const createProductData = /* GraphQL */ `
       name
       description
       weightType
+      weightQuantity
       createdAt
       updatedAt
     }
@@ -80,6 +81,7 @@ export const updateProductData = /* GraphQL */ `
       name
       description
       weightType
+      weightQuantity
       createdAt
       updatedAt
     }
@@ -95,6 +97,7 @@ export const deleteProductData = /* GraphQL */ `
       name
       description
       weightType
+      weightQuantity
       createdAt
       updatedAt
     }
