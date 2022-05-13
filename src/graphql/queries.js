@@ -11,8 +11,6 @@ export const getOurBusinessInfo = /* GraphQL */ `
 			city
 			state
 			zipCode
-			createdAt
-			updatedAt
 		}
 	}
 `;
@@ -115,8 +113,6 @@ export const getSaleTransactionData2022 = /* GraphQL */ `
 			saleInvoiceId
 			saleWeight
 			salePrice
-			createdAt
-			updatedAt
 		}
 	}
 `;
@@ -154,8 +150,6 @@ export const getVendorData = /* GraphQL */ `
 			state
 			country
 			zipCode
-			createdAt
-			updatedAt
 		}
 	}
 `;

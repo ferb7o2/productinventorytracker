@@ -22,9 +22,9 @@ import AddProduct from "./addProduct";
 import Login from "./screens/Login";
 
 //Database- AMPLIFY
-import Amplify, { API, graphqlOperation } from "aws-amplify";
+import { Amplify, API, graphqlOperation } from "aws-amplify";
 import awsconfig from "./aws-exports";
-//import { AmplifySignOut, withAuthenticator } from "@aws-amplify/ui-react";
+import { Authenticator, withAuthenticator } from "@aws-amplify/ui-react";
 import {
 	listOurBusinessInfos,
 	getOurBusinessInfo,
@@ -41,6 +41,8 @@ import { useStateContext } from "./contexts/dataContext";
 import { NavBar } from "./components/NavBar";
 import { Footer } from "./components/Footer";
 import MainScreen from "./MainScreen";
+import "@aws-amplify/ui-react/styles.css";
+//import awsmobile from "./aws-exports";
 
 Amplify.configure(awsconfig);
 
@@ -59,48 +61,37 @@ function Home() {
 			//	graphqlOperation(listOurBusinessInfos)
 			//);
 			//setOurBusinessInfo(businessData.data.listOurBusinessInfos.items[0]);
-
-			let productDatas = await API.graphql(graphqlOperation(listProductData));
-			//console.log(productDatas.data.listProductData.items);
-			setProductData(productDatas.data.listProductData.items);
-
-			const vendor_data = await API.graphql(graphqlOperation(listVendorData));
-			//console.log(vendor_data.data.listVendorData.items);
-			setvData(vendor_data.data.listVendorData.items);
-
 			//console.log(businessData.data.listOurBusinessInfos.items[0]);
 		} catch (error) {
 			console.log("error on fetchMainBusinessInfo() ", error);
 		}
 	};
 
+	const fetchProductData = async () => {
+		try {
+			const vendor_data = await API.graphql(graphqlOperation(listVendorData));
+
+			setvData(vendor_data.data.listVendorData.items);
+		} catch (error) {
+			console.log("Error retrieving vendor data (fetchVendorData) ", error);
+		}
+	};
+
+	const fetchVendorData = async () => {
+		try {
+			let productDatas = await API.graphql(graphqlOperation(listProductData));
+
+			setProductData(productDatas.data.listProductData.items);
+		} catch (error) {
+			console.log("Error retrieving product data (fetchProductData) ", error);
+		}
+	};
+
 	useEffect(() => {
-		fetchMainBusinessInfo();
+		//fetchMainBusinessInfo();
+		fetchProductData();
+		fetchVendorData();
 	}, []);
-
-	//console.log(ProductData);
-
-	/*const product_data=[
-    {pId: 1, pName:'Chile Guajillo', pDescription:' 1 Kg Chile Guajillo', pQuantity:1, pWeightType:'Kg'},
-    {pId: 2, pName:'Hoja p/tamal Chisemex', pDescription:'Bulto Hoja p/Tamal c/24 pzs', pQuantity:1, pWeightType:'Bulto'},
-    {pId: 3, pName:'Alpiste Bulto 25 kg', pDescription:'Bulto de Alpiste c/25 Kg', pQuantity:1, pWeightType:'Bulto'},
-  ]*/
-
-	/*const transaction_data=[
-    { tId:1, tpId:1, date:'12/24/2021', vId:1, purchaseInvoiceId:1, purchaseWeight:23, purchasePrice:4322, saleInvoiceId: null, saleWeight:null, salePrice:null},
-    { tId:2, tpId:1, date:'12/29/2021', vId:1, purchaseInvoiceId:12, purchaseWeight:44, purchasePrice:4322, saleInvoiceId: null, saleWeight:null, salePrice:null},
-    { tId:3, tpId:1, date:'12/31/2021', vId:null, purchaseInvoiceId:null, purchaseWeight:null, purchasePrice:null, saleInvoiceId: 244, saleWeight:67, salePrice:5000},
-  ]*/
-
-	/*const vendor_data=[
-    {vId: 1, vName:'Chisemex', vRFC:'MELM8305281H0', vNumOfTransactions:32, vAddress:'N/A'},
-    {vId: 2, vName:'Distribuidora De Productos Deshidratados SA de CV', vRFC:'JEFC8305281H0', vNumOfTransactions:12, vAddress:'N/A'},
-    {vId: 3, vName:'Alfredo Lopez', vRFC:'LANJ8305281H0', vNumOfTransactions:94, vAddress:'Calera de Victor Rosales Zacatecas'}
-  ]*/
-
-	// const [data,setData]=useState(product_data);
-	//const [vData, setvData]=useState(vendor_data);
-	//const [tData, settData]=useState(transaction_data);
 
 	const history = useHistory();
 
@@ -155,7 +146,7 @@ function Home() {
 						</div>
 						<div className="row">
 							<p className="address-tag">
-								Ave. 5 de Mayo 712 Nte.{/*ourBusinessInfo.address*/}
+								C. Juan Aldama 202 Nte Centro{/*ourBusinessInfo.address*/}
 							</p>
 							<p className="address-tag">
 								Calera de Víctor Rosales, Zacatecas 98500
@@ -330,11 +321,27 @@ function App() {
 						{" "}
 						{/*Makes sure we are only on one route at a time*/}
 						<Route exact path="/" component={MainScreen} />
-						<Route exact path="/main" component={Home} />
-						<Route exact path="/item/:pId" component={ItemInfo} />
-						<Route exact path="/vendor/:vId_global" component={VendorInfo} />
-						<Route exact path="/addVendor" component={AddVendor} />
-						<Route exact path="/addProduct" component={AddProduct} />
+						<Route exact path="/main" component={withAuthenticator(Home)} />
+						<Route
+							exact
+							path="/item/:pId"
+							component={withAuthenticator(ItemInfo)}
+						/>
+						<Route
+							exact
+							path="/vendor/:vId_global"
+							component={withAuthenticator(VendorInfo)}
+						/>
+						<Route
+							exact
+							path="/addVendor"
+							component={withAuthenticator(AddVendor)}
+						/>
+						<Route
+							exact
+							path="/addProduct"
+							component={withAuthenticator(AddProduct)}
+						/>
 						<Route exact path="/login" component={Login} />
 					</Switch>
 				</DataProvider>

@@ -10,6 +10,11 @@
       "StackName": "amplify-sanangelmx-dev-172641",
       "StackId": "arn:aws:cloudformation:us-east-2:252656841260:stack/amplify-sanangelmx-dev-172641/1cd730d0-c679-11ec-ad02-0a0b742da7ce",
       "AmplifyAppId": "d21ebwy79w73ym"
+    },
+    "categories": {
+      "auth": {
+        "sanangelmxd92fa4f4": {}
+      }
     }
   }
 }
