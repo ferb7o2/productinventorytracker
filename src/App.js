@@ -320,7 +320,7 @@ function App() {
 					<Switch>
 						{" "}
 						{/*Makes sure we are only on one route at a time*/}
-						<Route exact path="/PJL" component={withAuthenticator(Home)} />
+						<Route exact path="/" component={withAuthenticator(Home)} />
 						<Route
 							exact
 							path="/item/:pId"
