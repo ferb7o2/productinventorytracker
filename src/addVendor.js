@@ -12,38 +12,41 @@ function AddVendor() {
 
 	const [VendorData, setVendorData] = useStateContext()[2];
 
+	function displayErrorMsg(errorBannerId, message) {
+		errorBannerId.removeAttr("hidden");
+		errorBannerId.text(
+			"Error - el " + message + " de el distribuidor no puede estar vacío"
+		);
+	}
+
+	function validateStringInput(input) {
+		//is it empty?
+		if (input.length === 0) return false;
+		return true;
+	}
+
 	function registerVendor(e) {
 		e.preventDefault();
 		let uppercaseRFC = "";
 
-		if ($("#vendorNameField").val().length !== 0) {
-			if ($("#vendorRFCField").val().length !== 0) {
+		if (validateStringInput($("#vendorNameField").val())) {
+			if (validateStringInput($("#vendorRFCField").val())) {
 				uppercaseRFC = $("#vendorRFCField").val().toUpperCase();
-				setVendorData([
-					...VendorData,
-					{
-						vId: 1,
-						vName: $("#vendorNameField").val(),
-						vRFC: uppercaseRFC,
-						vNumOfTransactions: 0,
-						vAddress: $("#vendorAddressField").val(),
-					},
-				]);
-				history.goBack();
-			} else {
-				$("#error-vendor").removeAttr("hidden");
-				$("#error-vendor").text(
-					"Error - el RFC de el DISTRIBUIDOR no puede estar vacio"
-				);
 			}
+			setVendorData([
+				...VendorData,
+				{
+					vId: 1,
+					vName: $("#vendorNameField").val(),
+					vRFC: uppercaseRFC,
+					vNumOfTransactions: 0,
+					vAddress: $("#vendorAddressField").val(),
+				},
+			]);
+			history.goBack();
 		} else {
-			$("#error-vendor").removeAttr("hidden");
-			$("#error-vendor").text(
-				"Error - el NOMBRE de el DISTRIBUIDOR no puede estar vacio"
-			);
+			displayErrorMsg($("#error-vendor"), "NOMBRE");
 		}
-
-		console.log(VendorData);
 	}
 
 	return (
@@ -79,7 +82,7 @@ function AddVendor() {
 									type="text"
 									class="form-control"
 									id="vendorNameField"
-									placeholder="Nombre de Negocio"
+									placeholder="Nombre de Negocio/Distribuidor"
 								/>
 							</div>
 						</div>
@@ -92,7 +95,7 @@ function AddVendor() {
 									type="text"
 									class="form-control"
 									id="vendorRFCField"
-									placeholder="RFC"
+									placeholder="RFC (opcional)"
 								/>
 							</div>
 						</div>
@@ -109,12 +112,51 @@ function AddVendor() {
 								/>
 							</div>
 						</div>
+						<div class="form-group row">
+							<label for="vendorCityField" class="col-sm-2 col-form-label">
+								Ciudad
+							</label>
+							<div class="col-sm-10">
+								<input
+									type="text"
+									class="form-control"
+									id="vendorCityField"
+									placeholder="Ciudad (opcional)"
+								/>
+							</div>
+						</div>
+						<div class="form-group row">
+							<label for="vendorStateField" class="col-sm-2 col-form-label">
+								Estado
+							</label>
+							<div class="col-sm-10">
+								<input
+									type="text"
+									class="form-control"
+									id="vendorStateField"
+									placeholder="Estado (opcional)"
+								/>
+							</div>
+						</div>
+						<div class="form-group row">
+							<label for="vendorZipCodeField" class="col-sm-2 col-form-label">
+								Codigo Postal
+							</label>
+							<div class="col-sm-10">
+								<input
+									type="text"
+									class="form-control"
+									id="vendorZipCodeField"
+									placeholder="Codigo Postal (opcional)"
+								/>
+							</div>
+						</div>
 						<div className="fair-spacing" />
 						<div class="form-group row">
 							<div class="col-sm-10">
 								<button
 									type="submit"
-									class="btn btn-primary"
+									class="btn btn-outline-dark"
 									onClick={registerVendor}
 								>
 									Registrar

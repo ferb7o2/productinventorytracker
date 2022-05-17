@@ -248,7 +248,7 @@ function AddProduct() {
 							<div className="col-sm-10">
 								<button
 									type="submit"
-									className="btn btn-primary"
+									className="btn btn-outline-dark"
 									onClick={registerProduct}
 								>
 									Registrar Producto
