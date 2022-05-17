@@ -12,7 +12,7 @@ export class NavBar extends Component {
 					<div>
 						<nav className="navbar navbar-dark bg-dark">
 							<div className="container-fluid">
-								<a className="navbar-brand" href="/main">
+								<a className="navbar-brand" href="/">
 									Facturacion Mexico 2022
 								</a>
 								<button
@@ -37,16 +37,7 @@ export class NavBar extends Component {
 												Home
 											</a>
 										</li>
-										<li className="nav-item">
-											<a className="nav-link" href="/">
-												Features
-											</a>
-										</li>
-										<li className="nav-item">
-											<a className="nav-link" href="/">
-												Pricing
-											</a>
-										</li>
+
 										<li className="nav-item">
 											<p
 												className="nav-link"
