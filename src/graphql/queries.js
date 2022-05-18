@@ -83,7 +83,7 @@ export const getPurchaseTransactionData2022 = /* GraphQL */ `
 export const listPurchaseTransactionData2022s = /* GraphQL */ `
 	query ListPurchaseTransactionData2022s(
 		$filter: ModelPurchaseTransactionData2022FilterInput
-		$limit: Int
+		$limit: Int = 1000
 		$nextToken: String
 	) {
 		listPurchaseTransactionData2022s(

@@ -2,15 +2,14 @@ import React from "react";
 import $ from "jquery";
 import { useHistory } from "react-router-dom";
 
-import { useStateContext } from "./contexts/dataContext";
+import Amplify, { API, graphqlOperation } from "aws-amplify";
+import { createVendorData } from "./graphql/mutations";
 
 //Components
 import { NavBar } from "./components/NavBar";
 
 function AddVendor() {
 	const history = useHistory();
-
-	const [VendorData, setVendorData] = useStateContext()[2];
 
 	function displayErrorMsg(errorBannerId, message) {
 		errorBannerId.removeAttr("hidden");
@@ -25,7 +24,7 @@ function AddVendor() {
 		return true;
 	}
 
-	function registerVendor(e) {
+	const registerVendor = async (e) => {
 		e.preventDefault();
 		let uppercaseRFC = "";
 
@@ -33,21 +32,28 @@ function AddVendor() {
 			if (validateStringInput($("#vendorRFCField").val())) {
 				uppercaseRFC = $("#vendorRFCField").val().toUpperCase();
 			}
-			setVendorData([
-				...VendorData,
-				{
-					vId: 1,
-					vName: $("#vendorNameField").val(),
-					vRFC: uppercaseRFC,
-					vNumOfTransactions: 0,
-					vAddress: $("#vendorAddressField").val(),
-				},
-			]);
-			history.goBack();
+
+			try {
+				const result = await API.graphql(
+					graphqlOperation(createVendorData, {
+						input: {
+							name: $("#vendorNameField").val(),
+							rfc: uppercaseRFC,
+							address: $("#vendorAddressField").val(),
+							city: $("#vendorCityField").val(),
+							state: $("#vendorStateField").val(),
+							zipCode: $("#vendorZipCodeField").val(),
+						},
+					})
+				);
+				history.goBack();
+			} catch (error) {
+				console.log("ERROR Registering Vendor -> ", error);
+			}
 		} else {
 			displayErrorMsg($("#error-vendor"), "NOMBRE");
 		}
-	}
+	};
 
 	return (
 		<div className="Application">
