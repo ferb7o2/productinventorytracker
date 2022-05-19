@@ -52,7 +52,7 @@ export const getProductData = /* GraphQL */ `
 export const listProductData = /* GraphQL */ `
 	query ListProductData(
 		$filter: ModelProductDataFilterInput
-		$limit: Int
+		$limit: Int = 1000
 		$nextToken: String
 	) {
 		listProductData(filter: $filter, limit: $limit, nextToken: $nextToken) {
@@ -119,7 +119,7 @@ export const getSaleTransactionData2022 = /* GraphQL */ `
 export const listSaleTransactionData2022s = /* GraphQL */ `
 	query ListSaleTransactionData2022s(
 		$filter: ModelSaleTransactionData2022FilterInput
-		$limit: Int
+		$limit: Int = 1000
 		$nextToken: String
 	) {
 		listSaleTransactionData2022s(
@@ -156,7 +156,7 @@ export const getVendorData = /* GraphQL */ `
 export const listVendorData = /* GraphQL */ `
 	query ListVendorData(
 		$filter: ModelVendorDataFilterInput
-		$limit: Int
+		$limit: Int = 1000
 		$nextToken: String
 	) {
 		listVendorData(filter: $filter, limit: $limit, nextToken: $nextToken) {
