@@ -80,6 +80,8 @@ function ItemInfo(props) {
 				graphqlOperation(listSaleTransactionData2022s)
 			);
 
+			console.log("SALE-SALE");
+			console.log(saleData.data.listSaleTransactionData2022s.items);
 			return saleData.data.listSaleTransactionData2022s.items;
 
 			//setVendorData(vendorData.data.listVendorData.items);
