@@ -317,8 +317,7 @@ function ItemInfo(props) {
 
 	function nameForId(vIdPassed) {
 		if (VendorData.length != 0) {
-			if (vIdPassed >= 0 && vIdPassed != null)
-				return VendorData.find(({ id }, i) => vIdPassed === id).name;
+			return VendorData.find(({ id }, i) => vIdPassed === id).name;
 		} else return "";
 	}
 
