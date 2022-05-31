@@ -374,7 +374,8 @@ function ItemInfo(props) {
 		errorTemplate.attr("hidden", true); //keep it hidden
 
 		try {
-			let newVal = parseFloat(e.target.value);
+			let newVal = parseFloat(e.target.value.replace(",", ""));
+
 			if (newVal == lastValue) return;
 			const changeInvoiceId = await API.graphql(
 				graphqlOperation(updatePurchaseTransactionData2022, {
@@ -408,7 +409,7 @@ function ItemInfo(props) {
 		errorTemplate.attr("hidden", true); //keep it hidden
 
 		try {
-			let newVal = parseFloat(e.target.value);
+			let newVal = parseFloat(e.target.value.replace(",", ""));
 			if (newVal == lastValue) return;
 			const changeInvoiceId = await API.graphql(
 				graphqlOperation(updatePurchaseTransactionData2022, {
@@ -578,7 +579,7 @@ function ItemInfo(props) {
 		errorTemplate.attr("hidden", true); //keep it hidden
 
 		try {
-			let newVal = parseFloat(e.target.value);
+			let newVal = parseFloat(e.target.value.replace(",", ""));
 			if (newVal === parseFloat(lastValue)) return;
 
 			const changeSaleWeight = await API.graphql(
@@ -612,7 +613,7 @@ function ItemInfo(props) {
 		errorTemplate.attr("hidden", true); //keep it hidden
 
 		try {
-			let newVal = parseFloat(e.target.value);
+			let newVal = parseFloat(e.target.value.replace(",", ""));
 			if (newVal === parseFloat(lastValue)) return;
 
 			const changeSaleWeight = await API.graphql(
