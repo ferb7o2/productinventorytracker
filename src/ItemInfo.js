@@ -21,6 +21,7 @@ import {
 import {
 	createPurchaseTransactionData2022,
 	createSaleTransactionData2022,
+	updateProductData,
 	updatePurchaseTransactionData2022,
 	updateSaleTransactionData2022,
 } from "./graphql/mutations";
@@ -642,6 +643,29 @@ function ItemInfo(props) {
 		}
 	};
 
+	const editBtnTrigger = () => {
+		$("#productTitle").attr("readOnly", false);
+	};
+
+	const changeTitle = async (e, oldTitle) => {
+		var errorTemplate = $("#error-template");
+		errorTemplate.attr("hidden", true); //keep it hidden
+
+		try {
+			let newVal = e.target.value;
+			if (newVal == oldTitle) return;
+			const changeProductName = await API.graphql(
+				graphqlOperation(updateProductData, {
+					input: { id: ProductData.id, name: newVal },
+				})
+			);
+		} catch (error) {
+			console.log("error on changeTitle() ", error);
+			errorTemplate.text("Error - al actualizar el Nombre del producto");
+			errorTemplate.attr("hidden", false);
+		}
+	};
+
 	return (
 		<div className="Application">
 			<head>
@@ -664,7 +688,19 @@ function ItemInfo(props) {
 			<div className="container">
 				<div className="row">
 					<div className="col">
-						<h1>{ProductData.name}</h1>
+						<h1>
+							<input
+								type="text"
+								id="productTitle"
+								className="tableInput"
+								defaultValue={ProductData.name}
+								onBlur={(e) => {
+									changeTitle(e, ProductData.name);
+								}}
+								onKeyDown={(e) => focusOut(e)}
+								readOnly
+							/>
+						</h1>
 						<h4>{ProductData.description}</h4>
 						<h4>
 							{ProductData.weightType === "Kg"
@@ -674,6 +710,11 @@ function ItemInfo(props) {
 								  ProductData.weightQuantity +
 								  "Kg"}
 						</h4>
+						<div className="row">
+							<button id="editBtn" onClick={editBtnTrigger}>
+								<u>editar</u>
+							</button>
+						</div>
 					</div>
 					<div className="col-3 d-flex justify-content-end">
 						<h4>Product Id: {ProductData.id}</h4>
