@@ -42,7 +42,7 @@ export class NavBar extends Component {
 											<p
 												className="nav-link"
 												onClick={() => {
-													signOut();
+													signOut?.();
 												}}
 											>
 												Sign Out
