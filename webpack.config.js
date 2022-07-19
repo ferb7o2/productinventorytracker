@@ -8,6 +8,9 @@ module.exports = async function (env, argv) {
 		},
 		argv
 	);
+	resolve: {
+		extensions: [".js", ".jsx", ".ts", ".tsx"];
+	}
 
 	return config;
 };

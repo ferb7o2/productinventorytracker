@@ -9,7 +9,7 @@ import * as moment from "moment";
 
 //Components
 import { NavBar } from "./components/NavBar";
-import { Footer } from "./components/Footer";
+import Footer from "./components/Footer";
 
 import Amplify, { API, graphqlOperation } from "aws-amplify";
 import {
