@@ -16,3 +16,26 @@ export type VendorDataType = {
 	country?: string;
 	zipCode?: string;
 };
+
+export type urlPropType = {
+	pId: string;
+};
+
+export type PtransactionDataType = {
+	id: string;
+	pId: string;
+	date: string;
+	vId: string;
+	purchaseInvoiceId: string;
+	purchaseWeight: number;
+	purchasePrice: number;
+};
+
+export type StransactionDataType = {
+	id: string;
+	pId: string;
+	date: string;
+	saleInvoiceId: string;
+	saleWeight: number;
+	salePrice: number;
+};

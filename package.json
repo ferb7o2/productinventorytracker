@@ -59,6 +59,7 @@
 	},
 	"devDependencies": {
 		"@expo/webpack-config": "^0.16.23",
+		"@types/jquery": "^3.5.14",
 		"@types/react-router-dom": "^5.3.3",
 		"gh-pages": "^3.2.3"
 	}

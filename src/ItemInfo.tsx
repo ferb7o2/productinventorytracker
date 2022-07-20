@@ -26,25 +26,31 @@ import {
 	updateSaleTransactionData2022,
 } from "./graphql/mutations";
 
-function ItemInfo(props) {
-	let { pId } = useParams();
+//Types
+import {
+	urlPropType,
+	ProductDataType,
+	VendorDataType,
+	PtransactionDataType,
+	StransactionDataType,
+} from "./types";
+
+function ItemInfo() {
+	let { pId } = useParams<urlPropType>();
 
 	//Import data from Context API
-	const [ProductData, setProductData] = useState([]);
-	const [prePTransactionData, setPTData] = useState([]);
-	const [Ptransaction_data, setPtData] = useState([]);
-	const [VendorData, setVendorData] = useState([]);
-	const [InventoryTotal, setInventoryTotal] = useState(0);
-	const [Stransaction_data, setStData] = useState([]);
+	const [ProductData, setProductData] = useState<ProductDataType>();
+	const [Ptransaction_data, setPtData] = useState<PtransactionDataType[]>([]);
+	const [VendorData, setVendorData] = useState<VendorDataType[]>([]);
+	const [InventoryTotal, setInventoryTotal] = useState<number>(0);
+	const [Stransaction_data, setStData] = useState<StransactionDataType[]>([]);
 
-	const fetchProductInfo = async (pId) => {
+	const fetchProductInfo = async () => {
 		try {
-			//console.log("flag");
-			const productData = await API.graphql(
+			const productData = (await API.graphql(
 				graphqlOperation(getProductData, { id: pId })
-			);
+			)) as { data: { getProductData: ProductDataType } };
 
-			console.log(productData.data.getProductData);
 			setProductData(productData.data.getProductData);
 		} catch (error) {
 			console.log("error on fetchMainBusinessInfo() ", error);
@@ -53,12 +59,16 @@ function ItemInfo(props) {
 
 	const fetchPTransactionData = async () => {
 		try {
-			const pTransactionData = await API.graphql(
-				graphqlOperation(listPurchaseTransactionData2022s)
-			);
+			const pTransactionData = (await API.graphql(
+				graphqlOperation(listPurchaseTransactionData2022s, { pId: pId })
+			)) as {
+				data: {
+					listPurchaseTransactionData2022s: { items: PtransactionDataType[] };
+				};
+			};
 
-			console.log(pTransactionData.data.listPurchaseTransactionData2022s.items);
-			return pTransactionData.data.listPurchaseTransactionData2022s.items;
+			//console.log(pTransactionData.data.listPurchaseTransactionData2022s.items);
+			setPtData(pTransactionData.data.listPurchaseTransactionData2022s.items);
 		} catch (error) {
 			console.log("error on fetchPTransactionData() ", error);
 		}
@@ -66,9 +76,11 @@ function ItemInfo(props) {
 
 	const fetchVendorData = async () => {
 		try {
-			const vendorData = await API.graphql(graphqlOperation(listVendorData));
+			const vendorData = (await API.graphql(
+				graphqlOperation(listVendorData)
+			)) as { data: { listVendorData: { items: VendorDataType[] } } };
 
-			console.log(vendorData.data.listVendorData.items);
+			//console.log(vendorData.data.listVendorData.items);
 			setVendorData(vendorData.data.listVendorData.items);
 		} catch (error) {
 			console.log("error on fetchVendorData() ", error);
@@ -77,13 +89,16 @@ function ItemInfo(props) {
 
 	const fetchSaleTData = async () => {
 		try {
-			const saleData = await API.graphql(
-				graphqlOperation(listSaleTransactionData2022s)
-			);
+			const saleData = (await API.graphql(
+				graphqlOperation(listSaleTransactionData2022s, { pId: pId })
+			)) as {
+				data: {
+					listSaleTransactionData2022s: { items: StransactionDataType[] };
+				};
+			};
 
-			console.log("SALE-SALE");
-			console.log(saleData.data.listSaleTransactionData2022s.items);
-			return saleData.data.listSaleTransactionData2022s.items;
+			//console.log(saleData.data.listSaleTransactionData2022s.items);
+			setStData(saleData.data.listSaleTransactionData2022s.items);
 
 			//setVendorData(vendorData.data.listVendorData.items);
 		} catch (error) {
@@ -91,57 +106,33 @@ function ItemInfo(props) {
 		}
 	};
 
-	useEffect(async () => {
-		fetchProductInfo(pId);
-		let rawDataPTD = await fetchPTransactionData();
+	useEffect(() => {
+		fetchProductInfo();
+		fetchPTransactionData();
 		fetchVendorData();
-
-		let data = [];
-
-		for (let i = 0; i < rawDataPTD.length; ++i) {
-			if (rawDataPTD[i].pId === pId) {
-				data.push(rawDataPTD[i]);
-			}
-		}
-		setPtData(data);
-
-		let rawDataSTD = await fetchSaleTData();
-		data = [];
-
-		for (let i = 0; i < rawDataSTD.length; ++i) {
-			if (rawDataSTD[i].pId === pId) {
-				data.push(rawDataSTD[i]);
-			}
-		}
-
-		setStData(data);
+		fetchSaleTData();
 	}, []);
 
 	let realIndex = 0;
 
 	useEffect(() => {
-		function InventoryTotalSum(IndexPar) {
-			console.log(Ptransaction_data.length, "LENGTH");
+		function InventoryTotalSum() {
 			setInventoryTotal(0);
 			for (let i = 0; i < Ptransaction_data.length; i++) {
-				if (IndexPar === Ptransaction_data[i].tpId) {
-					setInventoryTotal(
-						(prevState) => prevState + Ptransaction_data[i].purchaseWeight
-					);
-				}
+				setInventoryTotal(
+					(prevState) => prevState + Ptransaction_data[i].purchaseWeight
+				);
 			}
 
 			for (let i = 0; i < Stransaction_data.length; i++) {
-				if (IndexPar === Stransaction_data[i].spId) {
-					setInventoryTotal(
-						(prevState) => prevState - Stransaction_data[i].saleWeight
-					);
-				}
+				setInventoryTotal(
+					(prevState) => prevState - Stransaction_data[i].saleWeight
+				);
 			}
 		}
 
-		InventoryTotalSum(realIndex.pId);
-	}, [Ptransaction_data, Stransaction_data, realIndex.pId]); //edit out
+		InventoryTotalSum();
+	}, [Ptransaction_data, Stransaction_data]);
 
 	function displayPURCHASEInputFields() {
 		$("#input-row-vId").val("");
@@ -167,7 +158,14 @@ function ItemInfo(props) {
 
 	const isNumber = new RegExp("^[0-9]*.[0-9]*");
 
-	function isNotEmpty(parameter) {
+	function isNotEmpty(parameter: any) {
+		//Guaranteed that the element will be there, as it is generated based on real data
+		if (typeof parameter === "undefined") {
+			throw new Error(
+				`Expected element, ERROR on isNotEmpty() parameter is undefined`
+			);
+		}
+
 		if (parameter.val().length !== 0) return true;
 		else return false;
 	}
@@ -175,65 +173,75 @@ function ItemInfo(props) {
 	const addNewSALEDataRow = async () => {
 		//Make a pointer of that Error Template HTML tag since we will be using it alot
 		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", true); //keep it hidden
+		errorTemplate.attr("hidden", 1); //keep it hidden
 
 		if (isNotEmpty($("#input-row-saleInvoiceId"))) {
 			if (
 				isNotEmpty($("#input-row-saleWeight")) &&
-				isNumber.test($("#input-row-saleWeight").val())
+				isNumber.test(
+					$("#input-row-saleWeight").val()?.toString() || "false"
+				) &&
+				($("#input-row-saleWeight").val() || -1) > 0
 			) {
 				if (
 					isNotEmpty($("#input-row-salePrice")) &&
-					isNumber.test($("#input-row-salePrice").val())
+					isNumber.test(
+						$("#input-row-salePrice").val()?.toString() || "false"
+					) &&
+					($("#input-row-salePrice").val() || -1) > 0
 				) {
 					try {
-						const result = await API.graphql(
+						const result = (await API.graphql(
 							graphqlOperation(createSaleTransactionData2022, {
 								input: {
 									pId: pId,
 									date: $("#input-row-sale-date").val(),
 									saleInvoiceId: $("#input-row-saleInvoiceId").val(),
-									saleWeight: parseFloat($("#input-row-saleWeight").val()),
-									salePrice: parseFloat($("#input-row-salePrice").val()),
+									saleWeight: $("#input-row-saleWeight").val(),
+									salePrice: $("#input-row-salePrice").val(),
 								},
 							})
-						);
+						)) as {
+							data: {
+								createSaleTransactionData2022: StransactionDataType;
+							};
+						};
 
 						setStData([
 							...Stransaction_data,
 							result.data.createSaleTransactionData2022,
 						]);
 					} catch (error) {
-						console.log("ERROR Adding into PurchaseTransaction DB -> ", error);
+						console.log("ERROR Adding into SaleTransaction DB -> ", error);
 					}
 
-					$("#input-new-data-row-sale").attr("hidden", true);
-					$("#btnSaleUpdate").attr("hidden", true);
+					$("#input-new-data-row-sale").attr("hidden", 1);
+					$("#btnSaleUpdate").attr("hidden", 1);
 				} else {
 					errorTemplate.text(
 						"Error - El precio de el producto no puede estar vacío / debe de ser un número válido"
 					);
-					errorTemplate.attr("hidden", false);
+					errorTemplate.removeAttr("hidden");
 				}
 			} else {
 				errorTemplate.text(
 					"Error - El peso de el producto no puede estar vacío / debe de ser un número válido"
 				);
-				errorTemplate.attr("hidden", false);
+				errorTemplate.removeAttr("hidden");
 			}
 		} else {
 			errorTemplate.text(
 				"Error - El numero de Invoice de el producto no puede estar vacío"
 			);
-			errorTemplate.attr("hidden", false);
+			errorTemplate.removeAttr("hidden");
 		}
 	};
 
 	const addNewPURCHASEDataRow = async () => {
 		//Make a pointer of that Error Template HTML tag since we will be using it alot
 		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", true); //keep it hidden
-		let vendorId = 0;
+		errorTemplate.attr("hidden", 1); //keep it hidden
+		let vendorId = "error";
 		vendorId = idForName($("#input-row-vId").val());
 
 		//-------->Check for valid [non-empty] PURCHASE info data
@@ -245,43 +253,42 @@ function ItemInfo(props) {
 			if (isNotEmpty($("#input-row-purchaseInvoiceId"))) {
 				if (
 					isNotEmpty($("#input-row-purchaseWeight")) &&
-					isNumber.test($("#input-row-purchaseWeight").val()) &&
-					parseFloat($("#input-row-purchaseWeight").val()) > 0
+					isNumber.test(
+						$("#input-row-purchaseWeight").val()?.toString() || "false"
+					) &&
+					($("#input-row-purchaseWeight").val() || -1) > 0
 				) {
 					if (
 						isNotEmpty($("#input-row-purchasePrice")) &&
-						isNumber.test($("#input-row-purchasePrice").val()) &&
-						parseFloat($("#input-row-purchasePrice").val()) > 0
+						isNumber.test(
+							$("#input-row-purchasePrice").val()?.toString() || "false"
+						) &&
+						($("#input-row-purchasePrice").val() || -1) > 0
 					) {
 						//then all data is valid, we can add into array
 
 						try {
-							const result = await API.graphql(
+							const result = (await API.graphql(
 								graphqlOperation(createPurchaseTransactionData2022, {
 									input: {
 										pId: pId,
 										date: $("#input-row-date").val(),
 										vId: vendorId,
 										purchaseInvoiceId: $("#input-row-purchaseInvoiceId").val(),
-										purchaseWeight: parseFloat(
-											$("#input-row-purchaseWeight").val()
-										),
-										purchasePrice: parseFloat(
-											$("#input-row-purchasePrice").val()
-										),
+										purchaseWeight: $("#input-row-purchaseWeight").val(),
+										purchasePrice: $("#input-row-purchasePrice").val(),
 									},
 								})
-							);
+							)) as {
+								data: {
+									createPurchaseTransactionData2022: PtransactionDataType;
+								};
+							};
 
 							setPtData([
 								...Ptransaction_data,
 								result.data.createPurchaseTransactionData2022,
 							]);
-
-							console.log(
-								"RESULKT",
-								result.data.createPurchaseTransactionData2022
-							);
 						} catch (error) {
 							console.log(
 								"ERROR Adding into PurchaseTransaction DB -> ",
@@ -289,40 +296,42 @@ function ItemInfo(props) {
 							);
 						}
 
-						$("#input-new-data-row").attr("hidden", true);
-						$("#btnUpdate").attr("hidden", true);
+						$("#input-new-data-row").attr("hidden", 1);
+						$("#btnUpdate").attr("hidden", 1);
 					} else {
 						//else, it is empty; Display correct error message to inform user
 						errorTemplate.text(
 							"Error - El precio de el producto no puede estar vacío / debe de ser un número válido"
 						);
-						errorTemplate.attr("hidden", false);
+						errorTemplate.removeAttr("hidden");
 					}
 				} else {
 					errorTemplate.text(
 						"Error - El peso de el producto no puede estar vacío / debe de ser un número válido"
 					);
-					errorTemplate.attr("hidden", false);
+					errorTemplate.removeAttr("hidden");
 				}
 			} else {
 				errorTemplate.text("Error - El numero de factura no puede estar vacío");
-				errorTemplate.attr("hidden", false);
+				errorTemplate.removeAttr("hidden");
 			}
 		} else {
 			errorTemplate.text(
 				"Error - el recuadro del proveedor no puede estar vacío / debe ser un nombre valido"
 			);
-			errorTemplate.attr("hidden", false);
+			errorTemplate.removeAttr("hidden");
 		}
 	};
 
-	function nameForId(vIdPassed) {
+	function nameForId(vIdPassed: string) {
 		if (VendorData.length != 0) {
-			return VendorData.find(({ id }, i) => vIdPassed === id).name;
+			return VendorData.find(({ id }, i) => vIdPassed === id)?.name;
 		} else return "";
 	}
 
-	function idForName(vNamePassed) {
+	function idForName(
+		vNamePassed: string | number | string[] | null | undefined
+	) {
 		if (vNamePassed != null) {
 			const vendor = VendorData.find(({ name }, i) => vNamePassed == name);
 			if (vendor != undefined) return vendor.id;
@@ -330,9 +339,13 @@ function ItemInfo(props) {
 		return "error";
 	}
 
-	const changeInvoiceId = async (e, lastValue, toChangeId) => {
+	const changeInvoiceId = async (
+		e: React.FocusEvent<HTMLInputElement, Element>,
+		lastValue: string,
+		toChangeId: string
+	) => {
 		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", true); //keep it hidden
+		errorTemplate.attr("hidden", 1); //keep it hidden
 		let newVal = e.target.value;
 		if (newVal === lastValue) return;
 		try {
@@ -359,20 +372,24 @@ function ItemInfo(props) {
 		} catch (error) {
 			console.log("error on changeInvoiceId() ", error);
 			errorTemplate.text("Error - al actualizar el numero de Invoice");
-			errorTemplate.attr("hidden", false);
+			errorTemplate.removeAttr("hidden");
 		}
 	};
 
-	function focusOut(e) {
+	function focusOut(e: React.KeyboardEvent<HTMLInputElement>) {
 		if (e.keyCode === 13 || e.keyCode === 9) {
 			$("#" + e.target.getAttribute("id")).prop("disabled", true);
 			$("#" + e.target.getAttribute("id")).prop("disabled", false); //lose focus out of the textbox
 		}
 	}
 
-	const changePurchaseWeight = async (e, lastValue, toChangeId) => {
+	const changePurchaseWeight = async (
+		e: React.FocusEvent<HTMLInputElement, Element>,
+		lastValue: number,
+		toChangeId: string
+	) => {
 		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", true); //keep it hidden
+		errorTemplate.attr("hidden", 1); //keep it hidden
 
 		try {
 			let newVal = parseFloat(e.target.value.replace(",", ""));
@@ -401,13 +418,17 @@ function ItemInfo(props) {
 		} catch (error) {
 			console.log("error on changeInvoiceId() ", error);
 			errorTemplate.text("Error - al actualizar el Peso");
-			errorTemplate.attr("hidden", false);
+			errorTemplate.removeAttr("hidden");
 		}
 	};
 
-	const changePurchasePrice = async (e, lastValue, toChangeId) => {
+	const changePurchasePrice = async (
+		e: React.FocusEvent<HTMLInputElement, Element>,
+		lastValue: number,
+		toChangeId: string
+	) => {
 		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", true); //keep it hidden
+		errorTemplate.attr("hidden", 1); //keep it hidden
 
 		try {
 			let newVal = parseFloat(e.target.value.replace(",", ""));
@@ -435,13 +456,17 @@ function ItemInfo(props) {
 		} catch (error) {
 			console.log("error on changeInvoiceId() ", error);
 			errorTemplate.text("Error - al actualizar el Precio");
-			errorTemplate.attr("hidden", false);
+			errorTemplate.removeAttr("hidden");
 		}
 	};
 
-	const changePurchaseDate = async (e, lastValue, toChangeId) => {
+	const changePurchaseDate = async (
+		e: React.FocusEvent<HTMLInputElement, Element>,
+		lastValue: string,
+		toChangeId: string
+	) => {
 		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", true); //keep it hidden
+		errorTemplate.attr("hidden", 1); //keep it hidden
 
 		try {
 			let newVal = e.target.value;
@@ -469,19 +494,23 @@ function ItemInfo(props) {
 		} catch (error) {
 			console.log("error on changeInvoiceId() ", error);
 			errorTemplate.text("Error - al actualizar la fecha");
-			errorTemplate.attr("hidden", false);
+			errorTemplate.removeAttr("hidden");
 		}
 	};
 
-	const changeVendor = async (e, lastValue, toChangeId) => {
+	const changeVendor = async (
+		e: React.FocusEvent<HTMLInputElement, Element>,
+		lastValue: string,
+		toChangeId: string
+	) => {
 		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", true); //keep it hidden
+		errorTemplate.attr("hidden", 1); //keep it hidden
 
 		try {
 			let newVal = idForName(e.target.value);
 			if (newVal === lastValue || newVal === "error") {
 				errorTemplate.text("Error - proveedor no registrado");
-				errorTemplate.attr("hidden", false);
+				errorTemplate.removeAttr("hidden");
 				return;
 			}
 			const changeInvoiceId = await API.graphql(
@@ -507,13 +536,17 @@ function ItemInfo(props) {
 		} catch (error) {
 			console.log("error on changeInvoiceId() ", error);
 			errorTemplate.text("Error - al actualizar el proveedor");
-			errorTemplate.attr("hidden", false);
+			errorTemplate.removeAttr("hidden");
 		}
 	};
 
-	const changeSaleDate = async (e, lastValue, toChangeId) => {
+	const changeSaleDate = async (
+		e: React.FocusEvent<HTMLInputElement, Element>,
+		lastValue: string,
+		toChangeId: string
+	) => {
 		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", true); //keep it hidden
+		errorTemplate.attr("hidden", 1); //keep it hidden
 		let newVal = e.target.value;
 		if (newVal === lastValue) return;
 		try {
@@ -539,13 +572,17 @@ function ItemInfo(props) {
 		} catch (error) {
 			console.log("error on changeInvoiceId() ", error);
 			errorTemplate.text("Error - al actualizar la fecha de venta");
-			errorTemplate.attr("hidden", false);
+			errorTemplate.removeAttr("hidden");
 		}
 	};
 
-	const changeSaleInvoiceId = async (e, lastValue, toChangeId) => {
+	const changeSaleInvoiceId = async (
+		e: React.FocusEvent<HTMLInputElement, Element>,
+		lastValue: string,
+		toChangeId: string
+	) => {
 		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", true); //keep it hidden
+		errorTemplate.attr("hidden", 1); //keep it hidden
 		let newVal = e.target.value;
 		if (newVal === lastValue) return;
 		try {
@@ -571,17 +608,21 @@ function ItemInfo(props) {
 		} catch (error) {
 			console.log("error on changeInvoiceId() ", error);
 			errorTemplate.text("Error - al actualizar el numero de Invoice de venta");
-			errorTemplate.attr("hidden", false);
+			errorTemplate.removeAttr("hidden");
 		}
 	};
 
-	const changeSaleWeight = async (e, lastValue, toChangeId) => {
+	const changeSaleWeight = async (
+		e: React.FocusEvent<HTMLInputElement, Element>,
+		lastValue: number,
+		toChangeId: string
+	) => {
 		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", true); //keep it hidden
+		errorTemplate.attr("hidden", 1); //keep it hidden
 
 		try {
 			let newVal = parseFloat(e.target.value.replace(",", ""));
-			if (newVal === parseFloat(lastValue)) return;
+			if (newVal === lastValue) return;
 
 			const changeSaleWeight = await API.graphql(
 				graphqlOperation(updateSaleTransactionData2022, {
@@ -605,17 +646,21 @@ function ItemInfo(props) {
 		} catch (error) {
 			console.log("error on changeInvoiceId() ", error);
 			errorTemplate.text("Error - al actualizar el peso de venta");
-			errorTemplate.attr("hidden", false);
+			errorTemplate.removeAttr("hidden");
 		}
 	};
 
-	const changeSalePrice = async (e, lastValue, toChangeId) => {
+	const changeSalePrice = async (
+		e: React.FocusEvent<HTMLInputElement, Element>,
+		lastValue: number,
+		toChangeId: string
+	) => {
 		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", true); //keep it hidden
+		errorTemplate.attr("hidden", 1); //keep it hidden
 
 		try {
 			let newVal = parseFloat(e.target.value.replace(",", ""));
-			if (newVal === parseFloat(lastValue)) return;
+			if (newVal === lastValue) return;
 
 			const changeSaleWeight = await API.graphql(
 				graphqlOperation(updateSaleTransactionData2022, {
@@ -639,37 +684,40 @@ function ItemInfo(props) {
 		} catch (error) {
 			console.log("error on changeInvoiceId() ", error);
 			errorTemplate.text("Error - al actualizar el precio de venta");
-			errorTemplate.attr("hidden", false);
+			errorTemplate.removeAttr("hidden");
 		}
 	};
 
 	const editBtnTrigger = () => {
-		$("#productTitle").attr("readOnly", false);
+		$("#productTitle").removeAttr("readOnly");
 	};
 
-	const changeTitle = async (e, oldTitle) => {
+	const changeTitle = async (
+		e: React.FocusEvent<HTMLInputElement, Element>,
+		oldTitle: string | undefined
+	) => {
 		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", true); //keep it hidden
+		errorTemplate.attr("hidden", 1); //keep it hidden
 
 		try {
 			let newVal = e.target.value;
 			if (newVal == oldTitle) return;
 			const changeProductName = await API.graphql(
 				graphqlOperation(updateProductData, {
-					input: { id: ProductData.id, name: newVal },
+					input: { id: ProductData?.id, name: newVal },
 				})
 			);
 		} catch (error) {
 			console.log("error on changeTitle() ", error);
 			errorTemplate.text("Error - al actualizar el Nombre del producto");
-			errorTemplate.attr("hidden", false);
+			errorTemplate.removeAttr("hidden");
 		}
 	};
 
 	return (
 		<div className="Application">
 			<head>
-				<title>Facturación PJL - {ProductData.name}</title>
+				<title>Facturación PJL - {ProductData?.name}</title>
 			</head>
 			<header>
 				<div
@@ -677,7 +725,7 @@ function ItemInfo(props) {
 					role="alert"
 					id="error-template"
 					onClick={() => {
-						$("#error-vendor").attr("hidden", true);
+						$("#error-vendor").attr("hidden", 1);
 					}}
 					hidden
 				>
@@ -693,21 +741,21 @@ function ItemInfo(props) {
 								type="text"
 								id="productTitle"
 								className="tableInput"
-								defaultValue={ProductData.name}
+								defaultValue={ProductData?.name}
 								onBlur={(e) => {
-									changeTitle(e, ProductData.name);
+									changeTitle(e, ProductData?.name);
 								}}
 								onKeyDown={(e) => focusOut(e)}
 								readOnly
 							/>
 						</h1>
-						<h4>{ProductData.description}</h4>
+						<h4>{ProductData?.description}</h4>
 						<h4>
-							{ProductData.weightType === "Kg"
+							{ProductData?.weightType === "Kg"
 								? ProductData.weightQuantity + " " + ProductData.weightType
-								: ProductData.weightType +
+								: ProductData?.weightType +
 								  " " +
-								  ProductData.weightQuantity +
+								  ProductData?.weightQuantity +
 								  "Kg"}
 						</h4>
 						<div className="row">
@@ -717,15 +765,13 @@ function ItemInfo(props) {
 						</div>
 					</div>
 					<div className="col-3 d-flex justify-content-end">
-						<h4>Product Id: {ProductData.id}</h4>
+						<h4>Product Id: {ProductData?.id}</h4>
 					</div>
 				</div>
 				<div className="row">
 					<div className="col-9"></div>
 					<div className="col d-flex justify-content-end">
-						<h5>
-							Cantidad disponible: {parseFloat(InventoryTotal).toFixed(2)}
-						</h5>
+						<h5>Cantidad disponible: {InventoryTotal.toFixed(3)}</h5>
 					</div>
 				</div>
 				<div className="fair-spacing" />
@@ -845,7 +891,7 @@ function ItemInfo(props) {
 										type="text"
 										id="input-row-date"
 										className="tableInput tableDate"
-										defaultValue={moment().format("YYYY-MM-DD")}
+										defaultValue={moment.default().format("YYYY-MM-DD")}
 									/>
 								</td>
 								<td>
@@ -1006,7 +1052,7 @@ function ItemInfo(props) {
 										type="text"
 										id="input-row-sale-date"
 										className="tableInput tableDate"
-										defaultValue={moment().format("YYYY-MM-DD")}
+										defaultValue={moment.default().format("YYYY-MM-DD")}
 									/>
 								</td>
 								<td>
