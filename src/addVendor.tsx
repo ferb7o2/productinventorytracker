@@ -11,26 +11,29 @@ import { NavBar } from "./components/NavBar";
 function AddVendor() {
 	const history = useHistory();
 
-	function displayErrorMsg(errorBannerId, message) {
+	function displayErrorMsg(
+		errorBannerId: JQuery<HTMLElement>,
+		message: string
+	) {
 		errorBannerId.removeAttr("hidden");
 		errorBannerId.text(
 			"Error - el " + message + " de el distribuidor no puede estar vacío"
 		);
 	}
 
-	function validateStringInput(input) {
+	function validateStringInput(input: string) {
 		//is it empty?
 		if (input.length === 0) return false;
 		return true;
 	}
 
-	const registerVendor = async (e) => {
+	const registerVendor = async (e: { preventDefault: () => void }) => {
 		e.preventDefault();
-		let uppercaseRFC = "";
+		let uppercaseRFC;
 
-		if (validateStringInput($("#vendorNameField").val())) {
-			if (validateStringInput($("#vendorRFCField").val())) {
-				uppercaseRFC = $("#vendorRFCField").val().toUpperCase();
+		if (validateStringInput($("#vendorNameField").val()?.toString() || "")) {
+			if (validateStringInput($("#vendorRFCField").val()?.toString() || "")) {
+				uppercaseRFC = $("#vendorRFCField").val()?.toString()?.toUpperCase();
 			}
 
 			try {
@@ -63,7 +66,7 @@ function AddVendor() {
 					role="alert"
 					id="error-vendor"
 					onClick={() => {
-						$("#error-vendor").attr("hidden", true);
+						$("#error-vendor").attr("hidden", 1);
 					}}
 					hidden
 				>
@@ -79,90 +82,108 @@ function AddVendor() {
 				<div className="fair-spacing" />
 				<div className="row">
 					<form>
-						<div class="form-group row">
-							<label for="vendorNameField" class="col-sm-2 col-form-label">
+						<div className="form-group row">
+							<label
+								htmlFor="vendorNameField"
+								className="col-sm-2 col-form-label"
+							>
 								Nombre
 							</label>
-							<div class="col-sm-10">
+							<div className="col-sm-10">
 								<input
 									type="text"
-									class="form-control"
+									className="form-control"
 									id="vendorNameField"
 									placeholder="Nombre de Negocio/Distribuidor"
 								/>
 							</div>
 						</div>
-						<div class="form-group row">
-							<label for="vendorRFCField" class="col-sm-2 col-form-label">
+						<div className="form-group row">
+							<label
+								htmlFor="vendorRFCField"
+								className="col-sm-2 col-form-label"
+							>
 								RFC
 							</label>
-							<div class="col-sm-10">
+							<div className="col-sm-10">
 								<input
 									type="text"
-									class="form-control"
+									className="form-control"
 									id="vendorRFCField"
 									placeholder="RFC (opcional)"
 								/>
 							</div>
 						</div>
-						<div class="form-group row">
-							<label for="vendorAddressField" class="col-sm-2 col-form-label">
+						<div className="form-group row">
+							<label
+								htmlFor="vendorAddressField"
+								className="col-sm-2 col-form-label"
+							>
 								Direccion
 							</label>
-							<div class="col-sm-10">
+							<div className="col-sm-10">
 								<input
 									type="text"
-									class="form-control"
+									className="form-control"
 									id="vendorAddressField"
 									placeholder="Direccion (opcional)"
 								/>
 							</div>
 						</div>
-						<div class="form-group row">
-							<label for="vendorCityField" class="col-sm-2 col-form-label">
+						<div className="form-group row">
+							<label
+								htmlFor="vendorCityField"
+								className="col-sm-2 col-form-label"
+							>
 								Ciudad
 							</label>
-							<div class="col-sm-10">
+							<div className="col-sm-10">
 								<input
 									type="text"
-									class="form-control"
+									className="form-control"
 									id="vendorCityField"
 									placeholder="Ciudad (opcional)"
 								/>
 							</div>
 						</div>
-						<div class="form-group row">
-							<label for="vendorStateField" class="col-sm-2 col-form-label">
+						<div className="form-group row">
+							<label
+								htmlFor="vendorStateField"
+								className="col-sm-2 col-form-label"
+							>
 								Estado
 							</label>
-							<div class="col-sm-10">
+							<div className="col-sm-10">
 								<input
 									type="text"
-									class="form-control"
+									className="form-control"
 									id="vendorStateField"
 									placeholder="Estado (opcional)"
 								/>
 							</div>
 						</div>
-						<div class="form-group row">
-							<label for="vendorZipCodeField" class="col-sm-2 col-form-label">
+						<div className="form-group row">
+							<label
+								htmlFor="vendorZipCodeField"
+								className="col-sm-2 col-form-label"
+							>
 								Codigo Postal
 							</label>
-							<div class="col-sm-10">
+							<div className="col-sm-10">
 								<input
 									type="text"
-									class="form-control"
+									className="form-control"
 									id="vendorZipCodeField"
 									placeholder="Codigo Postal (opcional)"
 								/>
 							</div>
 						</div>
 						<div className="fair-spacing" />
-						<div class="form-group row">
-							<div class="col-sm-10">
+						<div className="form-group row">
+							<div className="col-sm-10">
 								<button
 									type="submit"
-									class="btn btn-outline-dark"
+									className="btn btn-outline-dark"
 									onClick={registerVendor}
 								>
 									Registrar

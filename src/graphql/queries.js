@@ -52,7 +52,7 @@ export const getProductData = /* GraphQL */ `
 export const listProductData = /* GraphQL */ `
 	query ListProductData(
 		$filter: ModelProductDataFilterInput
-		$limit: Int = 1000
+		$limit: Int = 99999
 		$nextToken: String
 	) {
 		listProductData(filter: $filter, limit: $limit, nextToken: $nextToken) {
@@ -81,26 +81,21 @@ export const getPurchaseTransactionData2022 = /* GraphQL */ `
 	}
 `;
 export const listPurchaseTransactionData2022s = /* GraphQL */ `
-	query ListPurchaseTransactionData2022s(
-		$filter: ModelPurchaseTransactionData2022FilterInput
-		$limit: Int = 1000
-		$nextToken: String
-	) {
+	query ListPurchaseTransactionData2022s($pId: String) {
 		listPurchaseTransactionData2022s(
-			filter: $filter
-			limit: $limit
-			nextToken: $nextToken
+			limit: 999999
+			filter: { pId: { eq: $pId } }
 		) {
+			nextToken
 			items {
+				date
 				id
 				pId
-				date
-				vId
 				purchaseInvoiceId
-				purchaseWeight
 				purchasePrice
+				purchaseWeight
+				vId
 			}
-			nextToken
 		}
 	}
 `;
@@ -117,25 +112,19 @@ export const getSaleTransactionData2022 = /* GraphQL */ `
 	}
 `;
 export const listSaleTransactionData2022s = /* GraphQL */ `
-	query ListSaleTransactionData2022s(
-		$filter: ModelSaleTransactionData2022FilterInput
-		$limit: Int = 1000
-		$nextToken: String
-	) {
+	query ListSaleTransactionData2022s($pId: String!) {
 		listSaleTransactionData2022s(
-			filter: $filter
-			limit: $limit
-			nextToken: $nextToken
+			limit: 9999999
+			filter: { pId: { eq: $pId } }
 		) {
 			items {
+				date
 				id
 				pId
-				date
 				saleInvoiceId
-				saleWeight
 				salePrice
+				saleWeight
 			}
-			nextToken
 		}
 	}
 `;
@@ -156,7 +145,7 @@ export const getVendorData = /* GraphQL */ `
 export const listVendorData = /* GraphQL */ `
 	query ListVendorData(
 		$filter: ModelVendorDataFilterInput
-		$limit: Int = 1000
+		$limit: Int = 99999999
 		$nextToken: String
 	) {
 		listVendorData(filter: $filter, limit: $limit, nextToken: $nextToken) {

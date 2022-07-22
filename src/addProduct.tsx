@@ -14,51 +14,22 @@ function AddProduct() {
 	const history = useHistory();
 
 	//Enables the textbox for Bulk information Input
-	//both of the next two functions make sure that no two checkboxes are checked at the same time
-	function checkedBoxBULTO() {
-		if ($("#gridCheckBulto").is(":checked")) {
-			//if bulto checkbox is checked
-			$("#inputQuantityType").attr("disabled", false); //enable the textbox right next to it
-			$("#gridCheckKg").prop("checked", false); //disable the (kg) checkbox
-			$("#gridCheckCaja").prop("checked", false); //disable the (caja) checkbox
-		} else {
-			$("#inputQuantityType").attr("disabled", true); //if not checked, disable textbox next to it
-			$("#gridCheckKg").prop("checked", true); //enable the (kg) checkbox
-		}
+	function enableBulkTextBox() {
+		$("#inputQuantityType").removeAttr("disabled"); //enable the textbox right next to it
 	}
 
-	function checkedBoxCaja() {
-		if ($("#gridCheckCaja").is(":checked")) {
-			//if bulto checkbox is checked
-			$("#inputQuantityType").attr("disabled", false); //enable the textbox right next to it
-			$("#gridCheckKg").prop("checked", false); //disable the (kg) checkbox
-			$("#gridCheckBulto").prop("checked", false); //disable the (caja) checkbox
-		} else {
-			$("#inputQuantityType").attr("disabled", true); //if not checked, disable textbox next to it
-			$("#gridCheckKg").prop("checked", true); //enable the (kg) checkbox
-		}
-	}
-
-	function checkedBoxKG() {
-		if ($("#gridCheckKg").is(":checked")) {
-			//if Kg checkbox is checked
-			$("#inputQuantityType").attr("disabled", true); //disable Bulk textbox
-			$("#gridCheckBulto").prop("checked", false); //disable bulk checkbox
-			$("#gridCheckCaja").prop("checked", false); //disable bulk checkbox
-		} else {
-			$("#inputQuantityType").attr("disabled", false); //if not checked
-			$("#gridCheckKg").prop("checked", false);
-		}
+	function disableBulkTextBox() {
+		$("#inputQuantityType").attr("disabled", 1); //enable the textbox right next to it
 	}
 
 	//Triggered when (register) product button is pressed
 	//Checks that product name is non-NULL && non-empty
 	//Checks that if Bulk checkbox option is pressed, there exists a non-empty numeric value on the textBox
-	const registerProduct = async (e) => {
+	const registerProduct = async (e: { preventDefault: () => void }) => {
 		e.preventDefault();
 
 		//check if both (name and Bulk textbox, if applicable) fields have been entered
-		if ($("#productNameField").val().length === 0) {
+		if ($("#productNameField").val()?.toString()?.length === 0) {
 			//if (product name) field is blank
 			$("#error-product").removeAttr("hidden"); //display warning banner
 			$("#error-product").text(
@@ -70,9 +41,13 @@ function AddProduct() {
 				$("#gridCheckCaja").is(":checked")
 			) {
 				//if bulk checkbox is selected
-				if ($("#inputQuantityType").val().length !== 0) {
+				if ($("#inputQuantityType").val()?.toString().length !== 0) {
 					//check that it's textbox input is non-empty
-					if (/^[0-9]+(?:\.[0-9]+)?$/.test($("#inputQuantityType").val())) {
+					if (
+						/^[0-9]+(?:\.[0-9]+)?$/.test(
+							$("#inputQuantityType").val()?.toString() || "false"
+						)
+					) {
 						//REGEX - check if value on (kg) field is a number
 						//if non-empty && a valid number, add the new product to our Product data (associative) array
 						try {
@@ -139,7 +114,7 @@ function AddProduct() {
 					role="alert"
 					id="error-product"
 					onClick={() => {
-						$("#error-product").attr("hidden", true);
+						$("#error-product").attr("hidden", 1);
 					}}
 					hidden
 				>
@@ -188,8 +163,10 @@ function AddProduct() {
 								/>
 							</div>
 						</div>
+
 						<div className="form-group row">
 							<div className="col-sm-2">Cantidad/Peso</div>
+							{/*
 							<div className="col-sm-10">
 								<div className="form-check">
 									<input
@@ -204,7 +181,53 @@ function AddProduct() {
 									</label>
 								</div>
 							</div>
+				*/}
 						</div>
+						<form>
+							<label>
+								<input
+									type="radio"
+									id="gridCheckKg"
+									name="bulk_type"
+									value="kg"
+									onClick={disableBulkTextBox}
+								/>
+								Kg
+							</label>
+							<label>
+								<input
+									type="radio"
+									id="gridCheckBulto"
+									name="bulk_type"
+									value="bulto"
+									onClick={enableBulkTextBox}
+								/>
+								Bulto
+							</label>
+							<label>
+								<input
+									type="radio"
+									id="gridCheckCaja"
+									name="bulk_type"
+									value="caja"
+									onClick={enableBulkTextBox}
+								/>
+								Caja
+							</label>
+						</form>
+
+						<div className="col-sm-2">
+							<div className="form-check">
+								<input
+									type="text"
+									className="form-control"
+									id="inputQuantityType"
+									placeholder="Peso (kg)"
+									disabled
+								/>
+							</div>
+						</div>
+						{/*
 						<div className="form-group row">
 							<div className="col-sm-2"></div>
 							<div className="col-sm-1">
@@ -242,7 +265,7 @@ function AddProduct() {
 									/>
 								</div>
 							</div>
-						</div>
+						</div>*/}
 						<div className="fair-spacing" />
 						<div className="form-group row">
 							<div className="col-sm-10">
