@@ -10,7 +10,31 @@ export class NavBar extends Component {
 			<Authenticator>
 				{({ signOut }) => (
 					<div>
-						<nav className="navbar navbar-dark bg-dark">
+						<div className="navbar">
+							<a className="nav-title" href="/">
+								Facturacion PJL 2022
+							</a>
+
+							<div className="nav-section">
+								<a className="nav-section-title nav-selected" href="/products">
+									Productos
+								</a>
+
+								<a className="nav-section-title" href="/">
+									Distribuidores
+								</a>
+							</div>
+
+							<div className="account-info">
+								<p id="account-name">username</p>
+								<img
+									className="dropdown-icon"
+									src={require("../assets/icons/dropdown-white-attributed.png")}
+									alt="dropdown icon"
+								/>
+							</div>
+						</div>
+						{/*<nav className="header">
 							<div className="container-fluid">
 								<a className="navbar-brand" href="/">
 									Facturacion Mexico 2022
@@ -52,6 +76,7 @@ export class NavBar extends Component {
 								</div>
 							</div>
 						</nav>
+											*/}
 						<div className="fair-spacing"></div>
 					</div>
 				)}

@@ -8,7 +8,7 @@ import { useHistory } from "react-router-dom"; //Helps us redirect to other page
 
 import "bootstrap/dist/css/bootstrap.min.css"; //Boostrap Import 1/2
 import "bootstrap/dist/js/bootstrap.bundle.min"; //Boostrap Import 2/2
-import "./homePageStyle.css";
+import "./css/homePageStyle.css";
 
 import React, { useEffect, useState } from "react";
 
@@ -67,7 +67,7 @@ function Home() {
 	useEffect(() => {
 		//fetchMainBusinessInfo();
 		fetchProductData();
-		fetchVendorData();
+		////////////////fetchVendorData();
 	}, []);
 
 	const history = useHistory();
@@ -112,117 +112,143 @@ function Home() {
 				<title>Facturación PJL 2022 </title>
 			</head>
 			<div className="container">
-				<div className="row">
-					<div className="col-1" id="logo">
-						<img
-							src="https://www.coditt.com/images/LogoPlaceholder.png"
-							id="logo-image"
-							alt="company logo"
-						/>
-					</div>
-					<div className="col-7">
-						<div className="row">
-							<h2>Pastor Jaramillo Lopez 2022{/*ourBusinessInfo.name*/}</h2>
+				<div className="container-top-section">
+					<div className="container-top-first-row">
+						<div className="container-title-section">
+							<p className="container-title">Productos</p>
+							<p className="container-title-count">({ProductData.length})</p>
 						</div>
-						<div className="row">
-							<p className="address-tag">
-								C. Juan Aldama 202 Nte Centro{/*ourBusinessInfo.address*/}
-							</p>
-							<p className="address-tag">
-								Calera de Víctor Rosales, Zacatecas 98500
-								{/*ourBusinessInfo.city +
-									", " +
-									ourBusinessInfo.state +
-									" " +
-	ourBusinessInfo.zipCode*/}
-							</p>
-							<p className="address-tag">
-								RFC: JALPXXXXXXXXXX {/*ourBusinessInfo.rfc*/}
-							</p>
-						</div>
-					</div>
-					<div className="col ">
-						{/*<div className="row">
-                <button type="button" className="btn btn-primary" data-bs-toggle="button" autocomplete="off">Agregar transacción</button>
-                  </div>*/}
-						<div className="row d-flex justify-content-end">
+						<div className="title-button-container">
 							<button
 								type="button"
-								className="btn btn-outline-dark active homePageBtn "
+								className="btn secondary-btn"
 								data-bs-toggle="button"
 								id="btn"
 								onClick={addProductBtn}
 							>
-								Producto Nuevo
+								Agregar producto
 							</button>
-						</div>
-						<div className="row d-flex justify-content-end">
 							<button
 								type="button"
-								className="btn btn-outline-dark active homePageBtn"
+								className="btn "
 								data-bs-toggle="button"
 								id="btn"
 								onClick={addVendorBtn}
 							>
-								Distribuidor Nuevo
+								edt Distribuidor
 							</button>
 						</div>
 					</div>
-				</div>
 
-				<div className="fair-spacing" />
-
-				<div className="row">
-					<div className="col">
-						<h3>Lista de Productos</h3>
-					</div>
-					<div className="col">
-						<form className="d-flex">
-							<input
-								className="form-control me-2"
-								type="search"
-								placeholder="Buscar producto"
-								aria-label="Search"
-								onChange={(event) => {
-									setSearchTermProduct(event.target.value);
-								}}
-							/>
-							{/*<button className="btn btn-outline-success" id='search-btn' type="submit">Buscar</button>*/}
-						</form>
+					<div className="sub-section-container">
+						<div className="left-pad"></div>
+						<div className="selected-under">
+							<p className="sub-section-title sub-section-selected">See all</p>
+						</div>
+						<p className="sub-section-title ">Saved</p>
+						<p className="sub-section-title">Ongoing</p>
+						<p className="sub-section-title">Archived</p>
 					</div>
 				</div>
+
+				<div className="container-top-third-row">
+					<div className="dropdown-section">
+						<button
+							className="dropdown-btn dropdown-toggle"
+							type="button"
+							id="dropdownMenuButton1"
+							data-bs-toggle="dropdown"
+							aria-expanded="false"
+						>
+							Sort by
+						</button>
+						<ul className="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+							<li>
+								<a className="dropdown-item" href="#">
+									Action
+								</a>
+							</li>
+							<li>
+								<a className="dropdown-item" href="#">
+									Another action
+								</a>
+							</li>
+							<li>
+								<a className="dropdown-item" href="#">
+									Something else here
+								</a>
+							</li>
+						</ul>
+					</div>
+
+					<div className="search-container">
+						<button className="search-btn">
+							<img
+								className="search-icon"
+								src={require("./assets/icons/search-attributed.png")}
+							></img>
+						</button>
+						<input
+							className="search-bar"
+							type="search"
+							placeholder=" Buscar producto"
+							aria-label="Search"
+							onChange={(event) => {
+								setSearchTermProduct(event.target.value);
+							}}
+						/>
+						{/*<button className="btn btn-outline-success" id='search-btn' type="submit">Buscar</button>*/}
+					</div>
+				</div>
+
 				<div className="row">
-					<div id="productTable">
-						<table className="table table-striped">
-							<thead>
-								<tr>
-									<th scope="col"># Producto</th>
-									<th scope="col">Producto</th>
-									<th scope="col">Tipo</th>
+					<table className="tble">
+						<thead>
+							<tr className="thead-row">
+								<th scope="col" className="select-col">
+									#
+								</th>
+								<th scope="col" className="name-col">
+									Nombre del producto
+								</th>
+								<th scope="col" className="type-col">
+									Tipo
+								</th>
+								<th scope="col" className="tax-col">
+									Impuesto
+								</th>
+								<th scope="col" className="id-col">
+									Id
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							{ProductData.filter((val) => {
+								if (searchTermProduct === "") return val;
+								else if (
+									val.name
+										.toLowerCase()
+										.includes(searchTermProduct.toLowerCase())
+								)
+									return val;
+								else return null;
+							}).map(({ id, name, weightType }) => (
+								<tr key={id} onClick={(e) => itemTableRowClicked(e, id)}>
+									<td className="select-col"></td>
+									<td id={id} className="name-col name-col-data">
+										{name}
+									</td>
+									<td id={id} className="type-col">
+										{weightType}
+									</td>
+									<td className="tax-col"></td>
+									<td scope="row" id={id} className="id-col id-col-data">
+										{id}
+									</td>
 								</tr>
-							</thead>
-							<tbody>
-								{ProductData.filter((val) => {
-									if (searchTermProduct === "") return val;
-									else if (
-										val.name
-											.toLowerCase()
-											.includes(searchTermProduct.toLowerCase())
-									)
-										return val;
-									else return null;
-								}).map(({ id, name, weightType }) => (
-									<tr key={id} onClick={(e) => itemTableRowClicked(e, id)}>
-										<th scope="row" id={id}>
-											{id.length === 1 ? id[0] : id.slice(0, 3)}
-										</th>
-										<td id={id}>{name}</td>
-										<td id={id}>{weightType}</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
+							))}
+						</tbody>
+					</table>
 				</div>
 
 				<div className="fair-spacing" />
@@ -272,9 +298,9 @@ function Home() {
 											{ id, name } //Data driven display of rows in data
 										) => (
 											<tr key={id} /*onClick={vendorTableRowClicked}*/>
-												<th scope="row" id={id}>
+												<td scope="row" id={id}>
 													{id.length === 1 ? id[0] : id.slice(0, 3)}
-												</th>
+												</td>
 												<td id={id}>{name}</td>
 											</tr>
 										)
