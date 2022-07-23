@@ -206,7 +206,7 @@ function Home() {
 						<thead>
 							<tr className="thead-row">
 								<th scope="col" className="select-col">
-									#
+									<input type="checkbox" className="checkbox-table"></input>
 								</th>
 								<th scope="col" className="name-col">
 									Nombre del producto
@@ -234,7 +234,13 @@ function Home() {
 								else return null;
 							}).map(({ id, name, weightType }) => (
 								<tr key={id} onClick={(e) => itemTableRowClicked(e, id)}>
-									<td className="select-col"></td>
+									<td className="select-col">
+										<input
+											type="checkbox"
+											className="checkbox-table"
+											id={id}
+										></input>
+									</td>
 									<td id={id} className="name-col name-col-data">
 										{name}
 									</td>

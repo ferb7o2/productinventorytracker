@@ -520,3 +520,7 @@ tr {
 a {
 	text-decoration: none;
 }
+
+.checkbox-table {
+	border: red 1px solid;
+}
