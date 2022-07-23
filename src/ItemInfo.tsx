@@ -734,62 +734,102 @@ function ItemInfo() {
 				<NavBar />
 			</header>
 			<div className="container">
-				<div className="row">
-					<div className="col">
-						<h1>
-							<input
-								type="text"
-								id="productTitle"
-								className="tableInput"
-								defaultValue={ProductData?.name}
-								onBlur={(e) => {
-									changeTitle(e, ProductData?.name);
-								}}
-								onKeyDown={(e) => focusOut(e)}
-								readOnly
-							/>
-						</h1>
-						<h4>{ProductData?.description}</h4>
-						<h4>
-							{ProductData?.weightType === "Kg"
-								? ProductData.weightQuantity + " " + ProductData.weightType
-								: ProductData?.weightType +
-								  " " +
-								  ProductData?.weightQuantity +
-								  "Kg"}
+				<div className="container-top-section">
+					<div className="container-top-first-row">
+						<div className="container-title-section vendor-title">
+							<h1 className="container-title vendor-title">
+								<input
+									type="text"
+									id="productTitle"
+									className="container-title vendor-title"
+									defaultValue={ProductData?.name}
+									onBlur={(e) => {
+										changeTitle(e, ProductData?.name);
+									}}
+									onKeyDown={(e) => focusOut(e)}
+									readOnly
+								/>
+							</h1>
+						</div>
+						<h4 className="product-description hidden-description">
+							{/*ProductData?.description*/}esta es la descripcion de el
+							producto{" "}
 						</h4>
-						<div className="row">
-							<button id="editBtn" onClick={editBtnTrigger}>
-								<u>editar</u>
+
+						<div className="title-button-container vendor-btn">
+							<button
+								type="button"
+								className="btn secondary-btn"
+								data-bs-toggle="button"
+								id="btn"
+								onChange={editBtnTrigger}
+							>
+								editar producto
+							</button>
+							<button
+								type="button"
+								className="btn "
+								data-bs-toggle="button"
+								id="btn"
+							>
+								Borrar venta
 							</button>
 						</div>
 					</div>
-					<div className="col-3 d-flex justify-content-end">
-						<h4>Product Id: {ProductData?.id}</h4>
+					<h4 className="product-description primary-desc">
+						{/*ProductData?.description*/}esta es la descripcion de el producto{" "}
+					</h4>
+
+					<div className="product-third-row">
+						<p className="product-id-subtitle">Product Id: {ProductData?.id}</p>
+						<p className="product-qty-count">
+							Cantidad disponible: {InventoryTotal.toFixed(3)}
+						</p>
+					</div>
+					<div className="sub-section-container remove-top-pad">
+						<div className="left-pad"></div>
+						<div className="selected-under">
+							<p className="sub-section-title sub-section-selected">See all</p>
+						</div>
+						<p className="sub-section-title ">Saved</p>
+						<p className="sub-section-title">Ongoing</p>
+						<p className="sub-section-title">Archived</p>
 					</div>
 				</div>
-				<div className="row">
-					<div className="col-9"></div>
-					<div className="col d-flex justify-content-end">
-						<h5>Cantidad disponible: {InventoryTotal.toFixed(3)}</h5>
-					</div>
-				</div>
-				<div className="fair-spacing" />
 				<div className="row">
 					<div className="col">
 						<h4 className="item-table-label">Compra</h4>
 					</div>
 				</div>
 				<div className="row">
-					<table className="table table-striped">
+					<table className="tble">
 						<thead>
 							<tr>
-								<th scope="col">tId</th>
-								<th scope="col">Fecha</th>
-								<th scope="col">Proveedor</th>
-								<th scope="col"># Factura</th>
-								<th scope="col">Peso (Kg)</th>
-								<th scope="col">Precio (MXN)</th>
+								<th scope="col" className="thead-row select-col select-vendor">
+									<input type="checkbox" className="checkbox-table" />
+								</th>
+								<th scope="col" className="thead-row date-col">
+									Fecha
+								</th>
+								<th scope="col" className="thead-row vendor-col">
+									Proveedor
+								</th>
+								<th scope="col" className="thead-row factura-col">
+									# Factura
+								</th>
+								<th scope="col" className="thead-row weight-col">
+									{ProductData?.weightType}
+								</th>
+								<th scope="col" className="thead-row price-col">
+									Precio (MXN)
+								</th>
+								<th scope="col" className="thead-row pId-col">
+									Id de transaccion
+								</th>
+
+								<th scope="col" className="thead-row notes-col">
+									Notas
+								</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -805,10 +845,10 @@ function ItemInfo() {
 									} //Data driven display of rows in data
 								) => (
 									<tr key={id} className="table-row">
-										<th scope="row">
-											{id.length === 1 ? id[0] : id.slice(0, 4)}
-										</th>
-										<td>
+										<td className="select-col select-vendor">
+											<input type="checkbox" className="checkbox-table" />
+										</td>
+										<td className="date-col">
 											<input
 												type="text"
 												id={"row" + id + "date"}
@@ -821,11 +861,11 @@ function ItemInfo() {
 											/>
 										</td>
 
-										<td>
+										<td className="vendor-col">
 											<input
 												type="text"
 												id={"row" + id + "vId"}
-												className="tableInput"
+												className="tableInput vendor-input"
 												defaultValue={nameForId(vId)}
 												list="vendors"
 												onBlur={(e) => {
@@ -839,7 +879,7 @@ function ItemInfo() {
 												))}
 											</datalist>
 										</td>
-										<td>
+										<td className="factura-col">
 											<div className="tableData">
 												<input
 													type="text"
@@ -853,7 +893,7 @@ function ItemInfo() {
 												/>
 											</div>
 										</td>
-										<td>
+										<td className="weight-col">
 											<div className="tableData">
 												<input
 													type="text"
@@ -867,7 +907,7 @@ function ItemInfo() {
 												/>
 											</div>
 										</td>
-										<td>
+										<td className="price-col">
 											<div className="tableData">
 												<input
 													type="text"
@@ -881,10 +921,20 @@ function ItemInfo() {
 												/>
 											</div>
 										</td>
+										<td className="pId-col id-col-data">{id}</td>
+										<td className="notes-col">
+											<img
+												src={require("./assets/icons/blank-notes-attributed.png")}
+											></img>
+										</td>
 									</tr>
 								)
 							)}
-							<tr className="table-row" id="input-new-data-row" hidden>
+							<tr
+								className="table-row input-new-data-row"
+								id="input-new-data-row"
+								hidden
+							>
 								<th scope="row"></th>
 								<td>
 									<input
@@ -920,7 +970,7 @@ function ItemInfo() {
 								<td>
 									<div className="tableData">
 										<input
-											type="text"
+											type="number"
 											id="input-row-purchaseWeight"
 											className="tableInput"
 										/>
@@ -929,25 +979,29 @@ function ItemInfo() {
 								<td>
 									<div className="tableData">
 										<input
-											type="text"
+											type="number"
 											id="input-row-purchasePrice"
 											className="tableInput"
 										/>
 									</div>
 								</td>
+
+								<td></td>
+								<td></td>
 							</tr>
 							<tr hidden></tr>
 							{/* just a hidden element to not break the color scheme on the next table row*/}
-							<tr>
-								<th scope="row">
+							<tr className="input-new-data-row">
+								<td scope="row" className="select-col add-col">
 									<img
-										src="https://static.thenounproject.com/png/1649999-200.png"
+										src={require("./assets/icons/add-attributed.png")}
 										id="add-data-btn"
-										className="add-data-btn"
+										className=""
 										onClick={displayPURCHASEInputFields}
 										alt="add new purchase entry button"
 									/>
-								</th>
+								</td>
+								<td></td>
 								<td></td>
 								<td></td>
 								<td></td>
@@ -955,7 +1009,7 @@ function ItemInfo() {
 								<td>
 									<button
 										type="button"
-										className="btn btn-outline-dark btnUpdate"
+										className="btn"
 										id="btnUpdate"
 										onClick={addNewPURCHASEDataRow}
 										hidden
@@ -969,15 +1023,36 @@ function ItemInfo() {
 				</div>
 				<div className="fair-spacing"></div>
 				<div className="row">
-					<h4 className="item-table-label">Venta</h4>
-					<table className="table table-striped">
+					<div className="tble-title">
+						<h4 className="item-table-label item-table-label-sale">Venta</h4>
+					</div>
+				</div>
+
+				<div className="row">
+					<table className="tble">
 						<thead>
-							<tr>
-								<th scope="col">Id</th>
-								<th scope="col">Fecha</th>
-								<th scope="col"># Invoice</th>
-								<th scope="col">Peso (kg)</th>
-								<th scope="col">Precio (MXN)</th>
+							<tr className="table-row">
+								<th scope="col" className="thead-row select-col">
+									<input type="checkbox" className="checkbox-table" />
+								</th>
+								<th scope="col" className="thead-row sale-date-col">
+									Fecha
+								</th>
+								<th scope="col" className="thead-row sale-invoice-col">
+									# Invoice
+								</th>
+								<th scope="col" className="thead-row sale-weight-col">
+									{ProductData?.weightType}
+								</th>
+								<th scope="col" className="thead-row sale-price-col">
+									Precio (MXN)
+								</th>
+								<th scope="col" className="head-row pId-col">
+									Id de transaccion
+								</th>
+								<th scope="col" className="thead-row notes-col">
+									Notas
+								</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -986,14 +1061,14 @@ function ItemInfo() {
 									{ id, pId, date, saleInvoiceId, saleWeight, salePrice } //Data driven display of rows in data
 								) => (
 									<tr key={"s" + id} className="table-row">
-										<th scope="row">
-											{id.length === 1 ? id[0] : id.slice(0, 4)}
-										</th>
-										<td>
+										<td scope="col" className="select-col">
+											<input type="checkbox" className="checkbox-table" />
+										</td>
+										<td className="sale-date-col" scope="col">
 											<input
 												type="text"
 												id={"row" + id + "Sdate"}
-												className="tableInput tableDate"
+												className="tableInput"
 												defaultValue={date}
 												onBlur={(e) => {
 													changeSaleDate(e, date, id);
@@ -1002,11 +1077,11 @@ function ItemInfo() {
 											/>
 										</td>
 
-										<td>
+										<td className="sale-invoice-col" scope="col">
 											<input
 												type="text"
 												id={"row" + id + "saleInvoiceId"}
-												className="tableInput"
+												className="tableInput vendor-col"
 												defaultValue={saleInvoiceId}
 												onBlur={(e) => {
 													changeSaleInvoiceId(e, saleInvoiceId, id);
@@ -1014,44 +1089,52 @@ function ItemInfo() {
 												onKeyDown={(e) => focusOut(e)}
 											/>
 										</td>
-										<td>
-											<div className="tableData">
-												<input
-													type="text"
-													id={"row" + id + "saleWeight"}
-													className="tableInput"
-													defaultValue={saleWeight}
-													onBlur={(e) => {
-														changeSaleWeight(e, saleWeight, id);
-													}}
-													onKeyDown={(e) => focusOut(e)}
-												/>
-											</div>
+										<td className="sale-weight-col" scope="col">
+											<input
+												type="text"
+												id={"row" + id + "saleWeight"}
+												className="tableInput"
+												defaultValue={saleWeight}
+												onBlur={(e) => {
+													changeSaleWeight(e, saleWeight, id);
+												}}
+												onKeyDown={(e) => focusOut(e)}
+											/>
 										</td>
-										<td>
-											<div className="tableData">
-												<input
-													type="text"
-													id={"row" + id + "salePrice"}
-													className="tableInput"
-													defaultValue={salePrice}
-													onBlur={(e) => {
-														changeSalePrice(e, salePrice, id);
-													}}
-													onKeyDown={(e) => focusOut(e)}
-												/>
-											</div>
+										<td className="sale-price-col" scope="col">
+											<input
+												type="text"
+												id={"row" + id + "salePrice"}
+												className="tableInput vendor-col"
+												defaultValue={salePrice}
+												onBlur={(e) => {
+													changeSalePrice(e, salePrice, id);
+												}}
+												onKeyDown={(e) => focusOut(e)}
+											/>
+										</td>
+										<td className="pId-col id-col-data" scope="col">
+											{id}
+										</td>
+										<td className="notes-col" scope="col">
+											<img
+												src={require("./assets/icons/blank-notes-attributed.png")}
+											/>
 										</td>
 									</tr>
 								)
 							)}
-							<tr className="table-row" id="input-new-data-row-sale" hidden>
+							<tr
+								className="table-row input-new-data-row"
+								id="input-new-data-row-sale"
+								hidden
+							>
 								<th scope="row"></th>
 								<td>
 									<input
 										type="text"
 										id="input-row-sale-date"
-										className="tableInput tableDate"
+										className="tableInput"
 										defaultValue={moment.default().format("YYYY-MM-DD")}
 									/>
 								</td>
@@ -1083,10 +1166,10 @@ function ItemInfo() {
 							</tr>
 							<tr hidden></tr>
 							{/* just a hidden element to not break the color scheme on the next table row*/}
-							<tr>
+							<tr className="input-new-data-row">
 								<th scope="row">
 									<img
-										src="https://static.thenounproject.com/png/1649999-200.png"
+										src={require("./assets/icons/add-attributed.png")}
 										id="add-sale-data-btn"
 										className="add-data-btn"
 										onClick={displaySALEInputFields}
@@ -1096,10 +1179,11 @@ function ItemInfo() {
 								<td></td>
 								<td></td>
 								<td></td>
+								<td></td>
 								<td>
 									<button
 										type="button"
-										className="btn btn-outline-dark btnUpdate"
+										className="btn btn-contain"
 										id="btnSaleUpdate"
 										onClick={addNewSALEDataRow}
 										hidden
