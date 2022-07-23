@@ -474,6 +474,7 @@ td {
 	font-weight: 100;
 	text-align: center;
 	height: 38px;
+	font-family: Arial;
 }
 
 .select-col {
@@ -508,4 +509,14 @@ tr {
 
 .thead-row {
 	border-bottom: none;
+}
+
+/*	Footer	*/
+
+.footer {
+	background-color: #ff2942;
+}
+
+a {
+	text-decoration: none;
 }

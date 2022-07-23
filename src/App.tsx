@@ -66,7 +66,7 @@ function Home() {
 
 	useEffect(() => {
 		//fetchMainBusinessInfo();
-		fetchProductData();
+		//fetchProductData();
 		////////////////fetchVendorData();
 	}, []);
 
