@@ -234,6 +234,29 @@ function VendorInfo() {
 		}
 	};
 
+	const changeRfc = async (
+		e: React.FocusEvent<HTMLInputElement, Element>,
+		oldTitle: string | undefined
+	) => {
+		var errorTemplate = $("#error-template");
+		errorTemplate.attr("hidden", 1); //keep it hidden
+
+		try {
+			let newVal = e.target.value;
+			if (newVal == oldTitle) return;
+
+			const changeProductName = await API.graphql(
+				graphqlOperation(updateVendorData, {
+					input: { id: VendorData?.id, rfc: newVal },
+				})
+			);
+		} catch (error) {
+			console.log("error on changeRfc() ", error);
+			errorTemplate.text("Error - al actualizar el RFC del Distribuidor");
+			errorTemplate.removeAttr("hidden");
+		}
+	};
+
 	function saveBtnTrigger() {
 		$("#vNameInput").attr("readOnly", 1);
 		$("#vAddressInput").attr("readOnly", 1);
@@ -241,6 +264,7 @@ function VendorInfo() {
 		$("#vStateInput").attr("readOnly", 1);
 		$("#vCountryInput").attr("readOnly", 1);
 		$("#vZipInput").attr("readOnly", 1);
+		$("#vRfcInput").attr("readOnly", 1);
 		$(".editable-input").css("border", "none");
 		$(".editable-input").css("border-radius", "4px");
 		$("#saveBtn").attr("hidden", 1);
@@ -253,6 +277,7 @@ function VendorInfo() {
 		$("#vStateInput").removeAttr("readOnly");
 		$("#vCountryInput").removeAttr("readOnly");
 		$("#vZipInput").removeAttr("readOnly");
+		$("#vRfcInput").removeAttr("readOnly");
 		$(".editable-input").css("border", "1px rgb(54, 54, 54, 0.6) solid");
 		$(".editable-input").css("border-radius", "4px");
 		$("#saveBtn").removeAttr("hidden");
@@ -290,6 +315,7 @@ function VendorInfo() {
 									/>
 								</h1>
 							</div>
+
 							<div className="vInfo-row">
 								<h4 className="product-description  edit-primary">
 									<input
@@ -365,6 +391,21 @@ function VendorInfo() {
 										defaultValue={VendorData?.zipCode}
 										onBlur={(e) => {
 											changeZip(e, VendorData?.zipCode);
+										}}
+										onKeyDown={(e) => focusOut(e)}
+										readOnly
+									/>
+								</h4>
+							</div>
+							<div className="vInfo-row">
+								<h4 className="product-description  edit-primary">
+									<input
+										type="text"
+										id="vRfcInput"
+										className="product-description editable-input"
+										defaultValue={VendorData?.rfc}
+										onBlur={(e) => {
+											changeRfc(e, VendorData?.rfc);
 										}}
 										onKeyDown={(e) => focusOut(e)}
 										readOnly
