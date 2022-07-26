@@ -18,7 +18,12 @@ export type VendorDataType = {
 };
 
 export type urlPropType = {
-	pId: string;
+	pId?: string;
+	vId?: string;
+};
+
+export type urlPropVendorType = {
+	vId_global: string;
 };
 
 export type PtransactionDataType = {

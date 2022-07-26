@@ -80,6 +80,7 @@ export const getPurchaseTransactionData2022 = /* GraphQL */ `
 		}
 	}
 `;
+
 export const listPurchaseTransactionData2022s = /* GraphQL */ `
 	query ListPurchaseTransactionData2022s($pId: String) {
 		listPurchaseTransactionData2022s(
@@ -99,6 +100,27 @@ export const listPurchaseTransactionData2022s = /* GraphQL */ `
 		}
 	}
 `;
+
+export const listPurchaseTransactionData2022svId = /* GraphQL */ `
+	query ListPurchaseTransactionData2022s($vId: String) {
+		listPurchaseTransactionData2022s(
+			limit: 999999
+			filter: { vId: { eq: $vId } }
+		) {
+			nextToken
+			items {
+				date
+				id
+				pId
+				purchaseInvoiceId
+				purchasePrice
+				purchaseWeight
+				vId
+			}
+		}
+	}
+`;
+
 export const getSaleTransactionData2022 = /* GraphQL */ `
 	query GetSaleTransactionData2022($id: ID!) {
 		getSaleTransactionData2022(id: $id) {

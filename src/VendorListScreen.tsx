@@ -14,10 +14,9 @@ import React, { useEffect, useState } from "react";
 
 //Import external pages in folder (Screens)
 import ItemInfo from "./ItemInfo";
-import VendorInfo from "./VendorInfo";
+import VendorInfo from "./VendorListScreen";
 import AddVendor from "./addVendor";
 import AddProduct from "./addProduct";
-import VendorListScreen from "./VendorListScreen";
 
 //Database- AMPLIFY
 import { Amplify, API, graphqlOperation } from "aws-amplify";
@@ -35,23 +34,9 @@ import { ProductDataType, VendorDataType } from "./types";
 
 Amplify.configure(awsconfig);
 
-function Home() {
-	const [ProductData, setProductData] = useState<ProductDataType[]>([]);
+function VendorListScreen() {
 	const [vData, setvData] = useState<VendorDataType[]>([]);
-	const [searchTermProduct, setSearchTermProduct] = useState("");
 	const [searchTermVendor, setSearchTermVendor] = useState("");
-
-	const fetchProductData = async () => {
-		try {
-			const productDatas = (await API.graphql(
-				graphqlOperation(listProductData)
-			)) as { data: { listProductData: { items: ProductDataType[] } } };
-
-			setProductData(productDatas.data.listProductData.items);
-		} catch (error) {
-			console.log("Error retrieving vendor data (fetchProductData) ", error);
-		}
-	};
 
 	const fetchVendorData = async () => {
 		try {
@@ -66,17 +51,15 @@ function Home() {
 	};
 
 	useEffect(() => {
-		fetchProductData();
-		////////////////fetchVendorData();
+		fetchVendorData();
 	}, []);
 
 	const history = useHistory();
 
-	function itemTableRowClicked(id: string) {
-		//console.log(e.target.id);
-		//console.log("YOU CLICKED ME");
-		let path = `/item/${id}`;
-		//let path=`/item`;
+	function vendorTableRowClicked(e: any) {
+		console.log(e.target.id);
+		let path = `/vendor/${e.target.id}`;
+		//let path=`/vendor`;
 		history.push(path);
 	}
 
@@ -86,16 +69,10 @@ function Home() {
 		history.push(path);
 	}
 
-	function addProductBtn() {
-		//let path=`/item/:${e.target.id}`;
-		let path = `/addProduct`;
-		history.push(path);
-	}
-
 	return (
 		<div className="Application">
 			<header>
-				<NavBar />
+				<NavBar products={false} vendors={true} />
 			</header>
 			<head>
 				<title>Facturación PJL 2022 </title>
@@ -104,8 +81,8 @@ function Home() {
 				<div className="container-top-section">
 					<div className="container-top-first-row">
 						<div className="container-title-section">
-							<p className="container-title">Productos</p>
-							<p className="container-title-count">({ProductData.length})</p>
+							<p className="container-title">Distribuidores</p>
+							<p className="container-title-count">({vData.length})</p>
 						</div>
 						<div className="title-button-container">
 							<button
@@ -122,9 +99,9 @@ function Home() {
 								className="btn "
 								data-bs-toggle="button"
 								id="btn"
-								onClick={addProductBtn}
+								onClick={addVendorBtn}
 							>
-								Agregar producto
+								Agregar distribuidor
 							</button>
 						</div>
 					</div>
@@ -180,10 +157,10 @@ function Home() {
 						<input
 							className="search-bar"
 							type="search"
-							placeholder=" Buscar producto"
+							placeholder=" Buscar Distribuidor"
 							aria-label="Search"
 							onChange={(event) => {
-								setSearchTermProduct(event.target.value);
+								setSearchTermVendor(event.target.value);
 							}}
 						/>
 						{/*<button className="btn btn-outline-success" id='search-btn' type="submit">Buscar</button>*/}
@@ -197,67 +174,56 @@ function Home() {
 								<th scope="col" className="select-col">
 									<input type="checkbox" className="checkbox-table"></input>
 								</th>
-								<th scope="col" className="name-col">
-									Nombre del producto
+								<th scope="col" className="vName-col">
+									Nombre
 								</th>
-								<th scope="col" className="type-col">
-									Tipo
-								</th>
-								<th scope="col" className="tax-col">
-									Impuesto
-								</th>
-								<th scope="col" className="id-col">
+								<th scope="col" className="vId-col">
 									Id
 								</th>
 							</tr>
 						</thead>
 						<tbody>
-							{ProductData.filter((val) => {
-								if (searchTermProduct === "") return val;
-								else if (
-									val.name
-										.toLowerCase()
-										.includes(searchTermProduct.toLowerCase())
-								)
-									return val;
-								else return null;
-							}).map(({ id, name, weightType }) => (
-								<tr key={id}>
-									<td className="select-col">
-										<input
-											type="checkbox"
-											className="checkbox-table"
-											id={id}
-										></input>
-									</td>
-									<td
-										id={id}
-										className="name-col name-col-data"
-										onClick={() => itemTableRowClicked(id)}
-									>
-										{name}
-									</td>
-									<td
-										id={id}
-										className="type-col"
-										onClick={() => itemTableRowClicked(id)}
-									>
-										{weightType}
-									</td>
-									<td
-										className="tax-col"
-										onClick={() => itemTableRowClicked(id)}
-									></td>
-									<td
-										scope="row"
-										id={id}
-										className="id-col id-col-data"
-										onClick={() => itemTableRowClicked(id)}
-									>
-										{id}
-									</td>
-								</tr>
-							))}
+							{vData
+								.filter((val) => {
+									if (searchTermVendor === "") return val;
+									else if (
+										val.name
+											.toLowerCase()
+											.includes(searchTermVendor.toLowerCase())
+									)
+										return val;
+									else return null;
+								})
+								.map(
+									(
+										{ id, name } //Data driven display of rows in data
+									) => (
+										<tr key={id} /*onClick={vendorTableRowClicked}*/>
+											<td className="select-col">
+												<input
+													type="checkbox"
+													className="checkbox-table"
+													id={id}
+												></input>
+											</td>
+											<td
+												id={id}
+												className="vName-col"
+												onClick={(e) => vendorTableRowClicked(e)}
+											>
+												{name}
+											</td>
+											<td
+												scope="row"
+												id={id}
+												className="id-col-data vId-col"
+												onClick={(e) => vendorTableRowClicked(e)}
+											>
+												{id}
+											</td>
+										</tr>
+									)
+								)}
 						</tbody>
 					</table>
 				</div>
@@ -268,43 +234,4 @@ function Home() {
 	);
 }
 
-function App() {
-	return (
-		<HashRouter basename={process.env.PUBLIC_URL}>
-			<div className="Application">
-				<Switch>
-					{" "}
-					{/*Makes sure we are only on one route at a time*/}
-					<Route exact path="/" component={withAuthenticator(Home)} />
-					<Route
-						exact
-						path="/item/:pId"
-						component={withAuthenticator(ItemInfo)}
-					/>
-					<Route
-						exact
-						path="/vendor/:vId_global"
-						component={withAuthenticator(VendorInfo)}
-					/>
-					<Route
-						exact
-						path="/addVendor"
-						component={withAuthenticator(AddVendor)}
-					/>
-					<Route
-						exact
-						path="/addProduct"
-						component={withAuthenticator(AddProduct)}
-					/>
-					<Route
-						exact
-						path="/vendor"
-						component={withAuthenticator(VendorListScreen)}
-					/>
-				</Switch>
-			</div>
-		</HashRouter>
-	);
-}
-
-export default App;
+export default VendorListScreen;

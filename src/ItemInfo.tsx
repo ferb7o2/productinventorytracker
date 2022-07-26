@@ -762,7 +762,7 @@ function ItemInfo() {
 								className="btn secondary-btn"
 								data-bs-toggle="button"
 								id="btn"
-								onChange={editBtnTrigger}
+								onClick={editBtnTrigger}
 							>
 								editar producto
 							</button>
@@ -992,7 +992,7 @@ function ItemInfo() {
 							<tr hidden></tr>
 							{/* just a hidden element to not break the color scheme on the next table row*/}
 							<tr className="input-new-data-row">
-								<td scope="row" className="select-col add-col">
+								<td scope="row" className="select-col">
 									<img
 										src={require("./assets/icons/add-attributed.png")}
 										id="add-data-btn"
@@ -1001,12 +1001,12 @@ function ItemInfo() {
 										alt="add new purchase entry button"
 									/>
 								</td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td>
+								<td className="table-filler"></td>
+								<td className="table-filler"></td>
+								<td className="table-filler"></td>
+								<td className="table-filler"></td>
+								<td className="table-filler"></td>
+								<td className="btn-col">
 									<button
 										type="button"
 										className="btn"

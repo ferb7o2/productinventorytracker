@@ -4,37 +4,55 @@ import { Authenticator, withAuthenticator } from "@aws-amplify/ui-react";
 import awsExports from "../aws-exports";
 Amplify.configure(awsExports);
 
-export class NavBar extends Component {
-	render() {
-		return (
-			<Authenticator>
-				{({ signOut }) => (
-					<div>
-						<div className="navbar">
-							<a className="nav-title" href="/">
-								Facturacion PJL 2022
-							</a>
+type NavBarProps = {
+	products?: boolean;
+	vendors?: boolean;
+};
 
-							<div className="nav-section">
-								<a className="nav-section-title nav-selected" href="/products">
-									Productos
-								</a>
+export function NavBar({ products = true, vendors = false }: NavBarProps) {
+	return (
+		<Authenticator>
+			{({ signOut }) => (
+				<div>
+					<div className="navbar">
+						<a className="nav-title" href="/">
+							Facturacion PJL 2022
+						</a>
 
-								<a className="nav-section-title" href="/">
-									Distribuidores
-								</a>
-							</div>
+						<div className="nav-section">
+							{products ? (
+								<>
+									<a className="nav-section-title nav-selected" href="/">
+										Productos
+									</a>
 
-							<div className="account-info">
-								<p id="account-name">username</p>
-								<img
-									className="dropdown-icon"
-									src={require("../assets/icons/dropdown-white-attributed.png")}
-									alt="dropdown icon"
-								/>
-							</div>
+									<a className="nav-section-title" href="/vendor">
+										Distribuidores
+									</a>
+								</>
+							) : (
+								<>
+									<a className="nav-section-title " href="/">
+										Productos
+									</a>
+
+									<a className="nav-section-title nav-selected" href="/vendor">
+										Distribuidores
+									</a>
+								</>
+							)}
 						</div>
-						{/*<nav className="header">
+
+						<div className="account-info">
+							<p id="account-name">username</p>
+							<img
+								className="dropdown-icon"
+								src={require("../assets/icons/dropdown-white-attributed.png")}
+								alt="dropdown icon"
+							/>
+						</div>
+					</div>
+					{/*<nav className="header">
 							<div className="container-fluid">
 								<a className="navbar-brand" href="/">
 									Facturacion Mexico 2022
@@ -77,10 +95,9 @@ export class NavBar extends Component {
 							</div>
 						</nav>
 											*/}
-						<div className="fair-spacing"></div>
-					</div>
-				)}
-			</Authenticator>
-		);
-	}
+					<div className="fair-spacing"></div>
+				</div>
+			)}
+		</Authenticator>
+	);
 }
