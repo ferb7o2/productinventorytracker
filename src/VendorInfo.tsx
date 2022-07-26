@@ -5,7 +5,7 @@ import $ from "jquery";
 
 import { useStateContext } from "./contexts/dataContext";
 
-//import { useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 //Queries
 import {
@@ -258,6 +258,14 @@ function VendorInfo() {
 		$("#saveBtn").removeAttr("hidden");
 	};
 
+	const history = useHistory();
+
+	function goToProductPage(pId: string) {
+		let path = "/item/" + pId;
+		//let path=`/vendor`;
+		history.push(path);
+	}
+
 	return (
 		<div className="Application">
 			<header>
@@ -452,7 +460,11 @@ function VendorInfo() {
 										<td scope="col" className="vendor-date">
 											{date}
 										</td>
-										<td scope="col" className="vendor-pname">
+										<td
+											scope="col"
+											className="vendor-pname"
+											onClick={() => goToProductPage(pId)}
+										>
 											{idForName(pId)}
 										</td>
 										<td scope="col" className="vendor-invoice">
