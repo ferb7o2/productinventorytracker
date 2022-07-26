@@ -389,12 +389,6 @@ function VendorInfo() {
 						</div>
 					</div>
 
-					<div className="row">
-						<div className="second-address"></div>
-					</div>
-
-					<div className="second-address"></div>
-
 					<div className="product-third-row">
 						<p className="product-id-subtitle">Vendor Id: {VendorData?.id}</p>
 						<p className="product-qty-count">
