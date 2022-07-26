@@ -662,6 +662,12 @@ a {
 	max-width: 350px;
 }
 
+@media (max-width: 650px) {
+	.vInfo-section {
+		padding-bottom: 15px;
+	}
+}
+
 .vInfo-row {
 	width: 100%;
 	max-height: 36px;
