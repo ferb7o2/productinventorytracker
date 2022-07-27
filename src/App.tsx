@@ -10,7 +10,7 @@ import "bootstrap/dist/css/bootstrap.min.css"; //Boostrap Import 1/2
 import "bootstrap/dist/js/bootstrap.bundle.min"; //Boostrap Import 2/2
 import "./css/homePageStyle.css";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 
 //Import external pages in folder (Screens)
 import ItemInfo from "./ItemInfo";
@@ -69,6 +69,8 @@ function Home() {
 
 	useEffect(() => {
 		fetchProductData();
+		$("#vendorTabBtn").removeClass("nav-selected");
+		$("#productTabBtn").addClass("nav-selected");
 		////////////////fetchVendorData();
 	}, []);
 
@@ -95,9 +97,7 @@ function Home() {
 
 	return (
 		<div className="Application">
-			<header>
-				<NavBar />
-			</header>
+			<header></header>
 			<head>
 				<title>Facturación PJL 2022 </title>
 			</head>
@@ -264,8 +264,6 @@ function Home() {
 					</table>
 				</div>
 			</div>
-
-			<Footer />
 		</div>
 	);
 }
@@ -274,6 +272,13 @@ function App() {
 	return (
 		<HashRouter basename={process.env.PUBLIC_URL}>
 			<div className="Application">
+				{useMemo(
+					() => (
+						<NavBar />
+					),
+					[0]
+				)}
+
 				<Switch>
 					{" "}
 					{/*Makes sure we are only on one route at a time*/}
@@ -299,6 +304,7 @@ function App() {
 						component={withAuthenticator(VendorListScreen)}
 					/>
 				</Switch>
+				<Footer />
 			</div>
 		</HashRouter>
 	);

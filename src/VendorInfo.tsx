@@ -82,6 +82,8 @@ function VendorInfo() {
 		fetchVendorData();
 		fetchPTransactionData();
 		fetchProductData();
+		$("#vendorTabBtn").addClass("nav-selected");
+		$("#productTabBtn").removeClass("nav-selected");
 	}, []);
 
 	function idForName(pIdPassed: string) {
@@ -293,9 +295,7 @@ function VendorInfo() {
 
 	return (
 		<div className="Application">
-			<header>
-				<NavBar products={false} vendors={true} />
-			</header>
+			<header></header>
 			<div className="container">
 				<div className="container-top-section">
 					<div className="container-top-first-row">
@@ -532,7 +532,6 @@ function VendorInfo() {
 					</table>
 				</div>
 			</div>
-			<Footer />
 		</div>
 	);
 }

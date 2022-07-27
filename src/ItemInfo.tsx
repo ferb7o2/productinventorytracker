@@ -111,6 +111,8 @@ function ItemInfo() {
 		fetchPTransactionData();
 		fetchVendorData();
 		fetchSaleTData();
+		$("#vendorTabBtn").removeClass("nav-selected");
+		$("#productTabBtn").addClass("nav-selected");
 	}, []);
 
 	let realIndex = 0;
@@ -731,7 +733,6 @@ function ItemInfo() {
 				>
 					This is a danger alert—check it out!
 				</div>
-				<NavBar />
 			</header>
 			<div className="container">
 				<div className="container-top-section">
@@ -1196,8 +1197,6 @@ function ItemInfo() {
 					</table>
 				</div>
 			</div>
-
-			<Footer />
 		</div>
 	);
 }

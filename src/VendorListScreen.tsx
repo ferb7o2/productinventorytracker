@@ -11,6 +11,7 @@ import "bootstrap/dist/js/bootstrap.bundle.min"; //Boostrap Import 2/2
 import "./css/homePageStyle.css";
 
 import React, { useEffect, useState } from "react";
+import $ from "jquery";
 
 //Import external pages in folder (Screens)
 import ItemInfo from "./ItemInfo";
@@ -51,6 +52,8 @@ function VendorListScreen() {
 
 	useEffect(() => {
 		fetchVendorData();
+		$("#vendorTabBtn").addClass("nav-selected");
+		$("#productTabBtn").removeClass("nav-selected");
 	}, []);
 
 	const history = useHistory();
@@ -70,9 +73,7 @@ function VendorListScreen() {
 
 	return (
 		<div className="Application">
-			<header>
-				<NavBar products={false} vendors={true} />
-			</header>
+			<header></header>
 			<head>
 				<title>Facturación PJL 2022 </title>
 			</head>
@@ -227,8 +228,6 @@ function VendorListScreen() {
 					</table>
 				</div>
 			</div>
-
-			<Footer />
 		</div>
 	);
 }
