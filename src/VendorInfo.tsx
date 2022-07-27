@@ -84,6 +84,8 @@ function VendorInfo() {
 		fetchProductData();
 		$("#vendorTabBtn").addClass("nav-selected");
 		$("#productTabBtn").removeClass("nav-selected");
+
+		checkForMissingInfo();
 	}, []);
 
 	function idForName(pIdPassed: string) {
@@ -283,6 +285,13 @@ function VendorInfo() {
 		$(".editable-input").css("border", "1px rgb(54, 54, 54, 0.6) solid");
 		$(".editable-input").css("border-radius", "4px");
 		$("#saveBtn").removeAttr("hidden");
+
+		$("#vAddressInputRow").removeAttr("hidden");
+		$("#vCityInputRow").removeAttr("hidden");
+		$("#vStateInputRow").removeAttr("hidden");
+		$("#vCountryInputRow").removeAttr("hidden");
+		$("#vZipInputRow").removeAttr("hidden");
+		$("#vRfcInputRow").removeAttr("hidden");
 	};
 
 	const history = useHistory();
@@ -293,10 +302,19 @@ function VendorInfo() {
 		history.push(path);
 	}
 
+	function checkForMissingInfo() {
+		VendorData?.address ? <></> : $("#vAddressInputRow").attr("hidden", 1);
+		VendorData?.city ? <></> : $("#vCityInputRow").attr("hidden", 1);
+		VendorData?.state ? <></> : $("#vStateInputRow").attr("hidden", 1);
+		VendorData?.country ? <></> : $("#vCountryInputRow").attr("hidden", 1);
+		VendorData?.zipCode ? <></> : $("#vZipInputRow").attr("hidden", 1);
+		VendorData?.rfc ? <></> : $("#vRfcInputRow").attr("hidden", 1);
+	}
+
 	return (
 		<div className="Application">
 			<header></header>
-			<div className="container">
+			<div className="container" id="container">
 				<div className="container-top-section">
 					<div className="container-top-first-row">
 						<div className="vInfo-section">
@@ -317,12 +335,16 @@ function VendorInfo() {
 							</div>
 
 							<div className="vInfo-row">
-								<h4 className="product-description  edit-primary">
+								<h4
+									className="product-description  edit-primary"
+									id="vAddressInputRow"
+								>
 									<input
 										type="text"
 										id="vAddressInput"
 										className="product-description editable-input"
 										defaultValue={VendorData?.address}
+										placeholder="Direccion"
 										onBlur={(e) => {
 											changeAddress(e, VendorData?.address);
 										}}
@@ -331,13 +353,14 @@ function VendorInfo() {
 									/>
 								</h4>
 							</div>
-							<div className="vInfo-row vInfo-row-second">
+							<div className="vInfo-row vInfo-row-second" id="vCityInputRow">
 								<h4 className="product-description ">
 									<input
 										type="text"
 										id="vCityInput"
 										className="product-description editable-input city-exemption"
 										defaultValue={VendorData?.city}
+										placeholder="Ciudad"
 										onBlur={(e) => {
 											changeCity(e, VendorData?.city);
 										}}
@@ -356,6 +379,7 @@ function VendorInfo() {
 										id="vStateInput"
 										className="product-description editable-input"
 										defaultValue={VendorData?.state}
+										placeholder="Estado"
 										onBlur={(e) => {
 											changeState(e, VendorData?.state);
 										}}
@@ -364,13 +388,14 @@ function VendorInfo() {
 									/>
 								</h4>
 							</div>
-							<div className="vInfo-row vInfo-row-second">
+							<div className="vInfo-row vInfo-row-second" id="vCountryInputRow">
 								<h4 className="product-description">
 									<input
 										type="text"
 										id="vCountryInput"
 										className="product-description editable-input city-exemption"
 										defaultValue={VendorData?.country}
+										placeholder="Pais"
 										onBlur={(e) => {
 											changeCountry(e, VendorData?.country);
 										}}
@@ -389,6 +414,7 @@ function VendorInfo() {
 										id="vZipInput"
 										className="product-description editable-input"
 										defaultValue={VendorData?.zipCode}
+										placeholder="Codigo Postal"
 										onBlur={(e) => {
 											changeZip(e, VendorData?.zipCode);
 										}}
@@ -397,14 +423,14 @@ function VendorInfo() {
 									/>
 								</h4>
 							</div>
-							<div className="vInfo-row">
+							<div className="vInfo-row" id="vRfcInputRow">
 								<h4 className="product-description  edit-primary">
 									<input
 										type="text"
 										id="vRfcInput"
 										className="product-description editable-input"
 										defaultValue={VendorData?.rfc}
-										placeholder="RFC:"
+										placeholder="RFC"
 										onBlur={(e) => {
 											changeRfc(e, VendorData?.rfc);
 										}}

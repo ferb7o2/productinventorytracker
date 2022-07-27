@@ -734,7 +734,7 @@ function ItemInfo() {
 					This is a danger alert—check it out!
 				</div>
 			</header>
-			<div className="container">
+			<div className="container" id="container">
 				<div className="container-top-section">
 					<div className="container-top-first-row">
 						<div className="container-title-section vendor-title">
