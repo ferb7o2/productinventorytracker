@@ -16,7 +16,6 @@ import React, { useEffect, useState } from "react";
 import ItemInfo from "./ItemInfo";
 import VendorInfo from "./VendorListScreen";
 import AddVendor from "./addVendor";
-import AddProduct from "./addProduct";
 
 //Database- AMPLIFY
 import { Amplify, API, graphqlOperation } from "aws-amplify";

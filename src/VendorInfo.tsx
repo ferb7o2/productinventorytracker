@@ -404,6 +404,7 @@ function VendorInfo() {
 										id="vRfcInput"
 										className="product-description editable-input"
 										defaultValue={VendorData?.rfc}
+										placeholder="RFC:"
 										onBlur={(e) => {
 											changeRfc(e, VendorData?.rfc);
 										}}

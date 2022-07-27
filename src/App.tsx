@@ -16,7 +16,6 @@ import React, { useEffect, useState } from "react";
 import ItemInfo from "./ItemInfo";
 import VendorInfo from "./VendorInfo";
 import AddVendor from "./addVendor";
-import AddProduct from "./addProduct";
 import VendorListScreen from "./VendorListScreen";
 
 //Database- AMPLIFY
@@ -29,9 +28,12 @@ import { listProductData, listVendorData } from "./graphql/queries";
 import { NavBar } from "./components/NavBar";
 import Footer from "./components/Footer";
 import "@aws-amplify/ui-react/styles.css";
+import { AddProduct } from "./components/AddProduct";
 
 //Types
 import { ProductDataType, VendorDataType } from "./types";
+
+import $ from "jquery";
 
 Amplify.configure(awsconfig);
 
@@ -86,10 +88,9 @@ function Home() {
 		history.push(path);
 	}
 
-	function addProductBtn() {
-		//let path=`/item/:${e.target.id}`;
-		let path = `/addProduct`;
-		history.push(path);
+	function addProductBtnTrigger() {
+		console.log("Triggered");
+		$("#product-modal").removeAttr("hidden");
 	}
 
 	return (
@@ -101,6 +102,7 @@ function Home() {
 				<title>Facturación PJL 2022 </title>
 			</head>
 			<div className="container">
+				<AddProduct />
 				<div className="container-top-section">
 					<div className="container-top-first-row">
 						<div className="container-title-section">
@@ -119,10 +121,10 @@ function Home() {
 							</button>
 							<button
 								type="button"
-								className="btn "
+								className="btn addProductBtn"
 								data-bs-toggle="button"
-								id="btn"
-								onClick={addProductBtn}
+								id="addProductBtn"
+								onClick={addProductBtnTrigger}
 							>
 								Agregar producto
 							</button>
@@ -290,11 +292,6 @@ function App() {
 						exact
 						path="/addVendor"
 						component={withAuthenticator(AddVendor)}
-					/>
-					<Route
-						exact
-						path="/addProduct"
-						component={withAuthenticator(AddProduct)}
 					/>
 					<Route
 						exact
