@@ -31,17 +31,20 @@ import "@aws-amplify/ui-react/styles.css";
 import { AddProduct } from "./components/AddProduct";
 
 //Types
-import { ProductDataType, VendorDataType } from "./types";
+import { ProductDataType, toDeleteType, VendorDataType } from "./types";
 
 import $ from "jquery";
+import { DeleteProduct } from "./components/DeleteProduct";
 
 Amplify.configure(awsconfig);
 
-function Home() {
+function Home(this: any) {
 	const [ProductData, setProductData] = useState<ProductDataType[]>([]);
 	const [vData, setvData] = useState<VendorDataType[]>([]);
 	const [searchTermProduct, setSearchTermProduct] = useState("");
 	const [searchTermVendor, setSearchTermVendor] = useState("");
+
+	const [toDelete, setToDelete] = useState<toDeleteType[]>([]);
 
 	const fetchProductData = async () => {
 		try {
@@ -91,8 +94,76 @@ function Home() {
 	}
 
 	function addProductBtnTrigger() {
-		console.log("Triggered");
 		$("#product-modal").removeAttr("hidden");
+	}
+
+	function deleteProductBtnTrigger() {
+		if (toDelete.length > 0) {
+			$("#product-modal-delete").removeAttr("hidden");
+		}
+	}
+
+	function toggleAllCheckboxes() {
+		const checkM = document.getElementById("main-checkbox") as HTMLInputElement;
+		var checkboxes = document.getElementsByTagName("input");
+		if (checkM.checked) {
+			for (var i = 0; i < checkboxes.length; i++) {
+				if (checkboxes[i].type == "checkbox") {
+					checkboxes[i].checked = true;
+					let toDeleteId = checkboxes[i].name;
+					let toDeleteName = checkboxes[i].id;
+
+					var numberOfOcurrences = toDelete.filter(
+						({ pId, pName }) => pId == toDeleteId
+					);
+
+					if (toDeleteId != "") {
+						if (numberOfOcurrences.length == 0) {
+							setToDelete((toDelete) => [
+								...toDelete,
+								{ pId: toDeleteId, pName: toDeleteName },
+							]);
+						}
+					}
+				}
+			}
+		} else {
+			for (var i = 0; i < checkboxes.length; i++) {
+				if (checkboxes[i].type == "checkbox") {
+					checkboxes[i].checked = false;
+					let toDeleteId = checkboxes[i].name;
+					let toDeleteName = checkboxes[i].id;
+					let filtered_array = toDelete.filter(
+						({ pId, pName }) => pId != toDeleteId
+					);
+					setToDelete(filtered_array);
+				}
+			}
+		}
+	}
+
+	function addToDeleteArray(pIdInput: string, pNameInput: string) {
+		const currentChecked = document.getElementById(
+			pNameInput
+		) as HTMLInputElement;
+
+		if (currentChecked.checked) {
+			var numberOfOcurrences = toDelete.filter(
+				({ pId, pName }) => pId == pIdInput
+			);
+			if (numberOfOcurrences.length == 0) {
+				setToDelete((toDelete) => [
+					...toDelete,
+					{ pId: pIdInput, pName: pNameInput },
+				]);
+			}
+		} else {
+			let filtered_array = toDelete.filter(({ pId, pName }) => pId != pIdInput);
+			setToDelete(filtered_array);
+		}
+		let display = toDelete;
+
+		console.log(display);
 	}
 
 	return (
@@ -103,6 +174,7 @@ function Home() {
 			</head>
 			<div className="container" id="container">
 				<AddProduct />
+				<DeleteProduct products={toDelete} />
 				<div className="container-top-section">
 					<div className="container-top-first-row">
 						<div className="container-title-section">
@@ -112,10 +184,11 @@ function Home() {
 						<div className="title-button-container">
 							<button
 								type="button"
-								className="btn secondary-btn"
+								className="btn secondary-btn deleteProductBtn"
 								data-bs-toggle="button"
 								id="btn"
-								disabled
+								onClick={deleteProductBtnTrigger}
+								//disabled
 							>
 								Borrar
 							</button>
@@ -197,7 +270,12 @@ function Home() {
 						<thead>
 							<tr className="thead-row">
 								<th scope="col" className="select-col">
-									<input type="checkbox" className="checkbox-table"></input>
+									<input
+										type="checkbox"
+										id="main-checkbox"
+										onChange={(e) => toggleAllCheckboxes()}
+										className="checkbox-table"
+									></input>
 								</th>
 								<th scope="col" className="name-col">
 									Nombre del producto
@@ -229,7 +307,9 @@ function Home() {
 										<input
 											type="checkbox"
 											className="checkbox-table"
-											id={id}
+											name={id}
+											onChange={() => addToDeleteArray(id, name)}
+											id={name}
 										></input>
 									</td>
 									<td

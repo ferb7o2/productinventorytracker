@@ -44,3 +44,8 @@ export type StransactionDataType = {
 	saleWeight: number;
 	salePrice: number;
 };
+
+export type toDeleteType = {
+	pId: string;
+	pName: string;
+};

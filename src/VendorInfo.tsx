@@ -272,6 +272,8 @@ function VendorInfo() {
 		$(".editable-input").css("border", "none");
 		$(".editable-input").css("border-radius", "4px");
 		$("#saveBtn").attr("hidden", 1);
+
+		checkForMissingInfo();
 	}
 
 	const editBtnTrigger = () => {

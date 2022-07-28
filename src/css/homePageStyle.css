@@ -782,3 +782,45 @@ a {
 	font-size: 16px;
 	margin: 0 auto;
 }
+
+/*	Delete Modal	*/
+.delete-warning {
+	font-size: 20px;
+	color: #363636;
+	font-weight: normal;
+}
+
+.product-delete-col {
+	width: 40%;
+}
+
+.id-delete-col {
+	width: 60%;
+}
+
+.tble-container {
+	width: 100%;
+}
+
+.delete-confirm-div {
+}
+
+.delete-confirm-btn-div {
+	display: flex;
+	justify-content: center;
+	padding-top: 25px;
+}
+
+.confirm-product-btn {
+	width: 150px;
+	margin: 0px;
+	margin-left: 40px;
+}
+
+.product-cancel-btn {
+	margin: auto 0;
+	color: #363636;
+	font-weight: normal;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
