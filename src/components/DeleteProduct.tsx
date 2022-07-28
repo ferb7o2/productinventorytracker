@@ -111,7 +111,7 @@ export function DeleteProduct(props: { products: toDeleteType[] }) {
 						</thead>
 						<tbody>
 							{props.products.map(({ pId, pName }) => (
-								<tr>
+								<tr key={"prod-" + pId}>
 									<td className="product-delete-col">{pName}</td>
 									<td className="id-delete-col id-col-data">{pId}</td>
 								</tr>

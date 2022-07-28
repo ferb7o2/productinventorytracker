@@ -81,7 +81,46 @@ p {
 
 .account-info {
 	display: flex;
-	max-width: 100%;
+	text-align: center;
+	height: 20px;
+	line-height: 20px;
+}
+.signout-parenth {
+	color: #f6f9fc;
+}
+
+.signout-separator {
+	margin: 0 5px;
+	display: flex;
+}
+
+.signout-btn,
+.signout-parenth {
+	font-weight: normal;
+	font-size: 12px;
+}
+
+.signout-btn {
+	color: rgb(253, 240, 242, 0.8);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+.signout-btn:hover {
+	color: #f6f9fc;
+}
+
+.mobile-signout-btn {
+	width: 150px;
+	margin: 0 auto;
+	padding-top: 100px;
+	margin-bottom: -270px;
+}
+
+@media (min-width: 650px) {
+	.mobile-signout-btn {
+		display: none;
+	}
 }
 
 .dropdown-icon {
@@ -118,6 +157,10 @@ p {
 	.container-top-first-row {
 		display: flex;
 		flex-direction: column;
+	}
+	.signout-btn {
+		text-decoration: none;
+		color: #f6f9fc;
 	}
 }
 
@@ -825,4 +868,15 @@ a {
 	font-weight: normal;
 	text-decoration: underline;
 	text-underline-offset: 3px;
+}
+
+.authy {
+	margin: 0 auto;
+	padding-top: 250px;
+}
+
+@media (max-width: 650px) {
+	.authy {
+		padding-top: 100px;
+	}
 }

@@ -34,13 +34,15 @@ export function NavBar() {
 							</Link>
 						</div>
 
-						<div className="account-info">
-							<p id="account-name">username</p>
-							<img
-								className="dropdown-icon"
-								src={require("../assets/icons/dropdown-white-attributed.png")}
-								alt="dropdown icon"
-							/>
+						<div className="account-info account-info-mobile">
+							{/*<p id="account-name">username</p>*/}
+							<span className="signout-separator">
+								<p className="signout-parenth">(</p>
+								<a className="signout-btn" onClick={signOut}>
+									Cerrar sesión
+								</a>
+								<p className="signout-parenth">)</p>
+							</span>
 						</div>
 					</div>
 

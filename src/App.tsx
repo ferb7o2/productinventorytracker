@@ -1,4 +1,5 @@
 import "./App.css";
+
 import {
 	BrowserRouter as /*Router,*/ HashRouter,
 	Route,
@@ -21,7 +22,7 @@ import VendorListScreen from "./VendorListScreen";
 //Database- AMPLIFY
 import { Amplify, API, graphqlOperation } from "aws-amplify";
 import awsconfig from "./aws-exports";
-import { withAuthenticator } from "@aws-amplify/ui-react";
+import { Authenticator, withAuthenticator } from "@aws-amplify/ui-react";
 import { listProductData, listVendorData } from "./graphql/queries";
 
 //Components
@@ -35,6 +36,7 @@ import { ProductDataType, toDeleteType, VendorDataType } from "./types";
 
 import $ from "jquery";
 import { DeleteProduct } from "./components/DeleteProduct";
+import { MobileSignOutOption } from "./components/MobileSignOutOption";
 
 Amplify.configure(awsconfig);
 
@@ -272,12 +274,12 @@ function Home(this: any) {
 						<thead>
 							<tr className="thead-row">
 								<th scope="col" className="select-col">
-									<input
+									{/*<input
 										type="checkbox"
 										id="main-checkbox"
 										onChange={(e) => toggleAllCheckboxes()}
 										className="checkbox-table"
-									></input>
+						></input>*/}
 								</th>
 								<th scope="col" className="name-col">
 									Nombre del producto
@@ -354,34 +356,32 @@ function App() {
 	return (
 		<HashRouter basename={process.env.PUBLIC_URL}>
 			<div className="Application">
-				{useMemo(
-					() => (
-						<NavBar />
-					),
-					[0]
-				)}
+				<Authenticator className="authy">
+					<NavBar />
 
-				<Switch>
-					{" "}
-					{/*Makes sure we are only on one route at a time*/}
-					<Route exact path="/" component={withAuthenticator(Home)} />
-					<Route
-						exact
-						path="/item/:pId"
-						component={withAuthenticator(ItemInfo)}
-					/>
-					<Route
-						exact
-						path="/vendor/:vId_global"
-						component={withAuthenticator(VendorInfo)}
-					/>
-					<Route
-						exact
-						path="/vendor"
-						component={withAuthenticator(VendorListScreen)}
-					/>
-				</Switch>
-				<Footer />
+					<Switch>
+						{" "}
+						{/*Makes sure we are only on one route at a time*/}
+						<Route exact path="/" component={withAuthenticator(Home)} />
+						<Route
+							exact
+							path="/item/:pId"
+							component={withAuthenticator(ItemInfo)}
+						/>
+						<Route
+							exact
+							path="/vendor/:vId_global"
+							component={withAuthenticator(VendorInfo)}
+						/>
+						<Route
+							exact
+							path="/vendor"
+							component={withAuthenticator(VendorListScreen)}
+						/>
+					</Switch>
+					<MobileSignOutOption />
+					<Footer />
+				</Authenticator>
 			</div>
 		</HashRouter>
 	);
