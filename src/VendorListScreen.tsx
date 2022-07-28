@@ -49,7 +49,7 @@ function VendorListScreen() {
 			let only_data = vendor_data.data.listVendorData.items;
 
 			only_data = only_data.sort((a, b) => a.name.localeCompare(b.name));
-			setvData(vendor_data.data.listVendorData.items);
+			setvData(only_data);
 		} catch (error) {
 			console.log("Error retrieving product data (fetchVendorData) ", error);
 		}

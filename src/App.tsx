@@ -52,7 +52,9 @@ function Home(this: any) {
 				graphqlOperation(listProductData)
 			)) as { data: { listProductData: { items: ProductDataType[] } } };
 
-			setProductData(productDatas.data.listProductData.items);
+			let only_data = productDatas.data.listProductData.items;
+			only_data = only_data.sort((a, b) => a.name.localeCompare(b.name));
+			setProductData(only_data);
 		} catch (error) {
 			console.log("Error retrieving vendor data (fetchProductData) ", error);
 		}
