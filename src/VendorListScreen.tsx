@@ -16,7 +16,7 @@ import $ from "jquery";
 //Import external pages in folder (Screens)
 import ItemInfo from "./ItemInfo";
 import VendorInfo from "./VendorListScreen";
-import AddVendor from "./addVendor";
+import AddVendor from "./components/AddVendor";
 
 //Database- AMPLIFY
 import { Amplify, API, graphqlOperation } from "aws-amplify";
@@ -30,13 +30,15 @@ import Footer from "./components/Footer";
 import "@aws-amplify/ui-react/styles.css";
 
 //Types
-import { ProductDataType, VendorDataType } from "./types";
+import { toDeleteVendorType, VendorDataType } from "./types";
+import { DeleteVendor } from "./components/DeleteVendor";
 
 Amplify.configure(awsconfig);
 
 function VendorListScreen() {
 	const [vData, setvData] = useState<VendorDataType[]>([]);
 	const [searchTermVendor, setSearchTermVendor] = useState("");
+	const [toDelete, setToDelete] = useState<toDeleteVendorType[]>([]);
 
 	const fetchVendorData = async () => {
 		try {
@@ -44,6 +46,9 @@ function VendorListScreen() {
 				graphqlOperation(listVendorData)
 			)) as { data: { listVendorData: { items: VendorDataType[] } } };
 
+			let only_data = vendor_data.data.listVendorData.items;
+
+			only_data = only_data.sort((a, b) => a.name.localeCompare(b.name));
 			setvData(vendor_data.data.listVendorData.items);
 		} catch (error) {
 			console.log("Error retrieving product data (fetchVendorData) ", error);
@@ -66,17 +71,49 @@ function VendorListScreen() {
 	}
 
 	function addVendorBtn() {
-		//let path=`/item/:${e.target.id}`;
-		let path = `/addVendor`;
-		history.push(path);
+		$("#vendor-modal").removeAttr("hidden");
+	}
+
+	function deleteVendorBtnTrigger() {
+		if (toDelete.length > 0) {
+			$("#vendor-modal-delete").removeAttr("hidden");
+		}
+	}
+
+	function addToDeleteArray(vIdInput: string, vNameInput: string) {
+		const currentChecked = document.getElementById(
+			"vname-" + vNameInput
+		) as HTMLInputElement;
+
+		if (currentChecked.checked) {
+			var numberOfOcurrences = toDelete.filter(
+				({ vId, vName }) => vId == vIdInput
+			);
+			if (numberOfOcurrences.length == 0) {
+				setToDelete((toDelete) => [
+					...toDelete,
+					{ vId: vIdInput, vName: vNameInput },
+				]);
+			}
+		} else {
+			let filtered_array = toDelete.filter(({ vId, vName }) => vId != vIdInput);
+			setToDelete(filtered_array);
+		}
+		let display = toDelete;
+
+		console.log(display);
 	}
 
 	return (
 		<div className="Application">
-			<header></header>
+			<header>
+				<AddVendor />
+				<DeleteVendor vendors={toDelete} />
+			</header>
 			<head>
 				<title>Facturación PJL 2022 </title>
 			</head>
+
 			<div className="container" id="container">
 				<div className="container-top-section">
 					<div className="container-top-first-row">
@@ -87,16 +124,16 @@ function VendorListScreen() {
 						<div className="title-button-container">
 							<button
 								type="button"
-								className="btn secondary-btn"
+								className="btn secondary-btn deleteVendorBtn"
 								data-bs-toggle="button"
-								id="btn"
-								disabled
+								id="deleteVendorBtn"
+								onClick={deleteVendorBtnTrigger}
 							>
 								Borrar
 							</button>
 							<button
 								type="button"
-								className="btn "
+								className="btn addVendorBtn"
 								data-bs-toggle="button"
 								id="btn"
 								onClick={addVendorBtn}
@@ -172,7 +209,7 @@ function VendorListScreen() {
 						<thead>
 							<tr className="thead-row">
 								<th scope="col" className="select-col">
-									<input type="checkbox" className="checkbox-table"></input>
+									{/*<input type="checkbox" className="checkbox-table"></input>*/}
 								</th>
 								<th scope="col" className="vName-col">
 									Nombre
@@ -198,12 +235,14 @@ function VendorListScreen() {
 									(
 										{ id, name } //Data driven display of rows in data
 									) => (
-										<tr key={id} /*onClick={vendorTableRowClicked}*/>
+										<tr key={"v-" + id} /*onClick={vendorTableRowClicked}*/>
 											<td className="select-col">
 												<input
 													type="checkbox"
 													className="checkbox-table"
-													id={id}
+													name={id}
+													onChange={() => addToDeleteArray(id, name)}
+													id={"vname-" + name}
 												></input>
 											</td>
 											<td

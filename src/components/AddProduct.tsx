@@ -150,43 +150,41 @@ export function AddProduct() {
 						<div className="modal-qty-row">
 							<div className="">Cantidad/Peso</div>
 							<div className="modal-qty-row-left">
-								<form>
-									<input
-										type="radio"
-										id="gridCheckKg"
-										name="bulk_type"
-										value="kg"
-										className="radio-btn"
-										onClick={disableBulkTextBox}
-									/>
-									<label htmlFor="gridCheckKg" className="radio-label">
-										Kg
-									</label>
+								<input
+									type="radio"
+									id="gridCheckKg"
+									name="bulk_type"
+									value="kg"
+									className="radio-btn"
+									onClick={disableBulkTextBox}
+								/>
+								<label htmlFor="gridCheckKg" className="radio-label">
+									Kg
+								</label>
 
-									<input
-										type="radio"
-										id="gridCheckBulto"
-										name="bulk_type"
-										value="bulto"
-										className="radio-btn"
-										onClick={enableBulkTextBox}
-									/>
-									<label htmlFor="gridCheckBulto" className="radio-label">
-										Bulto
-									</label>
+								<input
+									type="radio"
+									id="gridCheckBulto"
+									name="bulk_type"
+									value="bulto"
+									className="radio-btn"
+									onClick={enableBulkTextBox}
+								/>
+								<label htmlFor="gridCheckBulto" className="radio-label">
+									Bulto
+								</label>
 
-									<input
-										type="radio"
-										id="gridCheckCaja"
-										name="bulk_type"
-										value="caja"
-										className="radio-btn"
-										onClick={enableBulkTextBox}
-									/>
-									<label htmlFor="gridCheckCaja" className="radio-label">
-										Caja
-									</label>
-								</form>
+								<input
+									type="radio"
+									id="gridCheckCaja"
+									name="bulk_type"
+									value="caja"
+									className="radio-btn"
+									onClick={enableBulkTextBox}
+								/>
+								<label htmlFor="gridCheckCaja" className="radio-label">
+									Caja
+								</label>
 
 								<input
 									type="number"

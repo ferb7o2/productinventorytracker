@@ -49,3 +49,8 @@ export type toDeleteType = {
 	pId: string;
 	pName: string;
 };
+
+export type toDeleteVendorType = {
+	vId: string;
+	vName: string;
+};

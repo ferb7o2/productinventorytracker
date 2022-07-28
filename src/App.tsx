@@ -15,7 +15,7 @@ import React, { useEffect, useState, useMemo } from "react";
 //Import external pages in folder (Screens)
 import ItemInfo from "./ItemInfo";
 import VendorInfo from "./VendorInfo";
-import AddVendor from "./addVendor";
+import AddVendor from "./components/AddVendor";
 import VendorListScreen from "./VendorListScreen";
 
 //Database- AMPLIFY
@@ -372,11 +372,6 @@ function App() {
 						exact
 						path="/vendor/:vId_global"
 						component={withAuthenticator(VendorInfo)}
-					/>
-					<Route
-						exact
-						path="/addVendor"
-						component={withAuthenticator(AddVendor)}
 					/>
 					<Route
 						exact
