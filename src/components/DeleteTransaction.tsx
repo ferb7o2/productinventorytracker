@@ -3,19 +3,13 @@ import { useHistory } from "react-router-dom";
 
 import { API, graphqlOperation } from "aws-amplify";
 import {
-	deleteProductData,
 	deletePurchaseTransactionData2022,
 	deleteSaleTransactionData2022,
-	deleteVendorData,
 } from "../graphql/mutations";
 
 import "../css/homePageStyle.css";
 import { useLayoutEffect } from "react";
-import {
-	toDeletePurchaseType,
-	toDeleteSaleType,
-	toDeleteVendorType,
-} from "../types";
+import { toDeletePurchaseType, toDeleteSaleType } from "../types";
 
 export function DeleteTransaction(props: {
 	purchase: toDeletePurchaseType[];
@@ -106,79 +100,97 @@ export function DeleteTransaction(props: {
 				</div>
 
 				<div className="modal-data-container">
-					{props.purchase.length + props.sale.length > 0 ? (
+					{props.purchase.length + props.sale.length > 1 ? (
 						<p className="delete-warning">
 							Estas apunto de borrar las siguientes{" "}
 							{props.purchase.length + props.sale.length} transacciones:
 						</p>
 					) : (
 						<p className="delete-warning">
-							Estas apunto de borrar el siguiente distribuidor:
+							Estas apunto de borrar la siguiente transaccion:
 						</p>
 					)}
 				</div>
 
-				<h4 className="item-table-label delete-subtitle">Compra</h4>
+				{props.purchase.length > 0 ? (
+					<>
+						<h4 className="item-table-label delete-subtitle">Compra</h4>
 
-				<div className="tble-container">
-					<table className="tble-container">
-						<thead>
-							<tr className="thead-row">
-								<th scope="col" className="product-item-date-col">
-									Fecha
-								</th>
-								<th scope="col" className="product-item-invoice-col">
-									# Factura
-								</th>
-								<th scope="col" className="id-delete-col product-item-id-col">
-									Id
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{props.purchase.map(({ pId, pDate, pInvoiceId }) => (
-								<tr key={"todelpurchase-" + pId}>
-									<td className="product-item-date-col">{pDate}</td>
-									<td className="product-item-invoice-col">{pInvoiceId}</td>
-									<td className="id-delete-col id-col-data product-item-id-col">
-										{pId}
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
+						<div className="tble-container">
+							<table className="tble-container">
+								<thead>
+									<tr className="thead-row">
+										<th scope="col" className="product-item-date-col">
+											Fecha
+										</th>
+										<th scope="col" className="product-item-invoice-col">
+											# Factura
+										</th>
+										<th
+											scope="col"
+											className="id-delete-col product-item-id-col"
+										>
+											Id
+										</th>
+									</tr>
+								</thead>
+								<tbody>
+									{props.purchase.map(({ pId, pDate, pInvoiceId }) => (
+										<tr key={"todelpurchase-" + pId}>
+											<td className="product-item-date-col">{pDate}</td>
+											<td className="product-item-invoice-col">{pInvoiceId}</td>
+											<td className="id-delete-col id-col-data product-item-id-col">
+												{pId}
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					</>
+				) : (
+					<></>
+				)}
 
-				<h4 className="item-table-label delete-subtitle">Venta</h4>
+				{props.sale.length > 0 ? (
+					<>
+						<h4 className="item-table-label delete-subtitle">Venta</h4>
 
-				<div className="tble-container">
-					<table className="tble-container">
-						<thead>
-							<tr className="thead-row">
-								<th scope="col" className="product-item-date-col">
-									Fecha
-								</th>
-								<th scope="col" className="product-item-invoice-col">
-									# Factura
-								</th>
-								<th scope="col" className="id-delete-col product-item-id-col">
-									Id
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{props.sale.map(({ sId, sDate, sInvoiceId }) => (
-								<tr key={"todelsale-" + sId}>
-									<td className="product-item-date-col">{sDate}</td>
-									<td className="product-item-invoice-col">{sInvoiceId}</td>
-									<td className="id-delete-col id-col-data product-item-id-col">
-										{sId}
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
+						<div className="tble-container">
+							<table className="tble-container">
+								<thead>
+									<tr className="thead-row">
+										<th scope="col" className="product-item-date-col">
+											Fecha
+										</th>
+										<th scope="col" className="product-item-invoice-col">
+											# Factura
+										</th>
+										<th
+											scope="col"
+											className="id-delete-col product-item-id-col"
+										>
+											Id
+										</th>
+									</tr>
+								</thead>
+								<tbody>
+									{props.sale.map(({ sId, sDate, sInvoiceId }) => (
+										<tr key={"todelsale-" + sId}>
+											<td className="product-item-date-col">{sDate}</td>
+											<td className="product-item-invoice-col">{sInvoiceId}</td>
+											<td className="id-delete-col id-col-data product-item-id-col">
+												{sId}
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					</>
+				) : (
+					<></>
+				)}
 
 				<div className="delete-confirm-div">
 					<form>

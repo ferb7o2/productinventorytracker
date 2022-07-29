@@ -695,8 +695,6 @@ a {
 
 /* Editable Input fields */
 
-.edit-primary {
-}
 .editable-input {
 	width: 100%;
 }
@@ -909,6 +907,6 @@ a {
 
 .tble-container {
 	max-height: 170px;
-	overflow: scroll;
 	overflow-x: hidden;
+	overflow-y: auto;
 }
