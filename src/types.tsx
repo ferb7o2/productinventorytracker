@@ -54,3 +54,17 @@ export type toDeleteVendorType = {
 	vId: string;
 	vName: string;
 };
+
+export const allowedWeightTypes = ["Kg", "Caja", "Bulto"];
+
+export type toDeleteSaleType = {
+	sId: string;
+	sDate: string;
+	sInvoiceId: string;
+};
+
+export type toDeletePurchaseType = {
+	pId: string;
+	pDate: string;
+	pInvoiceId: string;
+};

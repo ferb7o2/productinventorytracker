@@ -172,10 +172,8 @@ function Home(this: any) {
 
 	return (
 		<div className="Application">
-			<header></header>
-			<head>
-				<title>Facturación PJL 2022 </title>
-			</head>
+			<title>Facturación PJL 2022 - Productos </title>
+
 			<div className="container" id="container">
 				<AddProduct />
 				<DeleteProduct products={toDelete} />

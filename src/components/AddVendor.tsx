@@ -74,7 +74,7 @@ function AddVendor() {
 	});
 
 	return (
-		<div className="product-modal" id="vendor-modal" hidden>
+		<div className="product-modal vendor-modal" id="vendor-modal" hidden>
 			<div
 				className="alert alert-danger"
 				role="alert"

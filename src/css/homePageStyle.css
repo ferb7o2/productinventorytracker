@@ -696,7 +696,6 @@ a {
 /* Editable Input fields */
 
 .edit-primary {
-	max-width: 350px;
 }
 .editable-input {
 	width: 100%;
@@ -711,7 +710,7 @@ a {
 }
 
 .vInfo-section {
-	max-width: 350px;
+	min-width: 400px;
 }
 
 @media (max-width: 650px) {
@@ -739,7 +738,8 @@ a {
 		flex-direction: column;
 	}
 
-	#saveBtn {
+	#saveBtn,
+	#saveBtnProduct {
 		margin-top: 10px;
 	}
 }
@@ -757,6 +757,11 @@ a {
 	background-color: rgba(0, 0, 0, 0.5);
 }
 
+#product-item-modal-delete {
+	height: 180%;
+	margin-top: -150px;
+}
+
 .product-modal-content {
 	background-color: #ffff;
 	margin: 10% auto;
@@ -771,6 +776,11 @@ a {
 		width: 100%;
 		padding: 20px 30px;
 		margin-top: 30%;
+	}
+
+	.vendor-modal {
+		height: 120%;
+		margin-top: -100px;
 	}
 }
 
@@ -847,9 +857,6 @@ a {
 	width: 100%;
 }
 
-.delete-confirm-div {
-}
-
 .delete-confirm-btn-div {
 	display: flex;
 	justify-content: center;
@@ -879,4 +886,29 @@ a {
 	.authy {
 		padding-top: 100px;
 	}
+}
+
+.alert-body {
+	margin-top: 30px;
+}
+
+/*	Delete Transaction Table */
+.product-item-date-col,
+.product-item-invoice-col {
+	width: 30%;
+}
+
+.product-item-id-col {
+	width: 40%;
+}
+
+.delete-subtitle {
+	margin: 0px;
+	padding: 0px;
+}
+
+.tble-container {
+	max-height: 170px;
+	overflow: scroll;
+	overflow-x: hidden;
 }

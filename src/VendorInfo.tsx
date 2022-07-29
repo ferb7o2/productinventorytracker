@@ -33,6 +33,7 @@ function VendorInfo() {
 	const [ProductData, setProductData] = useState<ProductDataType[]>([]);
 	const [VendorData, setVendorData] = useState<VendorDataType>();
 	const [Ptransaction_data, setPtData] = useState<PtransactionDataType[]>([]);
+	const [DataLoaded, setDataLoaded] = useState<boolean>(false);
 
 	const fetchVendorData = async () => {
 		try {
@@ -42,6 +43,7 @@ function VendorInfo() {
 
 			//console.log(vendorData.data.listVendorData.items);
 			setVendorData(vendorData.data.getVendorData);
+			setDataLoaded(true);
 		} catch (error) {
 			console.log("error on fetchVendorData() ", error);
 		}
@@ -59,8 +61,11 @@ function VendorInfo() {
 				};
 			};
 
-			//console.log(pTransactionData.data.listPurchaseTransactionData2022s.items);
-			setPtData(pTransactionData.data.listPurchaseTransactionData2022s.items);
+			let only_data =
+				pTransactionData.data.listPurchaseTransactionData2022s.items.sort(
+					(a, b) => a.date.localeCompare(b.date)
+				);
+			setPtData(only_data);
 		} catch (error) {
 			console.log("error on fetchPTransactionData() ", error);
 		}
@@ -84,9 +89,13 @@ function VendorInfo() {
 		fetchProductData();
 		$("#vendorTabBtn").addClass("nav-selected");
 		$("#productTabBtn").removeClass("nav-selected");
-
-		checkForMissingInfo();
 	}, []);
+
+	useEffect(() => {
+		if (DataLoaded) {
+			checkForMissingInfo();
+		}
+	}, [DataLoaded]);
 
 	function idForName(pIdPassed: string) {
 		const product = ProductData.find(({ id }, i) => pIdPassed == id);
@@ -100,168 +109,59 @@ function VendorInfo() {
 		}
 	}
 
-	const changeName = async (
-		e: React.FocusEvent<HTMLInputElement, Element>,
-		oldTitle: string | undefined
-	) => {
-		var errorTemplate = $("#error-template");
+	const changeVendorInfo = async () => {
+		var errorTemplate = $("#error-template-vendor");
 		errorTemplate.attr("hidden", 1); //keep it hidden
 
-		try {
-			let newVal = e.target.value;
-			if (newVal == oldTitle) return;
+		if ($("#vNameInput").val() != "") {
+			try {
+				const changeVendorData = (await API.graphql(
+					graphqlOperation(updateVendorData, {
+						input: {
+							id: VendorData?.id,
+							name: $("#vNameInput").val(),
+							address: $("#vAddressInput").val(),
+							city: $("#vCityInput").val(),
+							state: $("#vStateInput").val(),
+							country: $("#vCountryInput").val(),
+							zipCode: $("#vZipInput").val(),
+							rfc: $("#vRfcInput").val(),
+						},
+					})
+				)) as {
+					data: {
+						updateVendorData: VendorDataType[];
+					};
+				};
 
-			const changeProductName = await API.graphql(
-				graphqlOperation(updateVendorData, {
-					input: { id: VendorData?.id, name: newVal },
-				})
-			);
-		} catch (error) {
-			console.log("error on changeName() ", error);
-			errorTemplate.text("Error - al actualizar el Nombre del Distribuidor");
-			errorTemplate.removeAttr("hidden");
-		}
-	};
-
-	const changeAddress = async (
-		e: React.FocusEvent<HTMLInputElement, Element>,
-		oldTitle: string | undefined
-	) => {
-		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-
-		try {
-			let newVal = e.target.value;
-			if (newVal == oldTitle) return;
-			const changeProductName = await API.graphql(
-				graphqlOperation(updateVendorData, {
-					input: { id: VendorData?.id, address: newVal },
-				})
-			);
-		} catch (error) {
-			console.log("error on changeAddress() ", error);
-			errorTemplate.text("Error - al actualizar la direccion del Distribuidor");
-			errorTemplate.removeAttr("hidden");
-		}
-	};
-
-	const changeCity = async (
-		e: React.FocusEvent<HTMLInputElement, Element>,
-		oldTitle: string | undefined
-	) => {
-		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-
-		try {
-			let newVal = e.target.value;
-			if (newVal == oldTitle) return;
-			const changeProductName = await API.graphql(
-				graphqlOperation(updateVendorData, {
-					input: { id: VendorData?.id, city: newVal },
-				})
-			);
-		} catch (error) {
-			console.log("error on changeCity() ", error);
-			errorTemplate.text("Error - al actualizar la ciudad del Distribuidor");
-			errorTemplate.removeAttr("hidden");
-		}
-	};
-
-	const changeState = async (
-		e: React.FocusEvent<HTMLInputElement, Element>,
-		oldTitle: string | undefined
-	) => {
-		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-
-		try {
-			let newVal = e.target.value;
-			if (newVal == oldTitle) return;
-
-			const changeProductName = await API.graphql(
-				graphqlOperation(updateVendorData, {
-					input: { id: VendorData?.id, state: newVal },
-				})
-			);
-		} catch (error) {
-			console.log("error on changeState() ", error);
-			errorTemplate.text("Error - al actualizar el estado del Distribuidor");
-			errorTemplate.removeAttr("hidden");
-		}
-	};
-
-	const changeCountry = async (
-		e: React.FocusEvent<HTMLInputElement, Element>,
-		oldTitle: string | undefined
-	) => {
-		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-
-		try {
-			let newVal = e.target.value;
-			if (newVal == oldTitle) return;
-
-			const changeProductName = await API.graphql(
-				graphqlOperation(updateVendorData, {
-					input: { id: VendorData?.id, country: newVal },
-				})
-			);
-		} catch (error) {
-			console.log("error on changeCountry() ", error);
-			errorTemplate.text("Error - al actualizar el pais del Distribuidor");
-			errorTemplate.removeAttr("hidden");
-		}
-	};
-
-	const changeZip = async (
-		e: React.FocusEvent<HTMLInputElement, Element>,
-		oldTitle: string | undefined
-	) => {
-		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-
-		try {
-			let newVal = e.target.value;
-			if (newVal == oldTitle) return;
-
-			const changeProductName = await API.graphql(
-				graphqlOperation(updateVendorData, {
-					input: { id: VendorData?.id, zipCode: newVal },
-				})
-			);
-		} catch (error) {
-			console.log("error on changeTitle() ", error);
+				/*setProductData({
+					id: VendorData?.id,
+					name: $("#vNameInput").val(),
+					address: $("#vAddressInput")?.val(),
+					city: $("#vCityInput").val(),
+					state: $("#vStateInput").val(),
+					country: $("#vCountryInput").val(),
+					zipCode: $("#vZipInput").val(),
+					rfc: $("#vRfcInput").val(),
+				})*/
+			} catch (error) {
+				console.log("error on changVendorInfo() ", error);
+				errorTemplate.text(
+					"Error - al actualizar el la Informacion del distribuidor"
+				);
+				errorTemplate.removeAttr("hidden");
+			}
+		} else {
+			$("#vNameInput").val(VendorData?.name || "");
 			errorTemplate.text(
-				"Error - al actualizar el codigo postal del Distribuidor"
+				"Error - al actualizar el nombre del distribuidor no puede estar vacio"
 			);
-			errorTemplate.removeAttr("hidden");
-		}
-	};
-
-	const changeRfc = async (
-		e: React.FocusEvent<HTMLInputElement, Element>,
-		oldTitle: string | undefined
-	) => {
-		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-
-		try {
-			let newVal = e.target.value;
-			if (newVal == oldTitle) return;
-
-			const changeProductName = await API.graphql(
-				graphqlOperation(updateVendorData, {
-					input: { id: VendorData?.id, rfc: newVal },
-				})
-			);
-		} catch (error) {
-			console.log("error on changeRfc() ", error);
-			errorTemplate.text("Error - al actualizar el RFC del Distribuidor");
 			errorTemplate.removeAttr("hidden");
 		}
 	};
 
 	function saveBtnTrigger() {
+		changeVendorInfo();
 		$("#vNameInput").attr("readOnly", 1);
 		$("#vAddressInput").attr("readOnly", 1);
 		$("#vCityInput").attr("readOnly", 1);
@@ -315,7 +215,7 @@ function VendorInfo() {
 
 	return (
 		<div className="Application">
-			<header></header>
+			<title>Facturación PJL - {VendorData?.name}</title>
 			<div className="container" id="container">
 				<div className="container-top-section">
 					<div className="container-top-first-row">
@@ -327,9 +227,6 @@ function VendorInfo() {
 										id="vNameInput"
 										className="editable-input"
 										defaultValue={VendorData?.name}
-										onBlur={(e) => {
-											changeName(e, VendorData?.name);
-										}}
 										onKeyDown={(e) => focusOut(e)}
 										readOnly
 									/>
@@ -347,9 +244,6 @@ function VendorInfo() {
 										className="product-description editable-input"
 										defaultValue={VendorData?.address}
 										placeholder="Direccion"
-										onBlur={(e) => {
-											changeAddress(e, VendorData?.address);
-										}}
 										onKeyDown={(e) => focusOut(e)}
 										readOnly
 									/>
@@ -363,9 +257,6 @@ function VendorInfo() {
 										className="product-description editable-input city-exemption"
 										defaultValue={VendorData?.city}
 										placeholder="Ciudad"
-										onBlur={(e) => {
-											changeCity(e, VendorData?.city);
-										}}
 										onKeyDown={(e) => focusOut(e)}
 										readOnly
 									/>
@@ -382,9 +273,6 @@ function VendorInfo() {
 										className="product-description editable-input"
 										defaultValue={VendorData?.state}
 										placeholder="Estado"
-										onBlur={(e) => {
-											changeState(e, VendorData?.state);
-										}}
 										onKeyDown={(e) => focusOut(e)}
 										readOnly
 									/>
@@ -398,9 +286,6 @@ function VendorInfo() {
 										className="product-description editable-input city-exemption"
 										defaultValue={VendorData?.country}
 										placeholder="Pais"
-										onBlur={(e) => {
-											changeCountry(e, VendorData?.country);
-										}}
 										onKeyDown={(e) => focusOut(e)}
 										readOnly
 									/>
@@ -417,9 +302,6 @@ function VendorInfo() {
 										className="product-description editable-input"
 										defaultValue={VendorData?.zipCode}
 										placeholder="Codigo Postal"
-										onBlur={(e) => {
-											changeZip(e, VendorData?.zipCode);
-										}}
 										onKeyDown={(e) => focusOut(e)}
 										readOnly
 									/>
@@ -433,9 +315,6 @@ function VendorInfo() {
 										className="product-description editable-input"
 										defaultValue={VendorData?.rfc}
 										placeholder="RFC"
-										onBlur={(e) => {
-											changeRfc(e, VendorData?.rfc);
-										}}
 										onKeyDown={(e) => focusOut(e)}
 										readOnly
 									/>
@@ -483,11 +362,22 @@ function VendorInfo() {
 						<p className="sub-section-title">Archived</p>
 					</div>
 				</div>
+				<div
+					className="alert alert-danger alert-body"
+					role="alert"
+					id="error-template-vendor"
+					onClick={() => {
+						$("#error-template-vendor").attr("hidden", 1);
+					}}
+					hidden
+				>
+					This is a danger alert—check it out!
+				</div>
 				<div className="fair-spacing" />
 				<div className="row">
 					<table className="tble">
 						<thead>
-							<tr>
+							<tr key={"heading-row"}>
 								<th scope="col" className="thead-row vendor-date">
 									Fecha
 								</th>
@@ -526,7 +416,7 @@ function VendorInfo() {
 									},
 									i
 								) => (
-									<tr>
+									<tr key={"vInfo-" + id}>
 										<td scope="col" className="vendor-date">
 											{date}
 										</td>

@@ -110,9 +110,8 @@ function VendorListScreen() {
 				<AddVendor />
 				<DeleteVendor vendors={toDelete} />
 			</header>
-			<head>
-				<title>Facturación PJL 2022 </title>
-			</head>
+
+			<title>Facturación PJL 2022 - Distribuidores </title>
 
 			<div className="container" id="container">
 				<div className="container-top-section">
@@ -138,7 +137,7 @@ function VendorListScreen() {
 								id="btn"
 								onClick={addVendorBtn}
 							>
-								Agregar distribuidor
+								Registrar nuevo
 							</button>
 						</div>
 					</div>
