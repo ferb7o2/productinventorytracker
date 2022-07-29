@@ -1,9 +1,7 @@
-import React, { Component } from "react";
 import { Amplify } from "aws-amplify";
 import { Authenticator, withAuthenticator } from "@aws-amplify/ui-react";
 import awsExports from "../aws-exports";
 import { Link } from "react-router-dom";
-import $ from "jquery";
 Amplify.configure(awsExports);
 
 export function NavBar() {

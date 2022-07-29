@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom"; //Helps us redirect to other pages
 
-import { useStateContext } from "./contexts/dataContext";
 import $ from "jquery";
 
 //get Date
 import * as moment from "moment";
 
-//Components
-import { NavBar } from "./components/NavBar";
-import Footer from "./components/Footer";
-
-import Amplify, { API, graphqlOperation } from "aws-amplify";
+import { API, graphqlOperation } from "aws-amplify";
 import {
 	getProductData,
 	listPurchaseTransactionData2022s,
@@ -114,10 +109,7 @@ function ItemInfo() {
 				(a, b) => a.date.localeCompare(b.date)
 			);
 
-			//console.log(saleData.data.listSaleTransactionData2022s.items);
 			setStData(only_data);
-
-			//setVendorData(vendorData.data.listVendorData.items);
 		} catch (error) {
 			console.log("error on fetchVendorData() ", error);
 		}

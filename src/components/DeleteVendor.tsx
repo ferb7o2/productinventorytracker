@@ -2,7 +2,7 @@ import $ from "jquery";
 import { useHistory } from "react-router-dom";
 
 import { API, graphqlOperation } from "aws-amplify";
-import { deleteProductData, deleteVendorData } from "../graphql/mutations";
+import { deleteVendorData } from "../graphql/mutations";
 
 import "../css/homePageStyle.css";
 import { useLayoutEffect } from "react";

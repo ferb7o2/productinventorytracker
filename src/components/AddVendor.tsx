@@ -1,12 +1,10 @@
-import React from "react";
 import $ from "jquery";
 import { useHistory } from "react-router-dom";
 
-import Amplify, { API, graphqlOperation } from "aws-amplify";
+import { API, graphqlOperation } from "aws-amplify";
 import { createVendorData } from "./../graphql/mutations";
 
 //Components
-import { NavBar } from "./../components/NavBar";
 
 function AddVendor() {
 	const history = useHistory();

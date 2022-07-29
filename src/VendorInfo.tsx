@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import Amplify, { API, graphqlOperation } from "aws-amplify";
+import { API, graphqlOperation } from "aws-amplify";
 import $ from "jquery";
-
-import { useStateContext } from "./contexts/dataContext";
 
 import { useHistory } from "react-router-dom";
 
@@ -15,7 +13,6 @@ import {
 } from "./graphql/queries";
 
 //Components
-import { NavBar } from "./components/NavBar";
 
 //Types
 import {
@@ -25,7 +22,6 @@ import {
 	ProductDataType,
 } from "./types";
 import { updateVendorData } from "./graphql/mutations";
-import Footer from "./components/Footer";
 
 function VendorInfo() {
 	let { vId_global } = useParams<urlPropVendorType>();

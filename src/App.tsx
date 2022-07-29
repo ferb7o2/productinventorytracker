@@ -11,12 +11,11 @@ import "bootstrap/dist/css/bootstrap.min.css"; //Boostrap Import 1/2
 import "bootstrap/dist/js/bootstrap.bundle.min"; //Boostrap Import 2/2
 import "./css/homePageStyle.css";
 
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 
 //Import external pages in folder (Screens)
 import ItemInfo from "./ItemInfo";
 import VendorInfo from "./VendorInfo";
-import AddVendor from "./components/AddVendor";
 import VendorListScreen from "./VendorListScreen";
 
 //Database- AMPLIFY
@@ -42,9 +41,8 @@ Amplify.configure(awsconfig);
 
 function Home(this: any) {
 	const [ProductData, setProductData] = useState<ProductDataType[]>([]);
-	const [vData, setvData] = useState<VendorDataType[]>([]);
+
 	const [searchTermProduct, setSearchTermProduct] = useState("");
-	const [searchTermVendor, setSearchTermVendor] = useState("");
 
 	const [toDelete, setToDelete] = useState<toDeleteType[]>([]);
 
@@ -62,38 +60,16 @@ function Home(this: any) {
 		}
 	};
 
-	const fetchVendorData = async () => {
-		try {
-			let vendor_data = (await API.graphql(
-				graphqlOperation(listVendorData)
-			)) as { data: { listVendorData: { items: VendorDataType[] } } };
-
-			setvData(vendor_data.data.listVendorData.items);
-		} catch (error) {
-			console.log("Error retrieving product data (fetchVendorData) ", error);
-		}
-	};
-
 	useEffect(() => {
 		fetchProductData();
 		$("#vendorTabBtn").removeClass("nav-selected");
 		$("#productTabBtn").addClass("nav-selected");
-		////////////////fetchVendorData();
 	}, []);
 
 	const history = useHistory();
 
 	function itemTableRowClicked(id: string) {
-		//console.log(e.target.id);
-		//console.log("YOU CLICKED ME");
 		let path = `/item/${id}`;
-		//let path=`/item`;
-		history.push(path);
-	}
-
-	function addVendorBtn() {
-		//let path=`/item/:${e.target.id}`;
-		let path = `/addVendor`;
 		history.push(path);
 	}
 

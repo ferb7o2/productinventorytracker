@@ -1,32 +1,23 @@
 import "./App.css";
-import {
-	BrowserRouter as /*Router,*/ HashRouter,
-	Route,
-	Switch,
-} from "react-router-dom";
+
 import { useHistory } from "react-router-dom"; //Helps us redirect to other pages
 
 import "bootstrap/dist/css/bootstrap.min.css"; //Boostrap Import 1/2
 import "bootstrap/dist/js/bootstrap.bundle.min"; //Boostrap Import 2/2
 import "./css/homePageStyle.css";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import $ from "jquery";
 
 //Import external pages in folder (Screens)
-import ItemInfo from "./ItemInfo";
-import VendorInfo from "./VendorListScreen";
 import AddVendor from "./components/AddVendor";
 
 //Database- AMPLIFY
 import { Amplify, API, graphqlOperation } from "aws-amplify";
 import awsconfig from "./aws-exports";
-import { withAuthenticator } from "@aws-amplify/ui-react";
-import { listProductData, listVendorData } from "./graphql/queries";
+import { listVendorData } from "./graphql/queries";
 
 //Components
-import { NavBar } from "./components/NavBar";
-import Footer from "./components/Footer";
 import "@aws-amplify/ui-react/styles.css";
 
 //Types
@@ -66,7 +57,6 @@ function VendorListScreen() {
 	function vendorTableRowClicked(e: any) {
 		console.log(e.target.id);
 		let path = `/vendor/${e.target.id}`;
-		//let path=`/vendor`;
 		history.push(path);
 	}
 
