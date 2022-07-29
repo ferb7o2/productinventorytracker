@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import { Component } from "react";
 
 class Footer extends Component {
 	render() {
@@ -6,11 +6,10 @@ class Footer extends Component {
 			<div>
 				<div className="footer-spacing" />
 
-				<footer className="bg-dark text-center text-white">
+				<footer className="footer text-center text-white">
 					<div className="text-center p-3">
 						© 2022 Copyright: <a href="./"> </a>
 						<a className="text-white" href="https://github.com/JoseJaramillo04">
-							{" "}
 							Fernando Jaramillo
 						</a>
 					</div>

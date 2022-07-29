@@ -18,7 +18,12 @@ export type VendorDataType = {
 };
 
 export type urlPropType = {
-	pId: string;
+	pId?: string;
+	vId?: string;
+};
+
+export type urlPropVendorType = {
+	vId_global: string;
 };
 
 export type PtransactionDataType = {
@@ -38,4 +43,28 @@ export type StransactionDataType = {
 	saleInvoiceId: string;
 	saleWeight: number;
 	salePrice: number;
+};
+
+export type toDeleteType = {
+	pId: string;
+	pName: string;
+};
+
+export type toDeleteVendorType = {
+	vId: string;
+	vName: string;
+};
+
+export const allowedWeightTypes = ["Kg", "Caja", "Bulto"];
+
+export type toDeleteSaleType = {
+	sId: string;
+	sDate: string;
+	sInvoiceId: string;
+};
+
+export type toDeletePurchaseType = {
+	pId: string;
+	pDate: string;
+	pInvoiceId: string;
 };

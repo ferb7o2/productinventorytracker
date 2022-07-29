@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom"; //Helps us redirect to other pages
 
-import { useStateContext } from "./contexts/dataContext";
 import $ from "jquery";
 
 //get Date
 import * as moment from "moment";
 
-//Components
-import { NavBar } from "./components/NavBar";
-import Footer from "./components/Footer";
-
-import Amplify, { API, graphqlOperation } from "aws-amplify";
+import { API, graphqlOperation } from "aws-amplify";
 import {
 	getProductData,
 	listPurchaseTransactionData2022s,
@@ -33,17 +28,24 @@ import {
 	VendorDataType,
 	PtransactionDataType,
 	StransactionDataType,
+	toDeleteSaleType,
+	toDeletePurchaseType,
 } from "./types";
+import { DeleteTransaction } from "./components/DeleteTransaction";
 
 function ItemInfo() {
 	let { pId } = useParams<urlPropType>();
 
-	//Import data from Context API
 	const [ProductData, setProductData] = useState<ProductDataType>();
 	const [Ptransaction_data, setPtData] = useState<PtransactionDataType[]>([]);
 	const [VendorData, setVendorData] = useState<VendorDataType[]>([]);
 	const [InventoryTotal, setInventoryTotal] = useState<number>(0);
 	const [Stransaction_data, setStData] = useState<StransactionDataType[]>([]);
+	const [DataLoaded, setDataLoaded] = useState<boolean>(false);
+	const [toDeleteSale, setToDeleteSale] = useState<toDeleteSaleType[]>([]);
+	const [toDeletePurchase, setToDeletePurchase] = useState<
+		toDeletePurchaseType[]
+	>([]);
 
 	const fetchProductInfo = async () => {
 		try {
@@ -52,6 +54,7 @@ function ItemInfo() {
 			)) as { data: { getProductData: ProductDataType } };
 
 			setProductData(productData.data.getProductData);
+			setDataLoaded(true);
 		} catch (error) {
 			console.log("error on fetchMainBusinessInfo() ", error);
 		}
@@ -67,8 +70,13 @@ function ItemInfo() {
 				};
 			};
 
+			let only_data =
+				pTransactionData.data.listPurchaseTransactionData2022s.items.sort(
+					(a, b) => a.date.localeCompare(b.date)
+				);
+
 			//console.log(pTransactionData.data.listPurchaseTransactionData2022s.items);
-			setPtData(pTransactionData.data.listPurchaseTransactionData2022s.items);
+			setPtData(only_data);
 		} catch (error) {
 			console.log("error on fetchPTransactionData() ", error);
 		}
@@ -97,10 +105,11 @@ function ItemInfo() {
 				};
 			};
 
-			//console.log(saleData.data.listSaleTransactionData2022s.items);
-			setStData(saleData.data.listSaleTransactionData2022s.items);
+			let only_data = saleData.data.listSaleTransactionData2022s.items.sort(
+				(a, b) => a.date.localeCompare(b.date)
+			);
 
-			//setVendorData(vendorData.data.listVendorData.items);
+			setStData(only_data);
 		} catch (error) {
 			console.log("error on fetchVendorData() ", error);
 		}
@@ -111,6 +120,8 @@ function ItemInfo() {
 		fetchPTransactionData();
 		fetchVendorData();
 		fetchSaleTData();
+		$("#vendorTabBtn").removeClass("nav-selected");
+		$("#productTabBtn").addClass("nav-selected");
 	}, []);
 
 	let realIndex = 0;
@@ -133,6 +144,12 @@ function ItemInfo() {
 
 		InventoryTotalSum();
 	}, [Ptransaction_data, Stransaction_data]);
+
+	useEffect(() => {
+		if (DataLoaded) {
+			checkForMissingInfo();
+		}
+	}, [DataLoaded]);
 
 	function displayPURCHASEInputFields() {
 		$("#input-row-vId").val("");
@@ -690,332 +707,557 @@ function ItemInfo() {
 
 	const editBtnTrigger = () => {
 		$("#productTitle").removeAttr("readOnly");
+
+		$("#productDescription").removeAttr("readOnly");
+		$(".editable-input").css("border", "1px rgb(54, 54, 54, 0.6) solid");
+		$(".editable-input").css("border-radius", "4px");
+		$("#saveBtnProduct").removeAttr("hidden");
+		$("#productDescription").removeAttr("hidden");
+
+		$("#pDescriptionRow").removeAttr("hidden");
 	};
 
-	const changeTitle = async (
-		e: React.FocusEvent<HTMLInputElement, Element>,
-		oldTitle: string | undefined
-	) => {
+	const changeProductInfo = async () => {
 		var errorTemplate = $("#error-template");
 		errorTemplate.attr("hidden", 1); //keep it hidden
 
-		try {
-			let newVal = e.target.value;
-			if (newVal == oldTitle) return;
-			const changeProductName = await API.graphql(
-				graphqlOperation(updateProductData, {
-					input: { id: ProductData?.id, name: newVal },
-				})
+		if ($("#productTitle").val() != "") {
+			if (
+				$("#productTitle").val() == ProductData?.name &&
+				($("#productDescription").val() !== "" ||
+					$("#productDescription").val() == ProductData?.description)
+			)
+				return;
+
+			try {
+				const changeProductName = await API.graphql(
+					graphqlOperation(updateProductData, {
+						input: {
+							id: ProductData?.id,
+							name: $("#productTitle").val(),
+							description: $("#productDescription").val(),
+						},
+					})
+				);
+			} catch (error) {
+				console.log("error on changeTitle() ", error);
+				errorTemplate.text("Error - al actualizar el Nombre del producto");
+				errorTemplate.removeAttr("hidden");
+			}
+		} else {
+			console.log("error on changeTitle(), title cannot e empty ");
+			$("#productTitle").val(ProductData?.name || "");
+			errorTemplate.text(
+				"Error - al actualizar el Nombre del producto, el nombre no puede estar vacio"
 			);
-		} catch (error) {
-			console.log("error on changeTitle() ", error);
-			errorTemplate.text("Error - al actualizar el Nombre del producto");
 			errorTemplate.removeAttr("hidden");
 		}
 	};
 
+	function saveTrigger() {
+		changeProductInfo();
+		$("#saveBtnProduct").attr("hidden", 1);
+		$(".editable-input").css("border", "none");
+		$(".editable-input").css("border-radius", "4px");
+		$("#productTitle").attr("readOnly", 1);
+
+		$("#productDescription").attr("readOnly", 1);
+
+		checkForMissingInfo();
+	}
+
+	function checkForMissingInfo() {
+		ProductData?.description ? (
+			<></>
+		) : (
+			$("#productDescription").attr("hidden", 1)
+		);
+	}
+
+	function deleteTransactionBtnTrigger() {
+		if (toDeleteSale.length + toDeletePurchase.length > 0) {
+			$("#product-item-modal-delete").removeAttr("hidden");
+		}
+	}
+
+	function addToDeleteArray(
+		IdInput: string,
+		dateInput: string,
+		invoiceInput: string,
+		type: string
+	) {
+		const currentChecked = document.getElementById(
+			"tid-" + IdInput
+		) as HTMLInputElement;
+
+		if (type == "purchase") {
+			if (currentChecked.checked) {
+				var numberOfOcurrences = toDeletePurchase.filter(
+					({ pId }) => pId == IdInput
+				);
+				if (numberOfOcurrences.length == 0) {
+					setToDeletePurchase((oldData) => [
+						...oldData,
+						{ pId: IdInput, pDate: dateInput, pInvoiceId: invoiceInput },
+					]);
+				}
+			} else {
+				let filtered_array = toDeletePurchase.filter(
+					({ pId }) => pId !== IdInput
+				);
+				setToDeletePurchase(filtered_array);
+			}
+			let display = toDeletePurchase;
+
+			console.log(display);
+		} else {
+			if (currentChecked.checked) {
+				var numberOfOcurrencesSale = toDeleteSale.filter(
+					({ sId }) => sId == IdInput
+				);
+				if (numberOfOcurrencesSale.length == 0) {
+					setToDeleteSale((oldData) => [
+						...oldData,
+						{ sId: IdInput, sDate: dateInput, sInvoiceId: invoiceInput },
+					]);
+				}
+			} else {
+				let filtered_arraySale = toDeleteSale.filter(
+					({ sId }) => sId !== IdInput
+				);
+				setToDeleteSale(filtered_arraySale);
+			}
+			let display = toDeletePurchase;
+
+			console.log(display);
+		}
+	}
+
 	return (
-		<div className="Application">
-			<head>
+		<>
+			<div className="Application">
 				<title>Facturación PJL - {ProductData?.name}</title>
-			</head>
-			<header>
-				<div
-					className="alert alert-danger"
-					role="alert"
-					id="error-template"
-					onClick={() => {
-						$("#error-vendor").attr("hidden", 1);
-					}}
-					hidden
-				>
-					This is a danger alert—check it out!
-				</div>
-				<NavBar />
-			</header>
-			<div className="container">
-				<div className="row">
-					<div className="col">
-						<h1>
-							<input
-								type="text"
-								id="productTitle"
-								className="tableInput"
-								defaultValue={ProductData?.name}
-								onBlur={(e) => {
-									changeTitle(e, ProductData?.name);
-								}}
-								onKeyDown={(e) => focusOut(e)}
-								readOnly
-							/>
-						</h1>
-						<h4>{ProductData?.description}</h4>
-						<h4>
-							{ProductData?.weightType === "Kg"
-								? ProductData.weightQuantity + " " + ProductData.weightType
-								: ProductData?.weightType +
-								  " " +
-								  ProductData?.weightQuantity +
-								  "Kg"}
-						</h4>
-						<div className="row">
-							<button id="editBtn" onClick={editBtnTrigger}>
-								<u>editar</u>
-							</button>
-						</div>
-					</div>
-					<div className="col-3 d-flex justify-content-end">
-						<h4>Product Id: {ProductData?.id}</h4>
-					</div>
-				</div>
-				<div className="row">
-					<div className="col-9"></div>
-					<div className="col d-flex justify-content-end">
-						<h5>Cantidad disponible: {InventoryTotal.toFixed(3)}</h5>
-					</div>
-				</div>
-				<div className="fair-spacing" />
-				<div className="row">
-					<div className="col">
-						<h4 className="item-table-label">Compra</h4>
-					</div>
-				</div>
-				<div className="row">
-					<table className="table table-striped">
-						<thead>
-							<tr>
-								<th scope="col">tId</th>
-								<th scope="col">Fecha</th>
-								<th scope="col">Proveedor</th>
-								<th scope="col"># Factura</th>
-								<th scope="col">Peso (Kg)</th>
-								<th scope="col">Precio (MXN)</th>
-							</tr>
-						</thead>
-						<tbody>
-							{Ptransaction_data.map(
-								(
-									{
-										id,
-										date,
-										vId,
-										purchaseInvoiceId,
-										purchaseWeight,
-										purchasePrice,
-									} //Data driven display of rows in data
-								) => (
-									<tr key={id} className="table-row">
-										<th scope="row">
-											{id.length === 1 ? id[0] : id.slice(0, 4)}
-										</th>
-										<td>
-											<input
-												type="text"
-												id={"row" + id + "date"}
-												className="tableInput tableDate"
-												defaultValue={date}
-												onBlur={(e) => {
-													changePurchaseDate(e, date, id);
-												}}
-												onKeyDown={(e) => focusOut(e)}
-											/>
-										</td>
+				<DeleteTransaction
+					purchase={toDeletePurchase}
+					sale={toDeleteSale}
+					currentItemId={pId || ""}
+				/>
 
-										<td>
-											<input
-												type="text"
-												id={"row" + id + "vId"}
-												className="tableInput"
-												defaultValue={nameForId(vId)}
-												list="vendors"
-												onBlur={(e) => {
-													changeVendor(e, vId, id);
-												}}
-												onKeyDown={(e) => focusOut(e)}
-											/>
-											<datalist id="vendors">
-												{VendorData.map(({ id, name }) => (
-													<option key={id} value={name} id={id} />
-												))}
-											</datalist>
-										</td>
-										<td>
-											<div className="tableData">
-												<input
-													type="text"
-													id={"row" + id + "purchaseInvoiceId"}
-													className="tableInput"
-													defaultValue={purchaseInvoiceId}
-													onBlur={(e) => {
-														changeInvoiceId(e, purchaseInvoiceId, id);
-													}}
-													onKeyDown={(e) => focusOut(e)}
-												/>
-											</div>
-										</td>
-										<td>
-											<div className="tableData">
-												<input
-													type="text"
-													id={"row" + id + "purchaseWeight"}
-													className="tableInput"
-													defaultValue={purchaseWeight}
-													onBlur={(e) => {
-														changePurchaseWeight(e, purchaseWeight, id);
-													}}
-													onKeyDown={(e) => focusOut(e)}
-												/>
-											</div>
-										</td>
-										<td>
-											<div className="tableData">
-												<input
-													type="text"
-													id={"row" + id + "purchasePrice"}
-													className="tableInput"
-													defaultValue={purchasePrice}
-													onBlur={(e) => {
-														changePurchasePrice(e, purchaseWeight, id);
-													}}
-													onKeyDown={(e) => focusOut(e)}
-												/>
-											</div>
-										</td>
-									</tr>
-								)
-							)}
-							<tr className="table-row" id="input-new-data-row" hidden>
-								<th scope="row"></th>
-								<td>
-									<input
-										type="text"
-										id="input-row-date"
-										className="tableInput tableDate"
-										defaultValue={moment.default().format("YYYY-MM-DD")}
-									/>
-								</td>
-								<td>
-									<input
-										list="vendors"
-										type="text"
-										id="input-row-vId"
-										className="tableInput"
-									/>
+				<div className="container" id="container">
+					<div className="container-top-section">
+						<div className="container-top-first-row">
+							<div className="vInfo-section">
+								<div className="vInfo-row">
+									<h1 className="container-title vendor-title edit-primary">
+										<input
+											type="text"
+											id="productTitle"
+											className="container-title vendor-title editable-input"
+											defaultValue={ProductData?.name}
+											onKeyDown={(e) => focusOut(e)}
+											readOnly
+										/>
+									</h1>
+								</div>
 
-									<datalist id="vendors">
-										{VendorData.map(({ id, name }) => (
-											<option key={id} value={name} id={id} />
-										))}
-									</datalist>
-								</td>
-								<td>
-									<div className="tableData">
+								<div className="vInfo-row" id="pDescriptionRow">
+									<h4 className="product-description edit-primary">
 										<input
 											type="text"
-											id="input-row-purchaseInvoiceId"
-											className="tableInput"
+											id="productDescription"
+											className="product-description editable-input"
+											defaultValue={
+												ProductData?.description ? ProductData.description : ""
+											}
+											placeholder="Descripcion"
+											onKeyDown={(e) => focusOut(e)}
+											readOnly
 										/>
-									</div>
-								</td>
-								<td>
-									<div className="tableData">
-										<input
-											type="text"
-											id="input-row-purchaseWeight"
-											className="tableInput"
-										/>
-									</div>
-								</td>
-								<td>
-									<div className="tableData">
-										<input
-											type="text"
-											id="input-row-purchasePrice"
-											className="tableInput"
-										/>
-									</div>
-								</td>
-							</tr>
-							<tr hidden></tr>
-							{/* just a hidden element to not break the color scheme on the next table row*/}
-							<tr>
-								<th scope="row">
-									<img
-										src="https://static.thenounproject.com/png/1649999-200.png"
-										id="add-data-btn"
-										className="add-data-btn"
-										onClick={displayPURCHASEInputFields}
-										alt="add new purchase entry button"
-									/>
-								</th>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td>
+									</h4>
+								</div>
+							</div>
+
+							<div className="vendor-btn-container">
+								<div className="title-button-container vendor-btn">
 									<button
 										type="button"
-										className="btn btn-outline-dark btnUpdate"
-										id="btnUpdate"
-										onClick={addNewPURCHASEDataRow}
-										hidden
+										className="btn secondary-btn"
+										data-bs-toggle="button"
+										id="btn"
+										onClick={editBtnTrigger}
 									>
-										Actualizar
+										editar producto
 									</button>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-				<div className="fair-spacing"></div>
-				<div className="row">
-					<h4 className="item-table-label">Venta</h4>
-					<table className="table table-striped">
-						<thead>
-							<tr>
-								<th scope="col">Id</th>
-								<th scope="col">Fecha</th>
-								<th scope="col"># Invoice</th>
-								<th scope="col">Peso (kg)</th>
-								<th scope="col">Precio (MXN)</th>
-							</tr>
-						</thead>
-						<tbody>
-							{Stransaction_data.map(
-								(
-									{ id, pId, date, saleInvoiceId, saleWeight, salePrice } //Data driven display of rows in data
-								) => (
-									<tr key={"s" + id} className="table-row">
-										<th scope="row">
-											{id.length === 1 ? id[0] : id.slice(0, 4)}
-										</th>
-										<td>
-											<input
-												type="text"
-												id={"row" + id + "Sdate"}
-												className="tableInput tableDate"
-												defaultValue={date}
-												onBlur={(e) => {
-													changeSaleDate(e, date, id);
-												}}
-												onKeyDown={(e) => focusOut(e)}
-											/>
-										</td>
+									<button
+										type="button"
+										className="btn "
+										data-bs-toggle="button"
+										id="deleteTransactionBtn"
+										onClick={deleteTransactionBtnTrigger}
+									>
+										Borrar venta
+									</button>
+								</div>
+								<button
+									type="button"
+									className="btn"
+									data-bs-toggle="button"
+									id="saveBtnProduct"
+									onClick={saveTrigger}
+									hidden
+								>
+									Guardar
+								</button>
+							</div>
+						</div>
 
-										<td>
+						<div className="product-third-row">
+							<p className="product-id-subtitle">
+								Product Id: {ProductData?.id}
+							</p>
+							<p className="product-qty-count">
+								Cantidad disponible: {InventoryTotal.toFixed(3)}
+							</p>
+						</div>
+						<div className="sub-section-container remove-top-pad">
+							<div className="left-pad"></div>
+							<div className="selected-under">
+								<p className="sub-section-title sub-section-selected">
+									See all
+								</p>
+							</div>
+							<p className="sub-section-title ">Saved</p>
+							<p className="sub-section-title">Ongoing</p>
+							<p className="sub-section-title">Archived</p>
+						</div>
+					</div>
+					<div
+						className="alert alert-danger alert-body"
+						role="alert"
+						id="error-template"
+						onClick={() => {
+							$("#error-template").attr("hidden", 1);
+						}}
+						hidden
+					>
+						This is a danger alert—check it out!
+					</div>
+					<div className="row">
+						<div className="col">
+							<h4 className="item-table-label">Compra</h4>
+						</div>
+					</div>
+					<div className="row">
+						<table className="tble">
+							<thead>
+								<tr>
+									<th
+										scope="col"
+										className="thead-row select-col select-vendor"
+									>
+										{/*<input type="checkbox" className="checkbox-table" />*/}
+									</th>
+									<th scope="col" className="thead-row date-col">
+										Fecha
+									</th>
+									<th scope="col" className="thead-row vendor-col">
+										Proveedor
+									</th>
+									<th scope="col" className="thead-row factura-col">
+										# Factura
+									</th>
+									<th scope="col" className="thead-row weight-col">
+										{ProductData?.weightType}
+									</th>
+									<th scope="col" className="thead-row price-col">
+										Precio (MXN)
+									</th>
+									<th scope="col" className="thead-row pId-col">
+										Id de transaccion
+									</th>
+
+									<th scope="col" className="thead-row notes-col">
+										Notas
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								{Ptransaction_data.map(
+									(
+										{
+											id,
+											date,
+											vId,
+											purchaseInvoiceId,
+											purchaseWeight,
+											purchasePrice,
+										} //Data driven display of rows in data
+									) => (
+										<tr key={id} className="table-row">
+											<td className="select-col select-vendor">
+												<input
+													type="checkbox"
+													className="checkbox-table"
+													id={"tid-" + id}
+													onChange={() =>
+														addToDeleteArray(
+															id,
+															date,
+															purchaseInvoiceId,
+															"purchase"
+														)
+													}
+												/>
+											</td>
+											<td className="date-col">
+												<input
+													type="text"
+													id={"row" + id + "date"}
+													className="tableInput tableDate"
+													defaultValue={date}
+													onBlur={(e) => {
+														changePurchaseDate(e, date, id);
+													}}
+													onKeyDown={(e) => focusOut(e)}
+												/>
+											</td>
+
+											<td className="vendor-col">
+												<input
+													type="text"
+													id={"row" + id + "vId"}
+													className="tableInput vendor-input"
+													defaultValue={nameForId(vId)}
+													list="vendors"
+													onBlur={(e) => {
+														changeVendor(e, vId, id);
+													}}
+													onKeyDown={(e) => focusOut(e)}
+												/>
+												<datalist id="vendors">
+													{VendorData.map(({ id, name }) => (
+														<option key={id} value={name} id={id} />
+													))}
+												</datalist>
+											</td>
+											<td className="factura-col">
+												<div className="tableData">
+													<input
+														type="text"
+														id={"row" + id + "purchaseInvoiceId"}
+														className="tableInput"
+														defaultValue={purchaseInvoiceId}
+														onBlur={(e) => {
+															changeInvoiceId(e, purchaseInvoiceId, id);
+														}}
+														onKeyDown={(e) => focusOut(e)}
+													/>
+												</div>
+											</td>
+											<td className="weight-col">
+												<div className="tableData">
+													<input
+														type="text"
+														id={"row" + id + "purchaseWeight"}
+														className="tableInput"
+														defaultValue={purchaseWeight}
+														onBlur={(e) => {
+															changePurchaseWeight(e, purchaseWeight, id);
+														}}
+														onKeyDown={(e) => focusOut(e)}
+													/>
+												</div>
+											</td>
+											<td className="price-col">
+												<div className="tableData">
+													<input
+														type="text"
+														id={"row" + id + "purchasePrice"}
+														className="tableInput"
+														defaultValue={purchasePrice}
+														onBlur={(e) => {
+															changePurchasePrice(e, purchaseWeight, id);
+														}}
+														onKeyDown={(e) => focusOut(e)}
+													/>
+												</div>
+											</td>
+											<td className="pId-col id-col-data">{id}</td>
+											<td className="notes-col">
+												<img
+													src={require("./assets/icons/blank-notes-attributed.png")}
+												></img>
+											</td>
+										</tr>
+									)
+								)}
+								<tr
+									className="table-row input-new-data-row"
+									id="input-new-data-row"
+									hidden
+								>
+									<th scope="row"></th>
+									<td>
+										<input
+											type="text"
+											id="input-row-date"
+											className="tableInput tableDate"
+											defaultValue={moment.default().format("YYYY-MM-DD")}
+										/>
+									</td>
+									<td>
+										<input
+											list="vendors"
+											type="text"
+											id="input-row-vId"
+											className="tableInput"
+										/>
+
+										<datalist id="vendors">
+											{VendorData.map(({ id, name }) => (
+												<option key={id} value={name} id={id} />
+											))}
+										</datalist>
+									</td>
+									<td>
+										<div className="tableData">
 											<input
 												type="text"
-												id={"row" + id + "saleInvoiceId"}
+												id="input-row-purchaseInvoiceId"
 												className="tableInput"
-												defaultValue={saleInvoiceId}
-												onBlur={(e) => {
-													changeSaleInvoiceId(e, saleInvoiceId, id);
-												}}
-												onKeyDown={(e) => focusOut(e)}
 											/>
-										</td>
-										<td>
-											<div className="tableData">
+										</div>
+									</td>
+									<td>
+										<div className="tableData">
+											<input
+												type="number"
+												id="input-row-purchaseWeight"
+												className="tableInput"
+											/>
+										</div>
+									</td>
+									<td>
+										<div className="tableData">
+											<input
+												type="number"
+												id="input-row-purchasePrice"
+												className="tableInput"
+											/>
+										</div>
+									</td>
+
+									<td></td>
+									<td></td>
+								</tr>
+								<tr hidden></tr>
+								{/* just a hidden element to not break the color scheme on the next table row*/}
+								<tr className="input-new-data-row">
+									<td scope="row" className="select-col">
+										<img
+											src={require("./assets/icons/add-attributed.png")}
+											id="add-data-btn"
+											className=""
+											onClick={displayPURCHASEInputFields}
+											alt="add new purchase entry button"
+										/>
+									</td>
+									<td className="table-filler"></td>
+									<td className="table-filler"></td>
+									<td className="table-filler"></td>
+									<td className="table-filler"></td>
+									<td className="table-filler"></td>
+									<td className="btn-col">
+										<button
+											type="button"
+											className="btn"
+											id="btnUpdate"
+											onClick={addNewPURCHASEDataRow}
+											hidden
+										>
+											Actualizar
+										</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div className="fair-spacing"></div>
+					<div className="row">
+						<div className="tble-title">
+							<h4 className="item-table-label item-table-label-sale">Venta</h4>
+						</div>
+					</div>
+
+					<div className="row">
+						<table className="tble">
+							<thead>
+								<tr className="table-row">
+									<th scope="col" className="thead-row select-col">
+										{/*<input type="checkbox" className="checkbox-table" />*/}
+									</th>
+									<th scope="col" className="thead-row sale-date-col">
+										Fecha
+									</th>
+									<th scope="col" className="thead-row sale-invoice-col">
+										# Invoice
+									</th>
+									<th scope="col" className="thead-row sale-weight-col">
+										{ProductData?.weightType}
+									</th>
+									<th scope="col" className="thead-row sale-price-col">
+										Precio (MXN)
+									</th>
+									<th scope="col" className="head-row pId-col">
+										Id de transaccion
+									</th>
+									<th scope="col" className="thead-row notes-col">
+										Notas
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								{Stransaction_data.map(
+									(
+										{ id, pId, date, saleInvoiceId, saleWeight, salePrice } //Data driven display of rows in data
+									) => (
+										<tr key={"s" + id} className="table-row">
+											<td scope="col" className="select-col">
+												<input
+													type="checkbox"
+													className="checkbox-table"
+													id={"tid-" + id}
+													onChange={() =>
+														addToDeleteArray(id, date, saleInvoiceId, "sale")
+													}
+												/>
+											</td>
+											<td className="sale-date-col" scope="col">
+												<input
+													type="text"
+													id={"row" + id + "Sdate"}
+													className="tableInput"
+													defaultValue={date}
+													onBlur={(e) => {
+														changeSaleDate(e, date, id);
+													}}
+													onKeyDown={(e) => focusOut(e)}
+												/>
+											</td>
+
+											<td className="sale-invoice-col" scope="col">
+												<input
+													type="text"
+													id={"row" + id + "saleInvoiceId"}
+													className="tableInput vendor-col"
+													defaultValue={saleInvoiceId}
+													onBlur={(e) => {
+														changeSaleInvoiceId(e, saleInvoiceId, id);
+													}}
+													onKeyDown={(e) => focusOut(e)}
+												/>
+											</td>
+											<td className="sale-weight-col" scope="col">
 												<input
 													type="text"
 													id={"row" + id + "saleWeight"}
@@ -1026,95 +1268,104 @@ function ItemInfo() {
 													}}
 													onKeyDown={(e) => focusOut(e)}
 												/>
-											</div>
-										</td>
-										<td>
-											<div className="tableData">
+											</td>
+											<td className="sale-price-col" scope="col">
 												<input
 													type="text"
 													id={"row" + id + "salePrice"}
-													className="tableInput"
+													className="tableInput vendor-col"
 													defaultValue={salePrice}
 													onBlur={(e) => {
 														changeSalePrice(e, salePrice, id);
 													}}
 													onKeyDown={(e) => focusOut(e)}
 												/>
-											</div>
-										</td>
-									</tr>
-								)
-							)}
-							<tr className="table-row" id="input-new-data-row-sale" hidden>
-								<th scope="row"></th>
-								<td>
-									<input
-										type="text"
-										id="input-row-sale-date"
-										className="tableInput tableDate"
-										defaultValue={moment.default().format("YYYY-MM-DD")}
-									/>
-								</td>
-								<td>
-									<input
-										type="text"
-										id="input-row-saleInvoiceId"
-										className="tableInput"
-									/>
-								</td>
-								<td>
-									<div className="tableData">
-										<input
-											type="number"
-											id="input-row-saleWeight"
-											className="tableInput"
-										/>
-									</div>
-								</td>
-								<td>
-									<div className="tableData">
+											</td>
+											<td className="pId-col id-col-data" scope="col">
+												{id}
+											</td>
+											<td className="notes-col" scope="col">
+												<img
+													src={require("./assets/icons/blank-notes-attributed.png")}
+												/>
+											</td>
+										</tr>
+									)
+								)}
+								<tr
+									className="table-row input-new-data-row"
+									id="input-new-data-row-sale"
+									hidden
+								>
+									<th scope="row"></th>
+									<td>
 										<input
 											type="text"
-											id="input-row-salePrice"
+											id="input-row-sale-date"
+											className="tableInput"
+											defaultValue={moment.default().format("YYYY-MM-DD")}
+										/>
+									</td>
+									<td>
+										<input
+											type="text"
+											id="input-row-saleInvoiceId"
 											className="tableInput"
 										/>
-									</div>
-								</td>
-							</tr>
-							<tr hidden></tr>
-							{/* just a hidden element to not break the color scheme on the next table row*/}
-							<tr>
-								<th scope="row">
-									<img
-										src="https://static.thenounproject.com/png/1649999-200.png"
-										id="add-sale-data-btn"
-										className="add-data-btn"
-										onClick={displaySALEInputFields}
-										alt="add new purchase entry button"
-									/>
-								</th>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td>
-									<button
-										type="button"
-										className="btn btn-outline-dark btnUpdate"
-										id="btnSaleUpdate"
-										onClick={addNewSALEDataRow}
-										hidden
-									>
-										Actualizar
-									</button>
-								</td>
-							</tr>
-						</tbody>
-					</table>
+									</td>
+									<td>
+										<div className="tableData">
+											<input
+												type="number"
+												id="input-row-saleWeight"
+												className="tableInput"
+											/>
+										</div>
+									</td>
+									<td>
+										<div className="tableData">
+											<input
+												type="text"
+												id="input-row-salePrice"
+												className="tableInput"
+											/>
+										</div>
+									</td>
+								</tr>
+								<tr hidden></tr>
+								{/* just a hidden element to not break the color scheme on the next table row*/}
+								<tr className="input-new-data-row">
+									<th scope="row">
+										<img
+											src={require("./assets/icons/add-attributed.png")}
+											id="add-sale-data-btn"
+											className="add-data-btn"
+											onClick={displaySALEInputFields}
+											alt="add new purchase entry button"
+										/>
+									</th>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td>
+										<button
+											type="button"
+											className="btn btn-contain"
+											id="btnSaleUpdate"
+											onClick={addNewSALEDataRow}
+											hidden
+										>
+											Actualizar
+										</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
 				</div>
 			</div>
-
-			<Footer />
-		</div>
+		</>
 	);
 }
 
