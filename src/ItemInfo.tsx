@@ -151,6 +151,10 @@ function ItemInfo() {
 		}
 	}, [DataLoaded]);
 
+	useEffect(() => {
+		checkForMissingInfo();
+	}, [ProductData]);
+
 	function displayPURCHASEInputFields() {
 		$("#input-row-vId").val("");
 		//Delete all data on fields just incase it is already filled
@@ -742,6 +746,7 @@ function ItemInfo() {
 						updateProductData: ProductDataType;
 					};
 				};
+				console.log(changeProductName);
 				setProductData(changeProductName.data.updateProductData);
 			} catch (error) {
 				console.log("error on changeTitle() ", error);
@@ -766,16 +771,14 @@ function ItemInfo() {
 		$("#productTitle").attr("readOnly", 1);
 
 		$("#productDescription").attr("readOnly", 1);
-
-		checkForMissingInfo();
+		if ($("#productDescription").val() == "")
+			$("#productDescription").attr("hidden", 1);
 	}
 
 	function checkForMissingInfo() {
-		ProductData?.description ? (
-			<></>
-		) : (
-			$("#productDescription").attr("hidden", 1)
-		);
+		if (!ProductData?.description || ProductData.description == "")
+			$("#productDescription").attr("hidden", 1);
+		else $("#productDescription").removeAttr("hidden");
 	}
 
 	function deleteTransactionBtnTrigger() {
