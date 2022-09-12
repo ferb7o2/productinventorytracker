@@ -724,13 +724,12 @@ function ItemInfo() {
 		if ($("#productTitle").val() != "") {
 			if (
 				$("#productTitle").val() == ProductData?.name &&
-				($("#productDescription").val() !== "" ||
-					$("#productDescription").val() == ProductData?.description)
+				$("#productDescription").val() == ProductData?.description
 			)
 				return;
 
 			try {
-				const changeProductName = await API.graphql(
+				const changeProductName = (await API.graphql(
 					graphqlOperation(updateProductData, {
 						input: {
 							id: ProductData?.id,
@@ -738,7 +737,12 @@ function ItemInfo() {
 							description: $("#productDescription").val(),
 						},
 					})
-				);
+				)) as {
+					data: {
+						updateProductData: ProductDataType;
+					};
+				};
+				setProductData(changeProductName.data.updateProductData);
 			} catch (error) {
 				console.log("error on changeTitle() ", error);
 				errorTemplate.text("Error - al actualizar el Nombre del producto");
