@@ -151,6 +151,10 @@ function ItemInfo() {
 		}
 	}, [DataLoaded]);
 
+	useEffect(() => {
+		checkForMissingInfo();
+	}, [ProductData]);
+
 	function displayPURCHASEInputFields() {
 		$("#input-row-vId").val("");
 		//Delete all data on fields just incase it is already filled
@@ -724,13 +728,12 @@ function ItemInfo() {
 		if ($("#productTitle").val() != "") {
 			if (
 				$("#productTitle").val() == ProductData?.name &&
-				($("#productDescription").val() !== "" ||
-					$("#productDescription").val() == ProductData?.description)
+				$("#productDescription").val() == ProductData?.description
 			)
 				return;
 
 			try {
-				const changeProductName = await API.graphql(
+				const changeProductName = (await API.graphql(
 					graphqlOperation(updateProductData, {
 						input: {
 							id: ProductData?.id,
@@ -738,7 +741,13 @@ function ItemInfo() {
 							description: $("#productDescription").val(),
 						},
 					})
-				);
+				)) as {
+					data: {
+						updateProductData: ProductDataType;
+					};
+				};
+				console.log(changeProductName);
+				setProductData(changeProductName.data.updateProductData);
 			} catch (error) {
 				console.log("error on changeTitle() ", error);
 				errorTemplate.text("Error - al actualizar el Nombre del producto");
@@ -762,16 +771,14 @@ function ItemInfo() {
 		$("#productTitle").attr("readOnly", 1);
 
 		$("#productDescription").attr("readOnly", 1);
-
-		checkForMissingInfo();
+		if ($("#productDescription").val() == "")
+			$("#productDescription").attr("hidden", 1);
 	}
 
 	function checkForMissingInfo() {
-		ProductData?.description ? (
-			<></>
-		) : (
-			$("#productDescription").attr("hidden", 1)
-		);
+		if (!ProductData?.description || ProductData.description == "")
+			$("#productDescription").attr("hidden", 1);
+		else $("#productDescription").removeAttr("hidden");
 	}
 
 	function deleteTransactionBtnTrigger() {

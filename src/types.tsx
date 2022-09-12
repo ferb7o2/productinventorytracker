@@ -4,6 +4,8 @@ export type ProductDataType = {
 	description?: string | null;
 	weightType: string;
 	weightQuantity: number;
+	createdAt?: string | null;
+	updatedAt?: string | null;
 };
 
 export type VendorDataType = {
