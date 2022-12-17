@@ -1,7 +1,9 @@
-# productinventorytracker - a web app for a small-business 
-Live Link - [PJL.Sanangelmx.com](pjl.sanangelmx.com)
+# productinventorytracker - Small business web app 
+Live Link - [pjl.sanangelmx.com](pjl.sanangelmx.com) requires authentication, private web app
 
-Will be integrating a React JS website along with an AWS database for a busines' inventory tracking needs. This replaces business' previous way of tracking (excel spreadsheet). This approach is more efficient and secure as it prevents loss of data and is accessible over the internet; can include custom rules and input restrictions specified by business needs
+A React JS website will be integrated with an AWS database to fulfill a business' inventory tracking requirements. This new approach replaces the use of an Excel spreadsheet and offers improved efficiency and security, as it prevents data loss and can be accessed remotely with customizable rules and input restrictions based on the business' specific needs.
+
+
 
 ### How it looks like on Desktop
 https://user-images.githubusercontent.com/71108160/181841338-062cb8d0-a453-4d06-9d5d-4baa061d06a4.mp4
