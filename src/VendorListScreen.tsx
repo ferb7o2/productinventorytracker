@@ -43,6 +43,7 @@ function VendorListScreen() {
 			setvData(only_data);
 		} catch (error) {
 			console.log("Error retrieving product data (fetchVendorData) ", error);
+			window.alert("ERROR: error al cargar DISTRIBUIDORES de la base de datos");
 		}
 	};
 
