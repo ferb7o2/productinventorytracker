@@ -79,6 +79,7 @@ function ItemInfo() {
 			setPtData(only_data);
 		} catch (error) {
 			console.log("error on fetchPTransactionData() ", error);
+			window.alert("ERROR: error al cargar COMPRAS de la base de datos");
 		}
 	};
 
@@ -92,6 +93,8 @@ function ItemInfo() {
 			setVendorData(vendorData.data.listVendorData.items);
 		} catch (error) {
 			console.log("error on fetchVendorData() ", error);
+
+			window.alert("ERROR: error al cargar DISTRIBUIDORES de la base de datos");
 		}
 	};
 
@@ -112,6 +115,7 @@ function ItemInfo() {
 			setStData(only_data);
 		} catch (error) {
 			console.log("error on fetchVendorData() ", error);
+			window.alert("ERROR: error al cargar VENTAS de la base de datos");
 		}
 	};
 
@@ -399,8 +403,8 @@ function ItemInfo() {
 
 	function focusOut(e: React.KeyboardEvent<HTMLInputElement>) {
 		if (e.keyCode === 13 || e.keyCode === 9) {
-			$("#" + e.target.getAttribute("id")).prop("disabled", true);
-			$("#" + e.target.getAttribute("id")).prop("disabled", false); //lose focus out of the textbox
+			$("#" + $(e.target).attr("id")).prop("disabled", true);
+			$("#" + $(e.target).attr("id")).prop("disabled", false); //lose focus out of the textbox
 		}
 	}
 
@@ -414,7 +418,7 @@ function ItemInfo() {
 
 		try {
 			let newVal = parseFloat(e.target.value.replace(",", ""));
-
+			if (isNaN(newVal)) throw new Error("No valid value");
 			if (newVal == lastValue) return;
 			const changeInvoiceId = await API.graphql(
 				graphqlOperation(updatePurchaseTransactionData2022, {
@@ -454,6 +458,7 @@ function ItemInfo() {
 		try {
 			let newVal = parseFloat(e.target.value.replace(",", ""));
 			if (newVal == lastValue) return;
+			if (isNaN(newVal)) throw new Error("No valid value");
 			const changeInvoiceId = await API.graphql(
 				graphqlOperation(updatePurchaseTransactionData2022, {
 					input: { id: toChangeId, purchasePrice: newVal },
