@@ -47,22 +47,35 @@ function VendorInfo() {
 	};
 
 	const fetchPTransactionData = async () => {
-		try {
-			const pTransactionData = (await API.graphql(
-				graphqlOperation(listPurchaseTransactionData2022svId, {
-					vId: vId_global,
-				})
-			)) as {
-				data: {
-					listPurchaseTransactionData2022s: { items: PtransactionDataType[] };
-				};
-			};
+		let nextToken = null;
+		let tempArray = [] as PtransactionDataType[];
 
-			let only_data =
-				pTransactionData.data.listPurchaseTransactionData2022s.items.sort(
-					(a, b) => a.date.localeCompare(b.date)
-				);
-			setPtData(only_data);
+		try {
+			do {
+				const pTransactionData = (await API.graphql(
+					graphqlOperation(listPurchaseTransactionData2022svId, {
+						vId: vId_global,
+						nextToken: nextToken,
+					})
+				)) as {
+					data: {
+						listPurchaseTransactionData2022s: {
+							items: PtransactionDataType[];
+							nextToken: string | null;
+						};
+					};
+				};
+
+				let only_data =
+					pTransactionData.data.listPurchaseTransactionData2022s.items;
+
+				nextToken =
+					pTransactionData.data.listPurchaseTransactionData2022s.nextToken;
+
+				tempArray = tempArray.concat(only_data);
+			} while (nextToken !== null);
+
+			setPtData(tempArray.sort((a, b) => a.date.localeCompare(b.date)));
 		} catch (error) {
 			console.log("error on fetchPTransactionData() ", error);
 			window.alert("ERROR: error al cargar COMPRAS de la base de datos");
@@ -70,12 +83,29 @@ function VendorInfo() {
 	};
 
 	const fetchProductData = async () => {
-		try {
-			const productDatas = (await API.graphql(
-				graphqlOperation(listProductData)
-			)) as { data: { listProductData: { items: ProductDataType[] } } };
+		let nextToken = null;
+		let tempArray = [] as ProductDataType[];
 
-			setProductData(productDatas.data.listProductData.items);
+		try {
+			do {
+				const productDatas = (await API.graphql(
+					graphqlOperation(listProductData, { nextToken: nextToken })
+				)) as {
+					data: {
+						listProductData: {
+							items: ProductDataType[];
+							nextToken: string | null;
+						};
+					};
+				};
+
+				let only_data = productDatas.data.listProductData.items;
+
+				nextToken = productDatas.data.listProductData.nextToken;
+				tempArray = tempArray.concat(only_data);
+			} while (nextToken !== null);
+
+			setProductData(tempArray);
 		} catch (error) {
 			console.log("Error retrieving vendor data (fetchProductData) ", error);
 			window.alert("ERROR: error al cargar PRODUCTOS de la base de datos");

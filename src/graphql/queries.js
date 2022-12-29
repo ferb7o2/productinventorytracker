@@ -52,10 +52,9 @@ export const getProductData = /* GraphQL */ `
 export const listProductData = /* GraphQL */ `
 	query ListProductData(
 		$filter: ModelProductDataFilterInput
-		$limit: Int = 99999
 		$nextToken: String
 	) {
-		listProductData(filter: $filter, limit: $limit, nextToken: $nextToken) {
+		listProductData(filter: $filter, limit: 9999, nextToken: $nextToken) {
 			items {
 				id
 				name
@@ -82,10 +81,11 @@ export const getPurchaseTransactionData2022 = /* GraphQL */ `
 `;
 
 export const listPurchaseTransactionData2022s = /* GraphQL */ `
-	query ListPurchaseTransactionData2022s($pId: String) {
+	query ListPurchaseTransactionData2022s($pId: String, $nextToken: String) {
 		listPurchaseTransactionData2022s(
-			limit: 999999
+			limit: 9999
 			filter: { pId: { eq: $pId } }
+			nextToken: $nextToken
 		) {
 			nextToken
 			items {
@@ -102,10 +102,11 @@ export const listPurchaseTransactionData2022s = /* GraphQL */ `
 `;
 
 export const listPurchaseTransactionData2022svId = /* GraphQL */ `
-	query ListPurchaseTransactionData2022s($vId: String) {
+	query ListPurchaseTransactionData2022s($vId: String, $nextToken: String) {
 		listPurchaseTransactionData2022s(
-			limit: 999999
+			limit: 9999
 			filter: { vId: { eq: $vId } }
+			nextToken: $nextToken
 		) {
 			nextToken
 			items {
@@ -134,11 +135,13 @@ export const getSaleTransactionData2022 = /* GraphQL */ `
 	}
 `;
 export const listSaleTransactionData2022s = /* GraphQL */ `
-	query ListSaleTransactionData2022s($pId: String!) {
+	query ListSaleTransactionData2022s($pId: String!, $nextToken: String) {
 		listSaleTransactionData2022s(
-			limit: 9999999
+			limit: 9999
 			filter: { pId: { eq: $pId } }
+			nextToken: $nextToken
 		) {
+			nextToken
 			items {
 				date
 				id
@@ -167,10 +170,9 @@ export const getVendorData = /* GraphQL */ `
 export const listVendorData = /* GraphQL */ `
 	query ListVendorData(
 		$filter: ModelVendorDataFilterInput
-		$limit: Int = 99999999
 		$nextToken: String
 	) {
-		listVendorData(filter: $filter, limit: $limit, nextToken: $nextToken) {
+		listVendorData(filter: $filter, limit: 9999, nextToken: $nextToken) {
 			items {
 				id
 				name

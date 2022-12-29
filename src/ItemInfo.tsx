@@ -61,22 +61,35 @@ function ItemInfo() {
 	};
 
 	const fetchPTransactionData = async () => {
+		let nextToken = null;
+		let tempArray = [] as PtransactionDataType[];
 		try {
-			const pTransactionData = (await API.graphql(
-				graphqlOperation(listPurchaseTransactionData2022s, { pId: pId })
-			)) as {
-				data: {
-					listPurchaseTransactionData2022s: { items: PtransactionDataType[] };
+			do {
+				const pTransactionData = (await API.graphql(
+					graphqlOperation(listPurchaseTransactionData2022s, {
+						pId: pId,
+						nextToken: nextToken,
+					})
+				)) as {
+					data: {
+						listPurchaseTransactionData2022s: {
+							items: PtransactionDataType[];
+							nextToken: string | null;
+						};
+					};
 				};
-			};
 
-			let only_data =
-				pTransactionData.data.listPurchaseTransactionData2022s.items.sort(
-					(a, b) => a.date.localeCompare(b.date)
-				);
+				let only_data =
+					pTransactionData.data.listPurchaseTransactionData2022s.items;
+
+				nextToken =
+					pTransactionData.data.listPurchaseTransactionData2022s.nextToken;
+
+				tempArray = tempArray.concat(only_data);
+			} while (nextToken !== null);
 
 			//console.log(pTransactionData.data.listPurchaseTransactionData2022s.items);
-			setPtData(only_data);
+			setPtData(tempArray.sort((a, b) => a.date.localeCompare(b.date)));
 		} catch (error) {
 			console.log("error on fetchPTransactionData() ", error);
 			window.alert("ERROR: error al cargar COMPRAS de la base de datos");
@@ -84,13 +97,29 @@ function ItemInfo() {
 	};
 
 	const fetchVendorData = async () => {
+		let nextToken = null;
+		let tempArray = [] as VendorDataType[];
 		try {
-			const vendorData = (await API.graphql(
-				graphqlOperation(listVendorData)
-			)) as { data: { listVendorData: { items: VendorDataType[] } } };
+			do {
+				const vendorData = (await API.graphql(
+					graphqlOperation(listVendorData, { nextToken: nextToken })
+				)) as {
+					data: {
+						listVendorData: {
+							items: VendorDataType[];
+							nextToken: string | null;
+						};
+					};
+				};
+
+				let only_data = vendorData.data.listVendorData.items;
+
+				nextToken = vendorData.data.listVendorData.nextToken;
+				tempArray = tempArray.concat(only_data);
+			} while (nextToken !== null);
 
 			//console.log(vendorData.data.listVendorData.items);
-			setVendorData(vendorData.data.listVendorData.items);
+			setVendorData(tempArray);
 		} catch (error) {
 			console.log("error on fetchVendorData() ", error);
 
@@ -99,20 +128,32 @@ function ItemInfo() {
 	};
 
 	const fetchSaleTData = async () => {
+		let nextToken = null;
+		let tempArray = [] as StransactionDataType[];
 		try {
-			const saleData = (await API.graphql(
-				graphqlOperation(listSaleTransactionData2022s, { pId: pId })
-			)) as {
-				data: {
-					listSaleTransactionData2022s: { items: StransactionDataType[] };
+			do {
+				const saleData = (await API.graphql(
+					graphqlOperation(listSaleTransactionData2022s, {
+						pId: pId,
+						nextToken: nextToken,
+					})
+				)) as {
+					data: {
+						listSaleTransactionData2022s: {
+							items: StransactionDataType[];
+							nextToken: string | null;
+						};
+					};
 				};
-			};
 
-			let only_data = saleData.data.listSaleTransactionData2022s.items.sort(
-				(a, b) => a.date.localeCompare(b.date)
-			);
+				let only_data = saleData.data.listSaleTransactionData2022s.items;
 
-			setStData(only_data);
+				nextToken = saleData.data.listSaleTransactionData2022s.nextToken;
+
+				tempArray = tempArray.concat(only_data);
+			} while (nextToken !== null);
+
+			setStData(tempArray.sort((a, b) => a.date.localeCompare(b.date)));
 		} catch (error) {
 			console.log("error on fetchVendorData() ", error);
 			window.alert("ERROR: error al cargar VENTAS de la base de datos");
