@@ -47,16 +47,32 @@ function Home(this: any) {
 	const [toDelete, setToDelete] = useState<toDeleteType[]>([]);
 
 	const fetchProductData = async () => {
-		try {
-			const productDatas = (await API.graphql(
-				graphqlOperation(listProductData)
-			)) as { data: { listProductData: { items: ProductDataType[] } } };
+		let nextToken = null;
+		let tempArray = [] as ProductDataType[];
 
-			let only_data = productDatas.data.listProductData.items;
-			only_data = only_data.sort((a, b) => a.name.localeCompare(b.name));
-			setProductData(only_data);
+		try {
+			do {
+				const productDatas = (await API.graphql(
+					graphqlOperation(listProductData, { nextToken: nextToken })
+				)) as {
+					data: {
+						listProductData: {
+							items: ProductDataType[];
+							nextToken: string | null;
+						};
+					};
+				};
+
+				let only_data = productDatas.data.listProductData.items;
+
+				nextToken = productDatas.data.listProductData.nextToken;
+				tempArray = tempArray.concat(only_data);
+			} while (nextToken !== null);
+
+			setProductData(tempArray);
 		} catch (error) {
 			console.log("Error retrieving vendor data (fetchProductData) ", error);
+			window.alert("ERROR: error al cargar PRODUCTOS de la base de datos");
 		}
 	};
 

@@ -32,17 +32,32 @@ function VendorListScreen() {
 	const [toDelete, setToDelete] = useState<toDeleteVendorType[]>([]);
 
 	const fetchVendorData = async () => {
+		let nextToken = null;
+		let tempArray = [] as VendorDataType[];
 		try {
-			let vendor_data = (await API.graphql(
-				graphqlOperation(listVendorData)
-			)) as { data: { listVendorData: { items: VendorDataType[] } } };
+			do {
+				const vendorData = (await API.graphql(
+					graphqlOperation(listVendorData, { nextToken: nextToken })
+				)) as {
+					data: {
+						listVendorData: {
+							items: VendorDataType[];
+							nextToken: string | null;
+						};
+					};
+				};
 
-			let only_data = vendor_data.data.listVendorData.items;
+				let only_data = vendorData.data.listVendorData.items;
 
-			only_data = only_data.sort((a, b) => a.name.localeCompare(b.name));
-			setvData(only_data);
+				nextToken = vendorData.data.listVendorData.nextToken;
+				tempArray = tempArray.concat(only_data);
+			} while (nextToken !== null);
+
+			//console.log(vendorData.data.listVendorData.items);
+			setvData(tempArray);
 		} catch (error) {
-			console.log("Error retrieving product data (fetchVendorData) ", error);
+			console.log("error on fetchVendorData() ", error);
+
 			window.alert("ERROR: error al cargar DISTRIBUIDORES de la base de datos");
 		}
 	};
