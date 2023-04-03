@@ -21,4 +21,5 @@ https://user-images.githubusercontent.com/71108160/183523561-7d6211ff-a0c6-46f8-
 To secure our site, we utilize Amazon Cognito and store data using Dynamo DB, which is based on relational databases. We retrieve the data to display it on the screen and use jQuery to easily obtain inputs and send API requests to update the data.
 Internal logic to display and "connect" data was all created by me
 
-![PJL-PIT-DB-Schema](https://user-images.githubusercontent.com/71108160/229425202-33a20984-24bc-4181-a43c-b5dcaf9bd935.png)
+
+![PJL-PIT-DB-Schema](https://user-images.githubusercontent.com/71108160/229438798-999ba791-3019-421f-9b44-b199914545ad.png)
