@@ -36,11 +36,13 @@ import { ProductDataType, toDeleteType, VendorDataType } from "./types";
 import $ from "jquery";
 import { DeleteProduct } from "./components/DeleteProduct";
 import { MobileSignOutOption } from "./components/MobileSignOutOption";
+import { getUserSession } from "./Cognito";
 
 Amplify.configure(awsconfig);
 
 function Home(this: any) {
 	const [ProductData, setProductData] = useState<ProductDataType[]>([]);
+	const [ProductCount, setProductCount] = useState<any>(0);
 
 	const [searchTermProduct, setSearchTermProduct] = useState("");
 
@@ -76,10 +78,22 @@ function Home(this: any) {
 		}
 	};
 
+	const fetchProductCount = async () => {
+		try {
+			fetch("http://localhost/products/count", {
+				headers: { Authorization: `Bearer ${"s"}` },
+			});
+		} catch (error) {
+			console.log("Error retrieving vendor data (fetchProductData) ", error);
+			window.alert("ERROR: error al cargar PRODUCTOS de la base de datos");
+		}
+	};
+
 	useEffect(() => {
 		fetchProductData();
 		$("#vendorTabBtn").removeClass("nav-selected");
 		$("#productTabBtn").addClass("nav-selected");
+		console.log(getUserSession());
 	}, []);
 
 	const history = useHistory();
@@ -173,7 +187,7 @@ function Home(this: any) {
 					<div className="container-top-first-row">
 						<div className="container-title-section">
 							<p className="container-title">Productos</p>
-							<p className="container-title-count">({ProductData.length})</p>
+							<p className="container-title-count">({ProductCount})</p>
 						</div>
 						<div className="title-button-container">
 							<button
@@ -346,35 +360,33 @@ function App() {
 	return (
 		<HashRouter basename={process.env.PUBLIC_URL}>
 			<div className="Application">
-				<Authenticator className="authy">
-					<NavBar />
+				<NavBar />
 
-					<Switch>
-						{" "}
-						{/*Makes sure we are only on one route at a time*/}
-						<Route exact path="/" component={withAuthenticator(Home)} />
-						<Route
-							exact
-							path="/item/:pId"
-							component={withAuthenticator(ItemInfo)}
-						/>
-						<Route
-							exact
-							path="/vendor/:vId_global"
-							component={withAuthenticator(VendorInfo)}
-						/>
-						<Route
-							exact
-							path="/vendor"
-							component={withAuthenticator(VendorListScreen)}
-						/>
-					</Switch>
-					<MobileSignOutOption />
-					<Footer />
-				</Authenticator>
+				<Switch>
+					{" "}
+					{/*Makes sure we are only on one route at a time*/}
+					<Route exact path="/" component={withAuthenticator(Home)} />
+					<Route
+						exact
+						path="/item/:pId"
+						component={withAuthenticator(ItemInfo)}
+					/>
+					<Route
+						exact
+						path="/vendor/:vId_global"
+						component={withAuthenticator(VendorInfo)}
+					/>
+					<Route
+						exact
+						path="/vendor"
+						component={withAuthenticator(VendorListScreen)}
+					/>
+				</Switch>
+				<MobileSignOutOption />
+				<Footer />
 			</div>
 		</HashRouter>
 	);
 }
 
-export default App;
+export default withAuthenticator(App);
