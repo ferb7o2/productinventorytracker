@@ -1,9 +1,10 @@
 export type ProductDataType = {
+	key: any;
 	id: string;
 	name: string;
 	description?: string | null;
 	weightType: string;
-	weightQuantity: number;
+	weightQty: number;
 	createdAt?: string | null;
 	updatedAt?: string | null;
 };

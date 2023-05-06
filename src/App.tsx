@@ -36,64 +36,81 @@ import { ProductDataType, toDeleteType, VendorDataType } from "./types";
 import $ from "jquery";
 import { DeleteProduct } from "./components/DeleteProduct";
 import { MobileSignOutOption } from "./components/MobileSignOutOption";
-import { getUserSession } from "./Cognito";
+import { getAccessToken, getUserSession } from "./Cognito";
+import ReactPaginate from "react-paginate";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 Amplify.configure(awsconfig);
 
 function Home(this: any) {
-	const [ProductData, setProductData] = useState<ProductDataType[]>([]);
-	const [ProductCount, setProductCount] = useState<any>(0);
+	const [productData, setProductData] = useState<ProductDataType[]>([]);
+	const [productCount, setProductCount] = useState<any>(0);
+	const [hasMore, setHasMore] = useState(false);
 
 	const [searchTermProduct, setSearchTermProduct] = useState("");
+	const [lastRowNum, SetLastRow] = useState(0);
 
 	const [toDelete, setToDelete] = useState<toDeleteType[]>([]);
 
-	const fetchProductData = async () => {
-		let nextToken = null;
-		let tempArray = [] as ProductDataType[];
-
+	const fetchProductCount = async () => {
 		try {
-			do {
-				const productDatas = (await API.graphql(
-					graphqlOperation(listProductData, { nextToken: nextToken })
-				)) as {
-					data: {
-						listProductData: {
-							items: ProductDataType[];
-							nextToken: string | null;
-						};
-					};
-				};
+			const token = await getAccessToken();
+			const data = await fetch(
+				`${process.env.REACT_APP_API_URL}/products/count`,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			)
+				.then((res) => res.json())
+				.then((datax) => {
+					return datax;
+				});
 
-				let only_data = productDatas.data.listProductData.items;
-
-				nextToken = productDatas.data.listProductData.nextToken;
-				tempArray = tempArray.concat(only_data);
-			} while (nextToken !== null);
-
-			setProductData(tempArray);
+			setProductCount(data[0].COUNT);
 		} catch (error) {
-			console.log("Error retrieving vendor data (fetchProductData) ", error);
-			window.alert("ERROR: error al cargar PRODUCTOS de la base de datos");
+			console.log("Error retrieving COUNT data (fetchCountData) ", error);
 		}
 	};
 
-	const fetchProductCount = async () => {
+	const fetchProductByTransactions = async () => {
 		try {
-			fetch("http://localhost/products/count", {
-				headers: { Authorization: `Bearer ${"s"}` },
-			});
+			const token = await getAccessToken();
+			const data = await fetch(
+				`${process.env.REACT_APP_API_URL}/products/mostTransactions?rowNum=${lastRowNum}`,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			)
+				.then((res) => res.json())
+				.then((datax) => {
+					return datax;
+				});
+
+			setProductData((prevData) => [...prevData, ...data]);
+			if (data.length > 0) {
+				SetLastRow(data[data.length - 1].rowNum);
+			}
+			setHasMore(data.length > 0);
 		} catch (error) {
-			console.log("Error retrieving vendor data (fetchProductData) ", error);
-			window.alert("ERROR: error al cargar PRODUCTOS de la base de datos");
+			console.error(
+				"Error retrieving Product data (fetchProductByTransactionsData) ",
+				error
+			);
+			window.alert(
+				"Error retrieving Product data (fetchProductByTransactionsData) "
+			);
 		}
 	};
 
 	useEffect(() => {
-		fetchProductData();
 		$("#vendorTabBtn").removeClass("nav-selected");
 		$("#productTabBtn").addClass("nav-selected");
-		console.log(getUserSession());
+		fetchProductCount();
+		fetchProductByTransactions();
 	}, []);
 
 	const history = useHistory();
@@ -124,7 +141,7 @@ function Home(this: any) {
 					let toDeleteName = checkboxes[i].id;
 
 					var numberOfOcurrences = toDelete.filter(
-						({ pId, pName }) => pId == toDeleteId
+						({ pId }) => pId == toDeleteId
 					);
 
 					if (toDeleteId != "") {
@@ -142,10 +159,7 @@ function Home(this: any) {
 				if (checkboxes[i].type == "checkbox") {
 					checkboxes[i].checked = false;
 					let toDeleteId = checkboxes[i].name;
-					let toDeleteName = checkboxes[i].id;
-					let filtered_array = toDelete.filter(
-						({ pId, pName }) => pId != toDeleteId
-					);
+					let filtered_array = toDelete.filter(({ pId }) => pId != toDeleteId);
 					setToDelete(filtered_array);
 				}
 			}
@@ -171,9 +185,6 @@ function Home(this: any) {
 			let filtered_array = toDelete.filter(({ pId, pName }) => pId != pIdInput);
 			setToDelete(filtered_array);
 		}
-		let display = toDelete;
-
-		console.log(display);
 	}
 
 	return (
@@ -187,7 +198,7 @@ function Home(this: any) {
 					<div className="container-top-first-row">
 						<div className="container-title-section">
 							<p className="container-title">Productos</p>
-							<p className="container-title-count">({ProductCount})</p>
+							<p className="container-title-count">({productCount})</p>
 						</div>
 						<div className="title-button-container">
 							<button
@@ -273,7 +284,13 @@ function Home(this: any) {
 					</div>
 				</div>
 
-				<div className="row">
+				<InfiniteScroll
+					dataLength={productData.length}
+					next={fetchProductByTransactions}
+					hasMore={hasMore}
+					loader={<h4>Loading...</h4>}
+					className="row"
+				>
 					<table className="tble">
 						<thead>
 							<tr className="thead-row">
@@ -300,16 +317,7 @@ function Home(this: any) {
 							</tr>
 						</thead>
 						<tbody>
-							{ProductData.filter((val) => {
-								if (searchTermProduct === "") return val;
-								else if (
-									val.name
-										.toLowerCase()
-										.includes(searchTermProduct.toLowerCase())
-								)
-									return val;
-								else return null;
-							}).map(({ id, name, weightType }) => (
+							{productData.map(({ id, name, weightType }) => (
 								<tr key={id}>
 									<td className="select-col">
 										<input
@@ -350,7 +358,7 @@ function Home(this: any) {
 							))}
 						</tbody>
 					</table>
-				</div>
+				</InfiniteScroll>
 			</div>
 		</div>
 	);
