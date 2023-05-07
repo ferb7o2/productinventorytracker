@@ -1,5 +1,5 @@
 export type ProductDataType = {
-	key: any;
+	rowNum: number;
 	id: string;
 	name: string;
 	description?: string | null;

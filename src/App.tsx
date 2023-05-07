@@ -21,8 +21,7 @@ import VendorListScreen from "./VendorListScreen";
 //Database- AMPLIFY
 import { Amplify, API, graphqlOperation } from "aws-amplify";
 import awsconfig from "./aws-exports";
-import { Authenticator, withAuthenticator } from "@aws-amplify/ui-react";
-import { listProductData, listVendorData } from "./graphql/queries";
+import { withAuthenticator } from "@aws-amplify/ui-react";
 
 //Components
 import { NavBar } from "./components/NavBar";
@@ -31,29 +30,35 @@ import "@aws-amplify/ui-react/styles.css";
 import { AddProduct } from "./components/AddProduct";
 
 //Types
-import { ProductDataType, toDeleteType, VendorDataType } from "./types";
+import { ProductDataType, toDeleteType } from "./types";
 
 import $ from "jquery";
 import { DeleteProduct } from "./components/DeleteProduct";
 import { MobileSignOutOption } from "./components/MobileSignOutOption";
-import { getAccessToken, getUserSession } from "./Cognito";
-import ReactPaginate from "react-paginate";
+import { getAccessToken } from "./Cognito";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 Amplify.configure(awsconfig);
 
 function Home(this: any) {
+	//essential display data
 	const [productData, setProductData] = useState<ProductDataType[]>([]);
 	const [productCount, setProductCount] = useState<any>(0);
 	const [hasMore, setHasMore] = useState(false);
 
+	//auxiliary variables - for search actions
 	const [searchTermProduct, setSearchTermProduct] = useState("");
+	const [preSearch, setPreSearch] = useState("");
+
+	//auxiliary variables - for pagination
 	const [lastRowNum, SetLastRow] = useState(0);
 
+	//auxiliary - for delete action
 	const [toDelete, setToDelete] = useState<toDeleteType[]>([]);
 
 	const fetchProductCount = async () => {
 		try {
+			//get user jwst token to query our API
 			const token = await getAccessToken();
 			const data = await fetch(
 				`${process.env.REACT_APP_API_URL}/products/count`,
@@ -68,17 +73,28 @@ function Home(this: any) {
 					return datax;
 				});
 
-			setProductCount(data[0].COUNT);
+			if (data.length > 0) {
+				setProductCount(data[0].COUNT);
+			}
 		} catch (error) {
 			console.log("Error retrieving COUNT data (fetchCountData) ", error);
 		}
 	};
 
-	const fetchProductByTransactions = async () => {
+	const fetchProductByTransactions = async (
+		searchTxt: string,
+		entered = false
+	) => {
+		//we use local rowIndex variable to prevent delays on global
+		//if we triggered search, start searching from index 0 else, keep pagination from last variable's index
+		var rowIndex = entered ? 0 : lastRowNum;
+
 		try {
+			//get user jwst token to query our API
 			const token = await getAccessToken();
+			console.log(token);
 			const data = await fetch(
-				`${process.env.REACT_APP_API_URL}/products/mostTransactions?rowNum=${lastRowNum}`,
+				`${process.env.REACT_APP_API_URL}/products/mostTransactions?rowNum=${rowIndex}&searchBy=${searchTxt}`,
 				{
 					headers: {
 						Authorization: `Bearer ${token}`,
@@ -90,8 +106,13 @@ function Home(this: any) {
 					return datax;
 				});
 
-			setProductData((prevData) => [...prevData, ...data]);
+			//if statement
+			entered
+				? setProductData(data) //if entered, forget all previous data and query new one (with search)
+				: setProductData((prevData) => [...prevData, ...data]); //if not, keep on adding new data to existing one
+
 			if (data.length > 0) {
+				//for pagination, remember which index was the last one queried so new query can start from there
 				SetLastRow(data[data.length - 1].rowNum);
 			}
 			setHasMore(data.length > 0);
@@ -101,16 +122,18 @@ function Home(this: any) {
 				error
 			);
 			window.alert(
-				"Error retrieving Product data (fetchProductByTransactionsData) "
+				"Error retrieving Product data (fetchProductByTransactionsData) " +
+					error
 			);
 		}
 	};
 
+	//Initialize all of this when first rendered
 	useEffect(() => {
 		$("#vendorTabBtn").removeClass("nav-selected");
 		$("#productTabBtn").addClass("nav-selected");
 		fetchProductCount();
-		fetchProductByTransactions();
+		fetchProductByTransactions(searchTermProduct);
 	}, []);
 
 	const history = useHistory();
@@ -276,8 +299,17 @@ function Home(this: any) {
 							type="search"
 							placeholder=" Buscar producto"
 							aria-label="Search"
+							onKeyDown={(event) => {
+								if (event.key === "Enter") {
+									fetchProductByTransactions(preSearch, true);
+									setSearchTermProduct(preSearch);
+								}
+							}}
 							onChange={(event) => {
-								setSearchTermProduct(event.target.value);
+								setPreSearch(event.target.value);
+								if (event.target.value.length == 0) {
+									setSearchTermProduct("");
+								}
 							}}
 						/>
 						{/*<button className="btn btn-outline-success" id='search-btn' type="submit">Buscar</button>*/}
@@ -286,7 +318,9 @@ function Home(this: any) {
 
 				<InfiniteScroll
 					dataLength={productData.length}
-					next={fetchProductByTransactions}
+					next={() => {
+						fetchProductByTransactions(searchTermProduct);
+					}}
 					hasMore={hasMore}
 					loader={<h4>Loading...</h4>}
 					className="row"
