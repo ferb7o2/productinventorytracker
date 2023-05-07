@@ -44,7 +44,6 @@ function Home(this: any) {
 	//essential display data
 	const [productData, setProductData] = useState<ProductDataType[]>([]);
 	const [productCount, setProductCount] = useState<any>(0);
-	const [hasMore, setHasMore] = useState(false);
 
 	//auxiliary variables - for search actions
 	const [searchTermProduct, setSearchTermProduct] = useState("");
@@ -52,6 +51,7 @@ function Home(this: any) {
 
 	//auxiliary variables - for pagination
 	const [lastRowNum, SetLastRow] = useState(0);
+	const [hasMore, setHasMore] = useState(false);
 
 	//auxiliary - for delete action
 	const [toDelete, setToDelete] = useState<toDeleteType[]>([]);

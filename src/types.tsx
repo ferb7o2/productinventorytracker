@@ -10,6 +10,7 @@ export type ProductDataType = {
 };
 
 export type VendorDataType = {
+	rowNum: number;
 	id: string;
 	name: string;
 	rfc?: string;
