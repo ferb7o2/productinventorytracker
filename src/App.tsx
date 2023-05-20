@@ -1,17 +1,17 @@
-import "./App.css";
-
 import {
 	BrowserRouter as /*Router,*/ HashRouter,
 	Route,
 	Switch,
 } from "react-router-dom";
 import { useHistory } from "react-router-dom"; //Helps us redirect to other pages
+import { useEffect, useState } from "react";
 
+//Import CSS styling
+import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css"; //Boostrap Import 1/2
 import "bootstrap/dist/js/bootstrap.bundle.min"; //Boostrap Import 2/2
 import "./css/homePageStyle.css";
-
-import { useEffect, useState } from "react";
+import "@aws-amplify/ui-react/styles.css";
 
 //Import external pages in folder (Screens)
 import ItemInfo from "./ItemInfo";
@@ -19,24 +19,23 @@ import VendorInfo from "./VendorInfo";
 import VendorListScreen from "./VendorListScreen";
 
 //Database- AMPLIFY
-import { Amplify, API, graphqlOperation } from "aws-amplify";
+import { Amplify } from "aws-amplify";
 import awsconfig from "./aws-exports";
 import { withAuthenticator } from "@aws-amplify/ui-react";
 
 //Components
 import { NavBar } from "./components/NavBar";
 import Footer from "./components/Footer";
-import "@aws-amplify/ui-react/styles.css";
 import { AddProduct } from "./components/AddProduct";
+import { DeleteProduct } from "./components/DeleteProduct";
+import { MobileSignOutOption } from "./components/MobileSignOutOption";
+import { getAccessToken } from "./Cognito";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 //Types
 import { ProductDataType, toDeleteType } from "./types";
 
 import $ from "jquery";
-import { DeleteProduct } from "./components/DeleteProduct";
-import { MobileSignOutOption } from "./components/MobileSignOutOption";
-import { getAccessToken } from "./Cognito";
-import InfiniteScroll from "react-infinite-scroll-component";
 
 Amplify.configure(awsconfig);
 
@@ -153,41 +152,41 @@ function Home(this: any) {
 		}
 	}
 
-	function toggleAllCheckboxes() {
-		const checkM = document.getElementById("main-checkbox") as HTMLInputElement;
-		var checkboxes = document.getElementsByTagName("input");
-		if (checkM.checked) {
-			for (var i = 0; i < checkboxes.length; i++) {
-				if (checkboxes[i].type == "checkbox") {
-					checkboxes[i].checked = true;
-					let toDeleteId = checkboxes[i].name;
-					let toDeleteName = checkboxes[i].id;
+	// function toggleAllCheckboxes() {
+	// 	const checkM = document.getElementById("main-checkbox") as HTMLInputElement;
+	// 	var checkboxes = document.getElementsByTagName("input");
+	// 	if (checkM.checked) {
+	// 		for (var i = 0; i < checkboxes.length; i++) {
+	// 			if (checkboxes[i].type == "checkbox") {
+	// 				checkboxes[i].checked = true;
+	// 				let toDeleteId = checkboxes[i].name;
+	// 				let toDeleteName = checkboxes[i].id;
 
-					var numberOfOcurrences = toDelete.filter(
-						({ pId }) => pId == toDeleteId
-					);
+	// 				var numberOfOcurrences = toDelete.filter(
+	// 					({ pId }) => pId == toDeleteId
+	// 				);
 
-					if (toDeleteId != "") {
-						if (numberOfOcurrences.length == 0) {
-							setToDelete((toDelete) => [
-								...toDelete,
-								{ pId: toDeleteId, pName: toDeleteName },
-							]);
-						}
-					}
-				}
-			}
-		} else {
-			for (var i = 0; i < checkboxes.length; i++) {
-				if (checkboxes[i].type == "checkbox") {
-					checkboxes[i].checked = false;
-					let toDeleteId = checkboxes[i].name;
-					let filtered_array = toDelete.filter(({ pId }) => pId != toDeleteId);
-					setToDelete(filtered_array);
-				}
-			}
-		}
-	}
+	// 				if (toDeleteId != "") {
+	// 					if (numberOfOcurrences.length == 0) {
+	// 						setToDelete((toDelete) => [
+	// 							...toDelete,
+	// 							{ pId: toDeleteId, pName: toDeleteName },
+	// 						]);
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	} else {
+	// 		for (var i = 0; i < checkboxes.length; i++) {
+	// 			if (checkboxes[i].type == "checkbox") {
+	// 				checkboxes[i].checked = false;
+	// 				let toDeleteId = checkboxes[i].name;
+	// 				let filtered_array = toDelete.filter(({ pId }) => pId != toDeleteId);
+	// 				setToDelete(filtered_array);
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	function addToDeleteArray(pIdInput: string, pNameInput: string) {
 		const currentChecked = document.getElementById(

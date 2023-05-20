@@ -2,7 +2,6 @@ import * as moment from "moment";
 import $ from "jquery";
 import { PtransactionDataType, VendorDataType } from "../types";
 import { getAccessToken } from "../Cognito";
-import { Response } from "node-fetch";
 
 interface AddPurchaseRowProps {
 	vendorData: VendorDataType[];
@@ -58,7 +57,7 @@ export function AddPurchaseRow(props: AddPurchaseRowProps) {
 
 		const purchase = {
 			id: "we dont use it",
-			productId: pId || "0",
+			productId: pId,
 			date: $("#input-row-date").val()?.toString(),
 			invoiceId: $("#input-row-purchaseInvoiceId").val(),
 			qty: $("#input-row-purchaseWeight").val(),

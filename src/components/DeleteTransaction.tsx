@@ -1,5 +1,5 @@
 import $ from "jquery";
-import { Redirect, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 import "../css/homePageStyle.css";
 import { useLayoutEffect, useState } from "react";
