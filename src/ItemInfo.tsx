@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom"; //Helps us redirect to other pages
-
 import $ from "jquery";
 
 //Types
@@ -13,12 +12,16 @@ import {
 	toDeleteSaleType,
 	toDeletePurchaseType,
 } from "./types";
+
+//Import Components
 import { DeleteTransaction } from "./components/DeleteTransaction";
-import { getAccessToken } from "./Cognito";
 import { PurchaseYearBox } from "./components/PurchaseYearBox";
 import { AddPurchaseRow } from "./components/AddPurchaseRow";
 import { SaleYearBox } from "./components/SaleYearBox";
 import { AddSaleRow } from "./components/AddSaleRow";
+
+//Import AWS Cognito Authentication
+import { getAccessToken } from "./Cognito";
 
 interface YearList {
 	year: number;
@@ -27,23 +30,26 @@ interface YearList {
 function ItemInfo() {
 	let { pId } = useParams<urlPropType>() || "";
 
-	const [ProductData, setProductData] = useState<ProductDataType>();
+	//Essential display data
+	const [productData, setProductData] = useState<ProductDataType>();
 	const [purchasesYears, setPurchasesYears] = useState<YearList[]>([]);
 	const [salesYears, setSalesYears] = useState<YearList[]>([]);
-	const [pTransaction_data, setPTransaction_Data] = useState<
+	const [pTransactionData, setPTransactionData] = useState<
 		PtransactionDataType[]
 	>([]);
-	const [vendorData, setVendorData] = useState<VendorDataType[]>([]);
 	const [inventoryTotal, setInventoryTotal] = useState<number>(-1);
 	const [sTransactionData, setSTransactionData] = useState<
 		StransactionDataType[]
 	>([]);
-	const [DataLoaded, setDataLoaded] = useState<boolean>(false);
+
+	//Auxiliary data, for deleting, recalculating inventory, passing vendor info & checking for data loads
 	const [toDeleteSale, setToDeleteSale] = useState<toDeleteSaleType[]>([]);
 	const [toDeletePurchase, setToDeletePurchase] = useState<
 		toDeletePurchaseType[]
 	>([]);
 	const [difference, setDifference] = useState<number>(0);
+	const [vendorData, setVendorData] = useState<VendorDataType[]>([]);
+	const [DataLoaded, setDataLoaded] = useState<boolean>(false);
 
 	const fetchProductData = async () => {
 		try {
@@ -207,7 +213,7 @@ function ItemInfo() {
 
 	useEffect(() => {
 		checkForMissingInfo();
-	}, [ProductData]);
+	}, [productData]);
 
 	function focusOut(e: React.KeyboardEvent<HTMLInputElement>) {
 		if (e.keyCode === 13 || e.keyCode === 9) {
@@ -236,8 +242,8 @@ function ItemInfo() {
 		const desc = $("#productDescription").val();
 
 		if (
-			$("#productTitle").val() == ProductData?.name &&
-			$("#productDescription").val() == ProductData?.description
+			$("#productTitle").val() == productData?.name &&
+			$("#productDescription").val() == productData?.description
 		)
 			return;
 
@@ -276,7 +282,7 @@ function ItemInfo() {
 	}
 
 	function checkForMissingInfo() {
-		if (!ProductData?.description || ProductData.description == "")
+		if (!productData?.description || productData.description == "")
 			$("#productDescription").attr("hidden", 1);
 		else $("#productDescription").removeAttr("hidden");
 	}
@@ -366,16 +372,16 @@ function ItemInfo() {
 				return;
 			}
 			//if it's a newly added product (YEAR DOES EXIST), then we sort to make sure we add it at it's correct position
-			const sortedData = [...pTransaction_data, ...newItems].sort(
+			const sortedData = [...pTransactionData, ...newItems].sort(
 				(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
 			);
 
-			setPTransaction_Data(sortedData);
+			setPTransactionData(sortedData);
 			console.log(sortedData);
 			return;
 		}
 		//else, just add to previous to keep order
-		setPTransaction_Data((prevItems) => [...prevItems, ...newItems]);
+		setPTransactionData((prevItems) => [...prevItems, ...newItems]);
 	};
 
 	const setDifferenceFUNC = (differenceReceived: number) => {
@@ -456,7 +462,7 @@ function ItemInfo() {
 
 			return item;
 		});
-		setPTransaction_Data(updatedData);
+		setPTransactionData(updatedData);
 	};
 
 	const updateSale = (
@@ -503,8 +509,8 @@ function ItemInfo() {
 	return (
 		<>
 			<div className="Application">
-				{ProductData?.name ? (
-					<title>Facturación PJL - {ProductData?.name}</title>
+				{productData?.name ? (
+					<title>Facturación PJL - {productData?.name}</title>
 				) : (
 					<title>Facturación PJL - Error al cargar informacion</title>
 				)}
@@ -525,7 +531,7 @@ function ItemInfo() {
 											type="text"
 											id="productTitle"
 											className="container-title vendor-title editable-input"
-											defaultValue={ProductData?.name}
+											defaultValue={productData?.name}
 											onKeyDown={(e) => focusOut(e)}
 											readOnly
 										/>
@@ -539,7 +545,7 @@ function ItemInfo() {
 											id="productDescription"
 											className="product-description editable-input"
 											defaultValue={
-												ProductData?.description ? ProductData.description : ""
+												productData?.description ? productData.description : ""
 											}
 											placeholder="Descripcion"
 											onKeyDown={(e) => focusOut(e)}
@@ -585,7 +591,7 @@ function ItemInfo() {
 
 						<div className="product-third-row">
 							<p className="product-id-subtitle">
-								Product Id: {ProductData?.id}
+								Product Id: {productData?.id}
 							</p>
 							<p className="product-qty-count">
 								Cantidad disponible:{" "}
@@ -640,7 +646,7 @@ function ItemInfo() {
 										# Factura
 									</th>
 									<th scope="col" className="thead-row weight-col">
-										{ProductData?.weightType}
+										{productData?.weightType}
 									</th>
 									<th scope="col" className="thead-row price-col">
 										Precio (MXN)
@@ -661,7 +667,7 @@ function ItemInfo() {
 										year={year}
 										pId={pId}
 										vendorData={vendorData}
-										transactionData={pTransaction_data.filter(
+										transactionData={pTransactionData.filter(
 											(item) => item.date.slice(0, 4) == String(year)
 											//passes only the transactions that match the year of the YearBox
 										)}
@@ -701,7 +707,7 @@ function ItemInfo() {
 										# Invoice
 									</th>
 									<th scope="col" className="thead-row sale-weight-col">
-										{ProductData?.weightType}
+										{productData?.weightType}
 									</th>
 									<th scope="col" className="thead-row sale-price-col">
 										Precio (MXN)
