@@ -47,53 +47,60 @@ function ItemInfo() {
 
 	const fetchProductData = async () => {
 		try {
-			//get user jwst token to query our API
+			// Get the user JWT token to query the API
 			const token = await getAccessToken();
-			console.log(token);
-			const data = await fetch(
+
+			const response = await fetch(
 				`${process.env.REACT_APP_API_URL}/products/${pId}`,
 				{
 					headers: {
 						Authorization: `Bearer ${token}`,
 					},
 				}
-			)
-				.then((res) => res.json())
-				.then((datax) => {
-					return datax;
-				});
+			);
 
-			if (data.length > 0) setProductData(data[0]);
-			setDataLoaded(true);
+			if (response.ok) {
+				const data = await response.json();
+				if (data.length > 0) {
+					setProductData(data[0]);
+				}
+				setDataLoaded(true);
+			} else {
+				throw new Error("Failed to fetch product data");
+			}
 		} catch (error) {
-			console.error("Error retrieving Vendor data (fetchVendorData) ", error);
-			window.alert("Error retrieving Vendor data (fetchVendorData) " + error);
+			console.error("Error retrieving product data (fetchProductData):", error);
+			window.alert(
+				"Error retrieving product data (fetchProductData): " + error
+			);
 		}
 	};
 
-	async function fetchInventorytotal() {
+	async function fetchInventoryTotal() {
 		try {
-			//get user jwst token to query our API
+			// Get the user JWT token to query the API
 			const token = await getAccessToken();
-			const data = await fetch(
+
+			const response = await fetch(
 				`${process.env.REACT_APP_API_URL}/products/${pId}/difference`,
 				{
 					headers: {
 						Authorization: `Bearer ${token}`,
 					},
 				}
-			)
-				.then((res) => res.json())
-				.then((datax) => {
-					return datax;
-				});
+			);
 
-			if (data.length > 0) {
-				setInventoryTotal(data[0].difference);
+			if (response.ok) {
+				const data = await response.json();
+				if (data.length > 0) {
+					setInventoryTotal(data[0].difference);
+				}
+			} else {
+				throw new Error("Failed to fetch inventory data");
 			}
 		} catch (error) {
 			console.error(
-				`Error retrieving Inventory data (fechInventoryToral()) `,
+				"Error retrieving inventory data (fetchInventoryTotal):",
 				error
 			);
 		}
@@ -101,76 +108,82 @@ function ItemInfo() {
 
 	const fetchPurchasesYears = async () => {
 		try {
-			//get user jwst token to query our API
+			// Get the user JWT token to query the API
 			const token = await getAccessToken();
-			const data = await fetch(
+
+			const response = await fetch(
 				`${process.env.REACT_APP_API_URL}/purchases/${pId}/years`,
 				{
 					headers: {
 						Authorization: `Bearer ${token}`,
 					},
 				}
-			)
-				.then((res) => res.json())
-				.then((datax) => {
-					return datax;
-				});
+			);
 
-			if (data.length > 0) {
-				setPurchasesYears(data);
+			if (response.ok) {
+				const data = await response.json();
+				if (data.length > 0) {
+					setPurchasesYears(data);
+				}
+			} else {
+				throw new Error("Failed to fetch purchase years data");
 			}
 		} catch (error) {
-			console.error("Error retrieving Year data (fetchPurchasesYears) ", error);
+			console.error("Error retrieving year data (fetchPurchasesYears):", error);
 		}
 	};
 
 	const fetchSalesYears = async () => {
 		try {
-			//get user jwst token to query our API
+			// Get the user JWT token to query the API
 			const token = await getAccessToken();
-			const data = await fetch(
+
+			const response = await fetch(
 				`${process.env.REACT_APP_API_URL}/sales/${pId}/years`,
 				{
 					headers: {
 						Authorization: `Bearer ${token}`,
 					},
 				}
-			)
-				.then((res) => res.json())
-				.then((datax) => {
-					return datax;
-				});
+			);
 
-			if (data.length > 0) {
-				setSalesYears(data);
+			if (response.ok) {
+				const data = await response.json();
+				if (data.length > 0) {
+					setSalesYears(data);
+				}
+			} else {
+				throw new Error("Failed to fetch sales years data");
 			}
 		} catch (error) {
-			console.error("Error retrieving Year data (fetchSalesYears) ", error);
+			console.error("Error retrieving year data (fetchSalesYears):", error);
 		}
 	};
 
 	const fetchAllVendorData = async () => {
 		try {
-			//get user jwst token to query our API
+			// Get the user JWT token to query the API
 			const token = await getAccessToken();
-			const data = await fetch(`${process.env.REACT_APP_API_URL}/vendors`, {
+
+			const response = await fetch(`${process.env.REACT_APP_API_URL}/vendors`, {
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},
-			})
-				.then((res) => res.json())
-				.then((datax) => {
-					return datax;
-				});
+			});
 
-			setVendorData(data);
+			if (response.ok) {
+				const data = await response.json();
+				setVendorData(data);
+			} else {
+				throw new Error("Failed to fetch vendor data");
+			}
 		} catch (error) {
 			console.error(
-				"Error retrieving Vendor data (fetchAllVendorData()) ",
+				"Error retrieving vendor data (fetchAllVendorData):",
 				error
 			);
 			window.alert(
-				"Error retrieving Vendor data (fetchAllVendorData) " + error
+				"Error retrieving vendor data (fetchAllVendorData): " + error
 			);
 		}
 	};
@@ -178,7 +191,7 @@ function ItemInfo() {
 	useEffect(() => {
 		fetchProductData();
 		fetchAllVendorData();
-		fetchInventorytotal();
+		fetchInventoryTotal();
 		fetchPurchasesYears();
 		fetchSalesYears();
 		fetchAllVendorData();
@@ -284,46 +297,54 @@ function ItemInfo() {
 			"tid-" + IdInput
 		) as HTMLInputElement;
 
-		if (type == "purchase") {
+		if (type === "purchase") {
 			if (currentChecked.checked) {
-				var numberOfOcurrences = toDeletePurchase.filter(
-					({ pId }) => pId == IdInput
+				// Check if the purchase with the given IdInput is already present in toDeletePurchase array
+				const numberOfOccurrences = toDeletePurchase.filter(
+					({ pId }) => pId === IdInput
 				);
-				if (numberOfOcurrences.length == 0) {
+
+				if (numberOfOccurrences.length === 0) {
+					// Add the purchase to toDeletePurchase array if it's not already present
 					setToDeletePurchase((oldData) => [
 						...oldData,
 						{ pId: IdInput, pDate: dateInput, pInvoiceId: invoiceInput },
 					]);
 				}
 			} else {
-				let filtered_array = toDeletePurchase.filter(
+				// Remove the purchase from toDeletePurchase array if it's unchecked
+				const filteredArray = toDeletePurchase.filter(
 					({ pId }) => pId !== IdInput
 				);
-				setToDeletePurchase(filtered_array);
+				setToDeletePurchase(filteredArray);
 			}
-			let display = toDeletePurchase;
 
-			console.log(display);
+			// Log the contents of toDeletePurchase array
+			console.log(toDeletePurchase);
 		} else {
 			if (currentChecked.checked) {
-				var numberOfOcurrencesSale = toDeleteSale.filter(
-					({ sId }) => sId == IdInput
+				// Check if the sale with the given IdInput is already present in toDeleteSale array
+				const numberOfOccurrencesSale = toDeleteSale.filter(
+					({ sId }) => sId === IdInput
 				);
-				if (numberOfOcurrencesSale.length == 0) {
+
+				if (numberOfOccurrencesSale.length === 0) {
+					// Add the sale to toDeleteSale array if it's not already present
 					setToDeleteSale((oldData) => [
 						...oldData,
 						{ sId: IdInput, sDate: dateInput, sInvoiceId: invoiceInput },
 					]);
 				}
 			} else {
-				let filtered_arraySale = toDeleteSale.filter(
+				// Remove the sale from toDeleteSale array if it's unchecked
+				const filteredArraySale = toDeleteSale.filter(
 					({ sId }) => sId !== IdInput
 				);
-				setToDeleteSale(filtered_arraySale);
+				setToDeleteSale(filteredArraySale);
 			}
-			let display = toDeletePurchase;
 
-			console.log(display);
+			// Log the contents of toDeleteSale array
+			console.log(toDeleteSale);
 		}
 	}
 
@@ -400,30 +421,37 @@ function ItemInfo() {
 					if (item.id === toChangeId) {
 						return { ...item, productId: newVal };
 					}
+					break;
 				case "date":
 					if (item.id === toChangeId) {
 						return { ...item, date: newVal };
 					}
+					break;
 				case "vendorId":
 					if (item.id === toChangeId) {
 						return { ...item, vendorId: newVal };
 					}
+					break;
 				case "invoiceId":
 					if (item.id === toChangeId) {
 						return { ...item, invoiceId: newVal };
 					}
+					break;
 				case "qty":
 					if (item.id === toChangeId) {
 						return { ...item, qty: newVal };
 					}
+					break;
 				case "price":
 					if (item.id === toChangeId) {
 						return { ...item, price: newVal };
 					}
+					break;
 				case "vName":
 					if (item.id === toChangeId) {
 						return { ...item, vName: newVal };
 					}
+					break;
 			}
 
 			return item;
@@ -443,23 +471,28 @@ function ItemInfo() {
 					if (item.id === toChangeId) {
 						return { ...item, productId: newVal };
 					}
+					break;
 				case "date":
 					if (item.id === toChangeId) {
 						return { ...item, date: newVal };
 					}
+					break;
 
 				case "invoiceId":
 					if (item.id === toChangeId) {
 						return { ...item, invoiceId: newVal };
 					}
+					break;
 				case "qty":
 					if (item.id === toChangeId) {
 						return { ...item, qty: newVal };
 					}
+					break;
 				case "price":
 					if (item.id === toChangeId) {
 						return { ...item, price: newVal };
 					}
+					break;
 			}
 
 			return item;
