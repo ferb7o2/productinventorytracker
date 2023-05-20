@@ -1,9 +1,14 @@
 import $ from "jquery";
 import { useHistory } from "react-router-dom";
-
-import "../css/homePageStyle.css";
 import { useLayoutEffect, useState } from "react";
+
+//Import CSS Styling
+import "../css/homePageStyle.css";
+
+//Import Types
 import { toDeletePurchaseType, toDeleteSaleType } from "../types";
+
+//Import AWS Cognito - Authentication
 import { getAccessToken } from "../Cognito";
 
 export function DeleteTransaction(props: {
@@ -11,8 +16,6 @@ export function DeleteTransaction(props: {
 	sale: toDeleteSaleType[];
 	currentItemId: string;
 }) {
-	//Variables for keeping up with Page's Navigation
-	const history = useHistory();
 	const [error, setError] = useState("");
 
 	function blankAllFields() {}
