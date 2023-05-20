@@ -1,4 +1,4 @@
-import { KeyboardEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "../css/YearBox.css";
 import $ from "jquery";
 import { PtransactionDataType, VendorDataType } from "../types";

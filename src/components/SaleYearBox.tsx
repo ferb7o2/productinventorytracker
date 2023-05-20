@@ -1,4 +1,4 @@
-import { KeyboardEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "../css/YearBox.css";
 import $ from "jquery";
 import { StransactionDataType } from "../types";
@@ -219,69 +219,6 @@ export function SaleYearBox({
 			);
 		}
 	}
-
-	/*function getIdByName(
-		vNamePassed: string | number | string[] | null | undefined
-	) {
-		if (vNamePassed != null) {
-			const vendor = vendorData.find(({ name }, i) => vNamePassed == name);
-			if (vendor != undefined) return vendor.id;
-		}
-		return "error";
-	}
-
-	function getNameById(
-		idPassed: string | number | string[] | null | undefined
-	) {
-		if (idPassed != null) {
-			const vendor = vendorData.find(({ id }, i) => idPassed == id);
-			if (vendor != undefined) return vendor.name;
-		}
-		return "error";
-	}
-
-	const changeVendor = async (
-		e: React.FocusEvent<HTMLInputElement, Element>,
-		toChangeId: string,
-		lastValue?: string
-	) => {
-		errorTemplate.attr("hidden", 1); //keep it hidden
-
-		let newVal = e.target.value;
-		let vendorId = getIdByName(e.target.value);
-		if (vendorId === "error") {
-			errorTemplate.text(
-				"Error - el nombre del distribuidor no es valido, asegurate de que lo escojas de la lista"
-			);
-			errorTemplate.removeAttr("hidden");
-			$(`#${e.target.id}`).val(lastValue ? lastValue : "ERROR");
-			return;
-		}
-		if (newVal === lastValue) return;
-
-		try {
-			const token = await getAccessToken();
-			const data = await fetch(
-				`${process.env.REACT_APP_API_URL}/purchases/${toChangeId}/vendor?newVendor=${vendorId}`,
-				{
-					method: "PUT",
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				}
-			)
-				.then((res) => res.json())
-				.then((datax) => {
-					return datax;
-				});
-			updatePurchase(transactionData, newVal, "vName", toChangeId);
-		} catch (error) {
-			console.error("error on changeVendor() ", error);
-			errorTemplate.text("Error - al actualizar el proveedor");
-			errorTemplate.removeAttr("hidden");
-			$(`#${e.target.id}`).val(lastValue ? lastValue : "ERROR");
-		}
-	};*/
 
 	useEffect(() => {
 		const currYear = new Date().getFullYear();
