@@ -93,9 +93,6 @@ function VendorListScreen() {
 					return datax;
 				});
 
-			console.log(
-				`${process.env.REACT_APP_API_URL}/vendors/mostTransactions?rowNum=${rowIndex}&searchBy=${searchTxt}`
-			);
 			//if statement
 			entered
 				? setvData(data) //if entered, forget all previous data and query new one (with search)

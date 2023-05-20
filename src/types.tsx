@@ -32,21 +32,23 @@ export type urlPropVendorType = {
 
 export type PtransactionDataType = {
 	id: string;
-	pId: string;
+	productId: string;
 	date: string;
-	vId: string;
-	purchaseInvoiceId: string;
-	purchaseWeight: number;
-	purchasePrice: number;
+	vendorId: string;
+	invoiceId: string;
+	qty: number;
+	price: number;
+	pName?: string;
+	vName?: string;
 };
 
 export type StransactionDataType = {
 	id: string;
-	pId: string;
+	productId: string;
 	date: string;
-	saleInvoiceId: string;
-	saleWeight: number;
-	salePrice: number;
+	invoiceId: string;
+	qty: number;
+	price: number;
 };
 
 export type toDeleteType = {

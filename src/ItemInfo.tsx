@@ -3,24 +3,6 @@ import { useParams } from "react-router-dom"; //Helps us redirect to other pages
 
 import $ from "jquery";
 
-//get Date
-import * as moment from "moment";
-
-import { API, graphqlOperation } from "aws-amplify";
-import {
-	getProductData,
-	listPurchaseTransactionData2022s,
-	listSaleTransactionData2022s,
-	listVendorData,
-} from "./graphql/queries";
-import {
-	createPurchaseTransactionData2022,
-	createSaleTransactionData2022,
-	updateProductData,
-	updatePurchaseTransactionData2022,
-	updateSaleTransactionData2022,
-} from "./graphql/mutations";
-
 //Types
 import {
 	urlPropType,
@@ -32,163 +14,177 @@ import {
 	toDeletePurchaseType,
 } from "./types";
 import { DeleteTransaction } from "./components/DeleteTransaction";
+import { getAccessToken } from "./Cognito";
+import { PurchaseYearBox } from "./components/PurchaseYearBox";
+import { AddPurchaseRow } from "./components/AddPurchaseRow";
+import { SaleYearBox } from "./components/SaleYearBox";
+import { AddSaleRow } from "./components/AddSaleRow";
+
+interface YearList {
+	year: number;
+}
 
 function ItemInfo() {
-	let { pId } = useParams<urlPropType>();
+	let { pId } = useParams<urlPropType>() || "";
 
 	const [ProductData, setProductData] = useState<ProductDataType>();
-	const [Ptransaction_data, setPtData] = useState<PtransactionDataType[]>([]);
-	const [VendorData, setVendorData] = useState<VendorDataType[]>([]);
-	const [InventoryTotal, setInventoryTotal] = useState<number>(0);
-	const [Stransaction_data, setStData] = useState<StransactionDataType[]>([]);
+	const [purchasesYears, setPurchasesYears] = useState<YearList[]>([]);
+	const [salesYears, setSalesYears] = useState<YearList[]>([]);
+	const [pTransaction_data, setPTransaction_Data] = useState<
+		PtransactionDataType[]
+	>([]);
+	const [vendorData, setVendorData] = useState<VendorDataType[]>([]);
+	const [inventoryTotal, setInventoryTotal] = useState<number>(-1);
+	const [sTransactionData, setSTransactionData] = useState<
+		StransactionDataType[]
+	>([]);
 	const [DataLoaded, setDataLoaded] = useState<boolean>(false);
 	const [toDeleteSale, setToDeleteSale] = useState<toDeleteSaleType[]>([]);
 	const [toDeletePurchase, setToDeletePurchase] = useState<
 		toDeletePurchaseType[]
 	>([]);
+	const [difference, setDifference] = useState<number>(0);
 
-	const fetchProductInfo = async () => {
+	const fetchProductData = async () => {
 		try {
-			const productData = (await API.graphql(
-				graphqlOperation(getProductData, { id: pId })
-			)) as { data: { getProductData: ProductDataType } };
+			//get user jwst token to query our API
+			const token = await getAccessToken();
+			console.log(token);
+			const data = await fetch(
+				`${process.env.REACT_APP_API_URL}/products/${pId}`,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			)
+				.then((res) => res.json())
+				.then((datax) => {
+					return datax;
+				});
 
-			setProductData(productData.data.getProductData);
+			if (data.length > 0) setProductData(data[0]);
 			setDataLoaded(true);
 		} catch (error) {
-			console.log("error on fetchMainBusinessInfo() ", error);
+			console.error("Error retrieving Vendor data (fetchVendorData) ", error);
+			window.alert("Error retrieving Vendor data (fetchVendorData) " + error);
 		}
 	};
 
-	const fetchPTransactionData = async () => {
-		let nextToken = null;
-		let tempArray = [] as PtransactionDataType[];
+	async function fetchInventorytotal() {
 		try {
-			do {
-				const pTransactionData = (await API.graphql(
-					graphqlOperation(listPurchaseTransactionData2022s, {
-						pId: pId,
-						nextToken: nextToken,
-					})
-				)) as {
-					data: {
-						listPurchaseTransactionData2022s: {
-							items: PtransactionDataType[];
-							nextToken: string | null;
-						};
-					};
-				};
+			//get user jwst token to query our API
+			const token = await getAccessToken();
+			const data = await fetch(
+				`${process.env.REACT_APP_API_URL}/products/${pId}/difference`,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			)
+				.then((res) => res.json())
+				.then((datax) => {
+					return datax;
+				});
 
-				let only_data =
-					pTransactionData.data.listPurchaseTransactionData2022s.items;
-
-				nextToken =
-					pTransactionData.data.listPurchaseTransactionData2022s.nextToken;
-
-				tempArray = tempArray.concat(only_data);
-			} while (nextToken !== null);
-
-			//console.log(pTransactionData.data.listPurchaseTransactionData2022s.items);
-			setPtData(tempArray.sort((a, b) => a.date.localeCompare(b.date)));
+			if (data.length > 0) {
+				setInventoryTotal(data[0].difference);
+			}
 		} catch (error) {
-			console.log("error on fetchPTransactionData() ", error);
-			window.alert("ERROR: error al cargar COMPRAS de la base de datos");
+			console.error(
+				`Error retrieving Inventory data (fechInventoryToral()) `,
+				error
+			);
+		}
+	}
+
+	const fetchPurchasesYears = async () => {
+		try {
+			//get user jwst token to query our API
+			const token = await getAccessToken();
+			const data = await fetch(
+				`${process.env.REACT_APP_API_URL}/purchases/${pId}/years`,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			)
+				.then((res) => res.json())
+				.then((datax) => {
+					return datax;
+				});
+
+			if (data.length > 0) {
+				setPurchasesYears(data);
+			}
+		} catch (error) {
+			console.error("Error retrieving Year data (fetchPurchasesYears) ", error);
 		}
 	};
 
-	const fetchVendorData = async () => {
-		let nextToken = null;
-		let tempArray = [] as VendorDataType[];
+	const fetchSalesYears = async () => {
 		try {
-			do {
-				const vendorData = (await API.graphql(
-					graphqlOperation(listVendorData, { nextToken: nextToken })
-				)) as {
-					data: {
-						listVendorData: {
-							items: VendorDataType[];
-							nextToken: string | null;
-						};
-					};
-				};
+			//get user jwst token to query our API
+			const token = await getAccessToken();
+			const data = await fetch(
+				`${process.env.REACT_APP_API_URL}/sales/${pId}/years`,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			)
+				.then((res) => res.json())
+				.then((datax) => {
+					return datax;
+				});
 
-				let only_data = vendorData.data.listVendorData.items;
-
-				nextToken = vendorData.data.listVendorData.nextToken;
-				tempArray = tempArray.concat(only_data);
-			} while (nextToken !== null);
-
-			//console.log(vendorData.data.listVendorData.items);
-			setVendorData(tempArray);
+			if (data.length > 0) {
+				setSalesYears(data);
+			}
 		} catch (error) {
-			console.log("error on fetchVendorData() ", error);
-
-			window.alert("ERROR: error al cargar DISTRIBUIDORES de la base de datos");
+			console.error("Error retrieving Year data (fetchSalesYears) ", error);
 		}
 	};
 
-	const fetchSaleTData = async () => {
-		let nextToken = null;
-		let tempArray = [] as StransactionDataType[];
+	const fetchAllVendorData = async () => {
 		try {
-			do {
-				const saleData = (await API.graphql(
-					graphqlOperation(listSaleTransactionData2022s, {
-						pId: pId,
-						nextToken: nextToken,
-					})
-				)) as {
-					data: {
-						listSaleTransactionData2022s: {
-							items: StransactionDataType[];
-							nextToken: string | null;
-						};
-					};
-				};
+			//get user jwst token to query our API
+			const token = await getAccessToken();
+			const data = await fetch(`${process.env.REACT_APP_API_URL}/vendors`, {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			})
+				.then((res) => res.json())
+				.then((datax) => {
+					return datax;
+				});
 
-				let only_data = saleData.data.listSaleTransactionData2022s.items;
-
-				nextToken = saleData.data.listSaleTransactionData2022s.nextToken;
-
-				tempArray = tempArray.concat(only_data);
-			} while (nextToken !== null);
-
-			setStData(tempArray.sort((a, b) => a.date.localeCompare(b.date)));
+			setVendorData(data);
 		} catch (error) {
-			console.log("error on fetchVendorData() ", error);
-			window.alert("ERROR: error al cargar VENTAS de la base de datos");
+			console.error(
+				"Error retrieving Vendor data (fetchAllVendorData()) ",
+				error
+			);
+			window.alert(
+				"Error retrieving Vendor data (fetchAllVendorData) " + error
+			);
 		}
 	};
 
 	useEffect(() => {
-		fetchProductInfo();
-		fetchPTransactionData();
-		fetchVendorData();
-		fetchSaleTData();
+		fetchProductData();
+		fetchAllVendorData();
+		fetchInventorytotal();
+		fetchPurchasesYears();
+		fetchSalesYears();
+		fetchAllVendorData();
 		$("#vendorTabBtn").removeClass("nav-selected");
 		$("#productTabBtn").addClass("nav-selected");
 	}, []);
-
-	let realIndex = 0;
-
-	useEffect(() => {
-		function InventoryTotalSum() {
-			setInventoryTotal(0);
-			for (let i = 0; i < Ptransaction_data.length; i++) {
-				setInventoryTotal(
-					(prevState) => prevState + Ptransaction_data[i].purchaseWeight
-				);
-			}
-
-			for (let i = 0; i < Stransaction_data.length; i++) {
-				setInventoryTotal(
-					(prevState) => prevState - Stransaction_data[i].saleWeight
-				);
-			}
-		}
-
-		InventoryTotalSum();
-	}, [Ptransaction_data, Stransaction_data]);
 
 	useEffect(() => {
 		if (DataLoaded) {
@@ -200,560 +196,12 @@ function ItemInfo() {
 		checkForMissingInfo();
 	}, [ProductData]);
 
-	function displayPURCHASEInputFields() {
-		$("#input-row-vId").val("");
-		//Delete all data on fields just incase it is already filled
-
-		$("#input-row-vId").val("");
-		$("#input-row-purchaseInvoiceId").val("");
-		$("#input-row-purchaseWeight").val("");
-		$("#input-row-purchasePrice").val("");
-
-		$("#btnUpdate").removeAttr("hidden");
-		$("#input-new-data-row").removeAttr("hidden");
-	}
-
-	function displaySALEInputFields() {
-		$("#input-row-sId").val("");
-		$("#input-row-saleInvoiceId").val("");
-		$("#input-row-saleWeight").val("");
-
-		$("#input-new-data-row-sale").removeAttr("hidden");
-		$("#btnSaleUpdate").removeAttr("hidden");
-	}
-
-	const isNumber = new RegExp("^[0-9]*.[0-9]*");
-
-	function isNotEmpty(parameter: any) {
-		//Guaranteed that the element will be there, as it is generated based on real data
-		if (typeof parameter === "undefined") {
-			throw new Error(
-				`Expected element, ERROR on isNotEmpty() parameter is undefined`
-			);
-		}
-
-		if (parameter.val().length !== 0) return true;
-		else return false;
-	}
-
-	const addNewSALEDataRow = async () => {
-		//Make a pointer of that Error Template HTML tag since we will be using it alot
-		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-
-		if (isNotEmpty($("#input-row-saleInvoiceId"))) {
-			if (
-				isNotEmpty($("#input-row-saleWeight")) &&
-				isNumber.test(
-					$("#input-row-saleWeight").val()?.toString() || "false"
-				) &&
-				($("#input-row-saleWeight").val() || -1) > 0
-			) {
-				if (
-					isNotEmpty($("#input-row-salePrice")) &&
-					isNumber.test(
-						$("#input-row-salePrice").val()?.toString() || "false"
-					) &&
-					($("#input-row-salePrice").val() || -1) > 0
-				) {
-					try {
-						const result = (await API.graphql(
-							graphqlOperation(createSaleTransactionData2022, {
-								input: {
-									pId: pId,
-									date: $("#input-row-sale-date").val(),
-									saleInvoiceId: $("#input-row-saleInvoiceId").val(),
-									saleWeight: $("#input-row-saleWeight").val(),
-									salePrice: $("#input-row-salePrice").val(),
-								},
-							})
-						)) as {
-							data: {
-								createSaleTransactionData2022: StransactionDataType;
-							};
-						};
-
-						setStData([
-							...Stransaction_data,
-							result.data.createSaleTransactionData2022,
-						]);
-					} catch (error) {
-						console.log("ERROR Adding into SaleTransaction DB -> ", error);
-					}
-
-					$("#input-new-data-row-sale").attr("hidden", 1);
-					$("#btnSaleUpdate").attr("hidden", 1);
-				} else {
-					errorTemplate.text(
-						"Error - El precio de el producto no puede estar vacío / debe de ser un número válido"
-					);
-					errorTemplate.removeAttr("hidden");
-				}
-			} else {
-				errorTemplate.text(
-					"Error - El peso de el producto no puede estar vacío / debe de ser un número válido"
-				);
-				errorTemplate.removeAttr("hidden");
-			}
-		} else {
-			errorTemplate.text(
-				"Error - El numero de Invoice de el producto no puede estar vacío"
-			);
-			errorTemplate.removeAttr("hidden");
-		}
-	};
-
-	const addNewPURCHASEDataRow = async () => {
-		//Make a pointer of that Error Template HTML tag since we will be using it alot
-		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-		let vendorId = "error";
-		vendorId = idForName($("#input-row-vId").val());
-
-		//-------->Check for valid [non-empty] PURCHASE info data
-		//------------->Display proper error messages if failed check
-		if (isNotEmpty($("#input-row-vId")) && vendorId !== "error") {
-			//Convert to proper db data
-
-			//If non-empty
-			if (isNotEmpty($("#input-row-purchaseInvoiceId"))) {
-				if (
-					isNotEmpty($("#input-row-purchaseWeight")) &&
-					isNumber.test(
-						$("#input-row-purchaseWeight").val()?.toString() || "false"
-					) &&
-					($("#input-row-purchaseWeight").val() || -1) > 0
-				) {
-					if (
-						isNotEmpty($("#input-row-purchasePrice")) &&
-						isNumber.test(
-							$("#input-row-purchasePrice").val()?.toString() || "false"
-						) &&
-						($("#input-row-purchasePrice").val() || -1) > 0
-					) {
-						//then all data is valid, we can add into array
-
-						try {
-							const result = (await API.graphql(
-								graphqlOperation(createPurchaseTransactionData2022, {
-									input: {
-										pId: pId,
-										date: $("#input-row-date").val(),
-										vId: vendorId,
-										purchaseInvoiceId: $("#input-row-purchaseInvoiceId").val(),
-										purchaseWeight: $("#input-row-purchaseWeight").val(),
-										purchasePrice: $("#input-row-purchasePrice").val(),
-									},
-								})
-							)) as {
-								data: {
-									createPurchaseTransactionData2022: PtransactionDataType;
-								};
-							};
-
-							setPtData([
-								...Ptransaction_data,
-								result.data.createPurchaseTransactionData2022,
-							]);
-						} catch (error) {
-							console.log(
-								"ERROR Adding into PurchaseTransaction DB -> ",
-								error
-							);
-						}
-
-						$("#input-new-data-row").attr("hidden", 1);
-						$("#btnUpdate").attr("hidden", 1);
-					} else {
-						//else, it is empty; Display correct error message to inform user
-						errorTemplate.text(
-							"Error - El precio de el producto no puede estar vacío / debe de ser un número válido"
-						);
-						errorTemplate.removeAttr("hidden");
-					}
-				} else {
-					errorTemplate.text(
-						"Error - El peso de el producto no puede estar vacío / debe de ser un número válido"
-					);
-					errorTemplate.removeAttr("hidden");
-				}
-			} else {
-				errorTemplate.text("Error - El numero de factura no puede estar vacío");
-				errorTemplate.removeAttr("hidden");
-			}
-		} else {
-			errorTemplate.text(
-				"Error - el recuadro del proveedor no puede estar vacío / debe ser un nombre valido"
-			);
-			errorTemplate.removeAttr("hidden");
-		}
-	};
-
-	function nameForId(vIdPassed: string) {
-		if (VendorData.length != 0) {
-			return VendorData.find(({ id }, i) => vIdPassed === id)?.name;
-		} else return "";
-	}
-
-	function idForName(
-		vNamePassed: string | number | string[] | null | undefined
-	) {
-		if (vNamePassed != null) {
-			const vendor = VendorData.find(({ name }, i) => vNamePassed == name);
-			if (vendor != undefined) return vendor.id;
-		}
-		return "error";
-	}
-
-	const changeInvoiceId = async (
-		e: React.FocusEvent<HTMLInputElement, Element>,
-		lastValue: string,
-		toChangeId: string
-	) => {
-		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-		let newVal = e.target.value;
-		if (newVal === lastValue) return;
-		try {
-			const changeInvoiceId = await API.graphql(
-				graphqlOperation(updatePurchaseTransactionData2022, {
-					input: { id: toChangeId, purchaseInvoiceId: newVal },
-				})
-			);
-			setPtData(
-				Ptransaction_data.map((val, i) =>
-					val.id === toChangeId
-						? {
-								id: val.id,
-								pId: val.pId,
-								date: val.date,
-								vId: val.vId,
-								purchaseInvoiceId: newVal,
-								purchaseWeight: val.purchaseWeight,
-								purchasePrice: val.purchasePrice,
-						  }
-						: val
-				)
-			);
-		} catch (error) {
-			console.log("error on changeInvoiceId() ", error);
-			errorTemplate.text("Error - al actualizar el numero de Invoice");
-			errorTemplate.removeAttr("hidden");
-		}
-	};
-
 	function focusOut(e: React.KeyboardEvent<HTMLInputElement>) {
 		if (e.keyCode === 13 || e.keyCode === 9) {
 			$("#" + $(e.target).attr("id")).prop("disabled", true);
 			$("#" + $(e.target).attr("id")).prop("disabled", false); //lose focus out of the textbox
 		}
 	}
-
-	const changePurchaseWeight = async (
-		e: React.FocusEvent<HTMLInputElement, Element>,
-		lastValue: number,
-		toChangeId: string
-	) => {
-		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-
-		try {
-			let newVal = parseFloat(e.target.value.replace(",", ""));
-			if (isNaN(newVal)) throw new Error("No valid value");
-			if (newVal == lastValue) return;
-			const changeInvoiceId = await API.graphql(
-				graphqlOperation(updatePurchaseTransactionData2022, {
-					input: { id: toChangeId, purchaseWeight: newVal },
-				})
-			);
-			setPtData(
-				Ptransaction_data.map((val, i) =>
-					val.id === toChangeId
-						? {
-								id: val.id,
-								pId: val.pId,
-								date: val.date,
-								vId: val.vId,
-								purchaseInvoiceId: val.purchaseInvoiceId,
-								purchaseWeight: newVal,
-								purchasePrice: val.purchasePrice,
-						  }
-						: val
-				)
-			);
-		} catch (error) {
-			console.log("error on changeInvoiceId() ", error);
-			errorTemplate.text("Error - al actualizar el Peso");
-			errorTemplate.removeAttr("hidden");
-		}
-	};
-
-	const changePurchasePrice = async (
-		e: React.FocusEvent<HTMLInputElement, Element>,
-		lastValue: number,
-		toChangeId: string
-	) => {
-		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-
-		try {
-			let newVal = parseFloat(e.target.value.replace(",", ""));
-			if (newVal == lastValue) return;
-			if (isNaN(newVal)) throw new Error("No valid value");
-			const changeInvoiceId = await API.graphql(
-				graphqlOperation(updatePurchaseTransactionData2022, {
-					input: { id: toChangeId, purchasePrice: newVal },
-				})
-			);
-			setPtData(
-				Ptransaction_data.map((val, i) =>
-					val.id === toChangeId
-						? {
-								id: val.id,
-								pId: val.pId,
-								date: val.date,
-								vId: val.vId,
-								purchaseInvoiceId: val.purchaseInvoiceId,
-								purchaseWeight: val.purchaseWeight,
-								purchasePrice: newVal,
-						  }
-						: val
-				)
-			);
-		} catch (error) {
-			console.log("error on changeInvoiceId() ", error);
-			errorTemplate.text("Error - al actualizar el Precio");
-			errorTemplate.removeAttr("hidden");
-		}
-	};
-
-	const changePurchaseDate = async (
-		e: React.FocusEvent<HTMLInputElement, Element>,
-		lastValue: string,
-		toChangeId: string
-	) => {
-		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-
-		try {
-			let newVal = e.target.value;
-			if (newVal === lastValue) return;
-			const changeInvoiceId = await API.graphql(
-				graphqlOperation(updatePurchaseTransactionData2022, {
-					input: { id: toChangeId, date: newVal },
-				})
-			);
-			setPtData(
-				Ptransaction_data.map((val, i) =>
-					val.id === toChangeId
-						? {
-								id: val.id,
-								pId: val.pId,
-								date: newVal,
-								vId: val.vId,
-								purchaseInvoiceId: val.purchaseInvoiceId,
-								purchaseWeight: val.purchaseWeight,
-								purchasePrice: val.purchasePrice,
-						  }
-						: val
-				)
-			);
-		} catch (error) {
-			console.log("error on changeInvoiceId() ", error);
-			errorTemplate.text("Error - al actualizar la fecha");
-			errorTemplate.removeAttr("hidden");
-		}
-	};
-
-	const changeVendor = async (
-		e: React.FocusEvent<HTMLInputElement, Element>,
-		lastValue: string,
-		toChangeId: string
-	) => {
-		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-
-		try {
-			let newVal = idForName(e.target.value);
-			if (newVal === lastValue || newVal === "error") {
-				errorTemplate.text("Error - proveedor no registrado");
-				errorTemplate.removeAttr("hidden");
-				return;
-			}
-			const changeInvoiceId = await API.graphql(
-				graphqlOperation(updatePurchaseTransactionData2022, {
-					input: { id: toChangeId, vId: newVal },
-				})
-			);
-			setPtData(
-				Ptransaction_data.map((val, i) =>
-					val.id === toChangeId
-						? {
-								id: val.id,
-								pId: val.id,
-								date: val.date,
-								vId: newVal,
-								purchaseInvoiceId: val.purchaseInvoiceId,
-								purchaseWeight: val.purchaseWeight,
-								purchasePrice: val.purchasePrice,
-						  }
-						: val
-				)
-			);
-		} catch (error) {
-			console.log("error on changeInvoiceId() ", error);
-			errorTemplate.text("Error - al actualizar el proveedor");
-			errorTemplate.removeAttr("hidden");
-		}
-	};
-
-	const changeSaleDate = async (
-		e: React.FocusEvent<HTMLInputElement, Element>,
-		lastValue: string,
-		toChangeId: string
-	) => {
-		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-		let newVal = e.target.value;
-		if (newVal === lastValue) return;
-		try {
-			const changeSaleDate = await API.graphql(
-				graphqlOperation(updateSaleTransactionData2022, {
-					input: { id: toChangeId, date: newVal },
-				})
-			);
-			setStData(
-				Stransaction_data.map((val, i) =>
-					val.id === toChangeId
-						? {
-								id: val.id,
-								pId: val.pId,
-								date: newVal,
-								saleInvoiceId: val.saleInvoiceId,
-								saleWeight: val.saleWeight,
-								salePrice: val.salePrice,
-						  }
-						: val
-				)
-			);
-		} catch (error) {
-			console.log("error on changeInvoiceId() ", error);
-			errorTemplate.text("Error - al actualizar la fecha de venta");
-			errorTemplate.removeAttr("hidden");
-		}
-	};
-
-	const changeSaleInvoiceId = async (
-		e: React.FocusEvent<HTMLInputElement, Element>,
-		lastValue: string,
-		toChangeId: string
-	) => {
-		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-		let newVal = e.target.value;
-		if (newVal === lastValue) return;
-		try {
-			const changeSaleInvoice = await API.graphql(
-				graphqlOperation(updateSaleTransactionData2022, {
-					input: { id: toChangeId, saleInvoiceId: newVal },
-				})
-			);
-			setStData(
-				Stransaction_data.map((val, i) =>
-					val.id === toChangeId
-						? {
-								id: val.id,
-								pId: val.pId,
-								date: val.date,
-								saleInvoiceId: newVal,
-								saleWeight: val.saleWeight,
-								salePrice: val.salePrice,
-						  }
-						: val
-				)
-			);
-		} catch (error) {
-			console.log("error on changeInvoiceId() ", error);
-			errorTemplate.text("Error - al actualizar el numero de Invoice de venta");
-			errorTemplate.removeAttr("hidden");
-		}
-	};
-
-	const changeSaleWeight = async (
-		e: React.FocusEvent<HTMLInputElement, Element>,
-		lastValue: number,
-		toChangeId: string
-	) => {
-		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-
-		try {
-			let newVal = parseFloat(e.target.value.replace(",", ""));
-			if (newVal === lastValue) return;
-
-			const changeSaleWeight = await API.graphql(
-				graphqlOperation(updateSaleTransactionData2022, {
-					input: { id: toChangeId, saleWeight: newVal },
-				})
-			);
-			setStData(
-				Stransaction_data.map((val, i) =>
-					val.id === toChangeId
-						? {
-								id: val.id,
-								pId: val.pId,
-								date: val.date,
-								saleInvoiceId: val.saleInvoiceId,
-								saleWeight: newVal,
-								salePrice: val.salePrice,
-						  }
-						: val
-				)
-			);
-		} catch (error) {
-			console.log("error on changeInvoiceId() ", error);
-			errorTemplate.text("Error - al actualizar el peso de venta");
-			errorTemplate.removeAttr("hidden");
-		}
-	};
-
-	const changeSalePrice = async (
-		e: React.FocusEvent<HTMLInputElement, Element>,
-		lastValue: number,
-		toChangeId: string
-	) => {
-		var errorTemplate = $("#error-template");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-
-		try {
-			let newVal = parseFloat(e.target.value.replace(",", ""));
-			if (newVal === lastValue) return;
-
-			const changeSaleWeight = await API.graphql(
-				graphqlOperation(updateSaleTransactionData2022, {
-					input: { id: toChangeId, salePrice: newVal },
-				})
-			);
-			setStData(
-				Stransaction_data.map((val, i) =>
-					val.id === toChangeId
-						? {
-								id: val.id,
-								pId: val.pId,
-								date: val.date,
-								saleInvoiceId: val.saleInvoiceId,
-								saleWeight: val.saleWeight,
-								salePrice: newVal,
-						  }
-						: val
-				)
-			);
-		} catch (error) {
-			console.log("error on changeInvoiceId() ", error);
-			errorTemplate.text("Error - al actualizar el precio de venta");
-			errorTemplate.removeAttr("hidden");
-		}
-	};
 
 	const editBtnTrigger = () => {
 		$("#productTitle").removeAttr("readOnly");
@@ -771,40 +219,33 @@ function ItemInfo() {
 		var errorTemplate = $("#error-template");
 		errorTemplate.attr("hidden", 1); //keep it hidden
 
-		if ($("#productTitle").val() != "") {
-			if (
-				$("#productTitle").val() == ProductData?.name &&
-				$("#productDescription").val() == ProductData?.description
-			)
-				return;
+		const name = $("#productTitle").val();
+		const desc = $("#productDescription").val();
 
-			try {
-				const changeProductName = (await API.graphql(
-					graphqlOperation(updateProductData, {
-						input: {
-							id: ProductData?.id,
-							name: $("#productTitle").val(),
-							description: $("#productDescription").val(),
-						},
-					})
-				)) as {
-					data: {
-						updateProductData: ProductDataType;
-					};
-				};
-				console.log(changeProductName);
-				setProductData(changeProductName.data.updateProductData);
-			} catch (error) {
-				console.log("error on changeTitle() ", error);
-				errorTemplate.text("Error - al actualizar el Nombre del producto");
-				errorTemplate.removeAttr("hidden");
-			}
-		} else {
-			console.log("error on changeTitle(), title cannot e empty ");
-			$("#productTitle").val(ProductData?.name || "");
-			errorTemplate.text(
-				"Error - al actualizar el Nombre del producto, el nombre no puede estar vacio"
-			);
+		if (
+			$("#productTitle").val() == ProductData?.name &&
+			$("#productDescription").val() == ProductData?.description
+		)
+			return;
+
+		try {
+			const token = await getAccessToken();
+			const data = await fetch(
+				`${process.env.REACT_APP_API_URL}/products/${pId}?name=${name}&desc=${desc}`,
+				{
+					method: "PUT",
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			)
+				.then((res) => res.json())
+				.then((datax) => {
+					return datax;
+				});
+		} catch (error) {
+			console.error("error on changeTitle() ", error);
+			errorTemplate.text("Error - al actualizar el Nombre del producto");
 			errorTemplate.removeAttr("hidden");
 		}
 	};
@@ -886,10 +327,155 @@ function ItemInfo() {
 		}
 	}
 
+	const addItemPurchase = (
+		newItems: PtransactionDataType[],
+		newAdded?: Boolean,
+		newYear?: String
+	) => {
+		//if it's a new Transaction added by the AddPurchaseRow (not fetched)
+		if (newAdded) {
+			const isYearPresent = purchasesYears.some(
+				(obj) => obj.year == Number(newYear)
+			);
+			//if the year does not exist already
+			if (!isYearPresent) {
+				//we add the year to the array so it can display
+				const updatedYears = purchasesYears.concat({ year: Number(newYear) });
+				setPurchasesYears(updatedYears);
+				return;
+			}
+			//if it's a newly added product (YEAR DOES EXIST), then we sort to make sure we add it at it's correct position
+			const sortedData = [...pTransaction_data, ...newItems].sort(
+				(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+			);
+
+			setPTransaction_Data(sortedData);
+			console.log(sortedData);
+			return;
+		}
+		//else, just add to previous to keep order
+		setPTransaction_Data((prevItems) => [...prevItems, ...newItems]);
+	};
+
+	const setDifferenceFUNC = (differenceReceived: number) => {
+		setDifference((prevVal) => prevVal + differenceReceived);
+	};
+
+	const addItemSale = (
+		newItems: StransactionDataType[],
+		newAdded?: Boolean,
+		newYear?: String
+	) => {
+		//if it's a newly added product, then we sort to make sure we add it at it's correct position
+		if (newAdded) {
+			const isYearPresent = salesYears.some(
+				(obj) => obj.year == Number(newYear)
+			);
+
+			if (!isYearPresent) {
+				const updatedYears = salesYears.concat({ year: Number(newYear) });
+				setSalesYears(updatedYears);
+				return;
+			}
+
+			const sortedData = [...sTransactionData, ...newItems].sort(
+				(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+			);
+			setSTransactionData(sortedData);
+			return;
+		}
+		//else, just add to previous to keep order
+		setSTransactionData((prevItems) => [...prevItems, ...newItems]);
+	};
+
+	const updatePurchase = (
+		array: PtransactionDataType[],
+		newVal: any,
+		toChangeVar: string,
+		toChangeId: string
+	) => {
+		const updatedData = array.map((item) => {
+			switch (toChangeVar) {
+				case "productId":
+					if (item.id === toChangeId) {
+						return { ...item, productId: newVal };
+					}
+				case "date":
+					if (item.id === toChangeId) {
+						return { ...item, date: newVal };
+					}
+				case "vendorId":
+					if (item.id === toChangeId) {
+						return { ...item, vendorId: newVal };
+					}
+				case "invoiceId":
+					if (item.id === toChangeId) {
+						return { ...item, invoiceId: newVal };
+					}
+				case "qty":
+					if (item.id === toChangeId) {
+						return { ...item, qty: newVal };
+					}
+				case "price":
+					if (item.id === toChangeId) {
+						return { ...item, price: newVal };
+					}
+				case "vName":
+					if (item.id === toChangeId) {
+						return { ...item, vName: newVal };
+					}
+			}
+
+			return item;
+		});
+		setPTransaction_Data(updatedData);
+	};
+
+	const updateSale = (
+		array: StransactionDataType[],
+		newVal: any,
+		toChangeVar: string,
+		toChangeId: string
+	) => {
+		const updatedData = array.map((item) => {
+			switch (toChangeVar) {
+				case "productId":
+					if (item.id === toChangeId) {
+						return { ...item, productId: newVal };
+					}
+				case "date":
+					if (item.id === toChangeId) {
+						return { ...item, date: newVal };
+					}
+
+				case "invoiceId":
+					if (item.id === toChangeId) {
+						return { ...item, invoiceId: newVal };
+					}
+				case "qty":
+					if (item.id === toChangeId) {
+						return { ...item, qty: newVal };
+					}
+				case "price":
+					if (item.id === toChangeId) {
+						return { ...item, price: newVal };
+					}
+			}
+
+			return item;
+		});
+		setSTransactionData(updatedData);
+	};
+
 	return (
 		<>
 			<div className="Application">
-				<title>Facturación PJL - {ProductData?.name}</title>
+				{ProductData?.name ? (
+					<title>Facturación PJL - {ProductData?.name}</title>
+				) : (
+					<title>Facturación PJL - Error al cargar informacion</title>
+				)}
+
 				<DeleteTransaction
 					purchase={toDeletePurchase}
 					sale={toDeleteSale}
@@ -969,7 +555,8 @@ function ItemInfo() {
 								Product Id: {ProductData?.id}
 							</p>
 							<p className="product-qty-count">
-								Cantidad disponible: {InventoryTotal.toFixed(3)}
+								Cantidad disponible:{" "}
+								{(Number(inventoryTotal) + difference).toFixed(3)}
 							</p>
 						</div>
 						<div className="sub-section-container remove-top-pad">
@@ -1035,203 +622,28 @@ function ItemInfo() {
 								</tr>
 							</thead>
 							<tbody>
-								{Ptransaction_data.map(
-									(
-										{
-											id,
-											date,
-											vId,
-											purchaseInvoiceId,
-											purchaseWeight,
-											purchasePrice,
-										} //Data driven display of rows in data
-									) => (
-										<tr key={id} className="table-row">
-											<td className="select-col select-vendor">
-												<input
-													type="checkbox"
-													className="checkbox-table"
-													id={"tid-" + id}
-													onChange={() =>
-														addToDeleteArray(
-															id,
-															date,
-															purchaseInvoiceId,
-															"purchase"
-														)
-													}
-												/>
-											</td>
-											<td className="date-col">
-												<input
-													type="text"
-													id={"row" + id + "date"}
-													className="tableInput tableDate"
-													defaultValue={date}
-													onBlur={(e) => {
-														changePurchaseDate(e, date, id);
-													}}
-													onKeyDown={(e) => focusOut(e)}
-												/>
-											</td>
-
-											<td className="vendor-col">
-												<input
-													type="text"
-													id={"row" + id + "vId"}
-													className="tableInput vendor-input"
-													defaultValue={nameForId(vId)}
-													list="vendors"
-													onBlur={(e) => {
-														changeVendor(e, vId, id);
-													}}
-													onKeyDown={(e) => focusOut(e)}
-												/>
-												<datalist id="vendors">
-													{VendorData.map(({ id, name }) => (
-														<option key={id} value={name} id={id} />
-													))}
-												</datalist>
-											</td>
-											<td className="factura-col">
-												<div className="tableData">
-													<input
-														type="text"
-														id={"row" + id + "purchaseInvoiceId"}
-														className="tableInput"
-														defaultValue={purchaseInvoiceId}
-														onBlur={(e) => {
-															changeInvoiceId(e, purchaseInvoiceId, id);
-														}}
-														onKeyDown={(e) => focusOut(e)}
-													/>
-												</div>
-											</td>
-											<td className="weight-col">
-												<div className="tableData">
-													<input
-														type="text"
-														id={"row" + id + "purchaseWeight"}
-														className="tableInput"
-														defaultValue={purchaseWeight}
-														onBlur={(e) => {
-															changePurchaseWeight(e, purchaseWeight, id);
-														}}
-														onKeyDown={(e) => focusOut(e)}
-													/>
-												</div>
-											</td>
-											<td className="price-col">
-												<div className="tableData">
-													<input
-														type="text"
-														id={"row" + id + "purchasePrice"}
-														className="tableInput"
-														defaultValue={purchasePrice}
-														onBlur={(e) => {
-															changePurchasePrice(e, purchaseWeight, id);
-														}}
-														onKeyDown={(e) => focusOut(e)}
-													/>
-												</div>
-											</td>
-											<td className="pId-col id-col-data">{id}</td>
-											<td className="notes-col">
-												<img
-													src={require("./assets/icons/blank-notes-attributed.png")}
-												></img>
-											</td>
-										</tr>
-									)
-								)}
-								<tr
-									className="table-row input-new-data-row"
-									id="input-new-data-row"
-									hidden
-								>
-									<th scope="row"></th>
-									<td>
-										<input
-											type="text"
-											id="input-row-date"
-											className="tableInput tableDate"
-											defaultValue={moment.default().format("YYYY-MM-DD")}
-										/>
-									</td>
-									<td>
-										<input
-											list="vendors"
-											type="text"
-											id="input-row-vId"
-											className="tableInput"
-										/>
-
-										<datalist id="vendors">
-											{VendorData.map(({ id, name }) => (
-												<option key={id} value={name} id={id} />
-											))}
-										</datalist>
-									</td>
-									<td>
-										<div className="tableData">
-											<input
-												type="text"
-												id="input-row-purchaseInvoiceId"
-												className="tableInput"
-											/>
-										</div>
-									</td>
-									<td>
-										<div className="tableData">
-											<input
-												type="number"
-												id="input-row-purchaseWeight"
-												className="tableInput"
-											/>
-										</div>
-									</td>
-									<td>
-										<div className="tableData">
-											<input
-												type="number"
-												id="input-row-purchasePrice"
-												className="tableInput"
-											/>
-										</div>
-									</td>
-
-									<td></td>
-									<td></td>
-								</tr>
-								<tr hidden></tr>
-								{/* just a hidden element to not break the color scheme on the next table row*/}
-								<tr className="input-new-data-row">
-									<td scope="row" className="select-col">
-										<img
-											src={require("./assets/icons/add-attributed.png")}
-											id="add-data-btn"
-											className=""
-											onClick={displayPURCHASEInputFields}
-											alt="add new purchase entry button"
-										/>
-									</td>
-									<td className="table-filler"></td>
-									<td className="table-filler"></td>
-									<td className="table-filler"></td>
-									<td className="table-filler"></td>
-									<td className="table-filler"></td>
-									<td className="btn-col">
-										<button
-											type="button"
-											className="btn"
-											id="btnUpdate"
-											onClick={addNewPURCHASEDataRow}
-											hidden
-										>
-											Actualizar
-										</button>
-									</td>
-								</tr>
+								{purchasesYears.map(({ year }) => (
+									<PurchaseYearBox
+										key={year + "box"}
+										year={year}
+										pId={pId}
+										vendorData={vendorData}
+										transactionData={pTransaction_data.filter(
+											(item) => item.date.slice(0, 4) == String(year)
+											//passes only the transactions that match the year of the YearBox
+										)}
+										addItems={addItemPurchase}
+										setDiff={setDifferenceFUNC}
+										updatePurchase={updatePurchase}
+										addToDeleteArray={addToDeleteArray}
+									/>
+								))}
+								<AddPurchaseRow
+									vendorData={vendorData}
+									pId={pId}
+									addItems={addItemPurchase}
+									setDiff={setDifferenceFUNC}
+								/>
 							</tbody>
 						</table>
 					</div>
@@ -1270,149 +682,26 @@ function ItemInfo() {
 								</tr>
 							</thead>
 							<tbody>
-								{Stransaction_data.map(
-									(
-										{ id, pId, date, saleInvoiceId, saleWeight, salePrice } //Data driven display of rows in data
-									) => (
-										<tr key={"s" + id} className="table-row">
-											<td scope="col" className="select-col">
-												<input
-													type="checkbox"
-													className="checkbox-table"
-													id={"tid-" + id}
-													onChange={() =>
-														addToDeleteArray(id, date, saleInvoiceId, "sale")
-													}
-												/>
-											</td>
-											<td className="sale-date-col" scope="col">
-												<input
-													type="text"
-													id={"row" + id + "Sdate"}
-													className="tableInput"
-													defaultValue={date}
-													onBlur={(e) => {
-														changeSaleDate(e, date, id);
-													}}
-													onKeyDown={(e) => focusOut(e)}
-												/>
-											</td>
-
-											<td className="sale-invoice-col" scope="col">
-												<input
-													type="text"
-													id={"row" + id + "saleInvoiceId"}
-													className="tableInput vendor-col"
-													defaultValue={saleInvoiceId}
-													onBlur={(e) => {
-														changeSaleInvoiceId(e, saleInvoiceId, id);
-													}}
-													onKeyDown={(e) => focusOut(e)}
-												/>
-											</td>
-											<td className="sale-weight-col" scope="col">
-												<input
-													type="text"
-													id={"row" + id + "saleWeight"}
-													className="tableInput"
-													defaultValue={saleWeight}
-													onBlur={(e) => {
-														changeSaleWeight(e, saleWeight, id);
-													}}
-													onKeyDown={(e) => focusOut(e)}
-												/>
-											</td>
-											<td className="sale-price-col" scope="col">
-												<input
-													type="text"
-													id={"row" + id + "salePrice"}
-													className="tableInput vendor-col"
-													defaultValue={salePrice}
-													onBlur={(e) => {
-														changeSalePrice(e, salePrice, id);
-													}}
-													onKeyDown={(e) => focusOut(e)}
-												/>
-											</td>
-											<td className="pId-col id-col-data" scope="col">
-												{id}
-											</td>
-											<td className="notes-col" scope="col">
-												<img
-													src={require("./assets/icons/blank-notes-attributed.png")}
-												/>
-											</td>
-										</tr>
-									)
-								)}
-								<tr
-									className="table-row input-new-data-row"
-									id="input-new-data-row-sale"
-									hidden
-								>
-									<th scope="row"></th>
-									<td>
-										<input
-											type="text"
-											id="input-row-sale-date"
-											className="tableInput"
-											defaultValue={moment.default().format("YYYY-MM-DD")}
-										/>
-									</td>
-									<td>
-										<input
-											type="text"
-											id="input-row-saleInvoiceId"
-											className="tableInput"
-										/>
-									</td>
-									<td>
-										<div className="tableData">
-											<input
-												type="number"
-												id="input-row-saleWeight"
-												className="tableInput"
-											/>
-										</div>
-									</td>
-									<td>
-										<div className="tableData">
-											<input
-												type="text"
-												id="input-row-salePrice"
-												className="tableInput"
-											/>
-										</div>
-									</td>
-								</tr>
-								<tr hidden></tr>
-								{/* just a hidden element to not break the color scheme on the next table row*/}
-								<tr className="input-new-data-row">
-									<th scope="row">
-										<img
-											src={require("./assets/icons/add-attributed.png")}
-											id="add-sale-data-btn"
-											className="add-data-btn"
-											onClick={displaySALEInputFields}
-											alt="add new purchase entry button"
-										/>
-									</th>
-									<td></td>
-									<td></td>
-									<td></td>
-									<td></td>
-									<td>
-										<button
-											type="button"
-											className="btn btn-contain"
-											id="btnSaleUpdate"
-											onClick={addNewSALEDataRow}
-											hidden
-										>
-											Actualizar
-										</button>
-									</td>
-								</tr>
+								{salesYears.map(({ year }) => (
+									<SaleYearBox
+										key={year + "box"}
+										year={year}
+										pId={pId}
+										transactionData={sTransactionData.filter(
+											(item) => item.date.slice(0, 4) == String(year)
+											//passes only the transactions that match the year of the YearBox
+										)}
+										addItems={addItemSale}
+										updateSale={updateSale}
+										setDiff={setDifferenceFUNC}
+										addToDeleteArray={addToDeleteArray}
+									/>
+								))}
+								<AddSaleRow
+									pId={pId}
+									addItems={addItemSale}
+									setDiff={setDifferenceFUNC}
+								/>
 							</tbody>
 						</table>
 					</div>

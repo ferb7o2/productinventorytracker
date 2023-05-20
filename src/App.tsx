@@ -50,7 +50,7 @@ function Home(this: any) {
 	const [preSearch, setPreSearch] = useState("");
 
 	//auxiliary variables - for pagination
-	const [lastRowNum, SetLastRow] = useState(0);
+	const [lastRowNum, SetLastRow] = useState(-1);
 	const [hasMore, setHasMore] = useState(false);
 
 	//auxiliary - for delete action

@@ -1,15 +1,10 @@
 import $ from "jquery";
-import { useHistory } from "react-router-dom";
-
-import { API, graphqlOperation } from "aws-amplify";
-import {
-	deletePurchaseTransactionData2022,
-	deleteSaleTransactionData2022,
-} from "../graphql/mutations";
+import { Redirect, useHistory } from "react-router-dom";
 
 import "../css/homePageStyle.css";
-import { useLayoutEffect } from "react";
+import { useLayoutEffect, useState } from "react";
 import { toDeletePurchaseType, toDeleteSaleType } from "../types";
+import { getAccessToken } from "../Cognito";
 
 export function DeleteTransaction(props: {
 	purchase: toDeletePurchaseType[];
@@ -18,6 +13,7 @@ export function DeleteTransaction(props: {
 }) {
 	//Variables for keeping up with Page's Navigation
 	const history = useHistory();
+	const [error, setError] = useState("");
 
 	function blankAllFields() {}
 
@@ -39,28 +35,45 @@ export function DeleteTransaction(props: {
 
 	const deleteMethod = async () => {
 		try {
-			for (var i = 0; i < props.purchase.length; ++i) {
-				const result = await API.graphql(
-					graphqlOperation(deletePurchaseTransactionData2022, {
-						input: {
-							id: props.purchase[i].pId,
+			const token = await getAccessToken();
+
+			for (let i = 0; i < props.purchase.length; ++i) {
+				const response = await fetch(
+					`${process.env.REACT_APP_API_URL}/purchases/${props.purchase[i].pId}`,
+					{
+						method: "DELETE",
+						headers: {
+							Authorization: `Bearer ${token}`,
 						},
-					})
+					}
 				);
+
+				if (!response.ok) {
+					throw new Error("Failed to delete purchase");
+				}
 			}
 
-			for (var i = 0; i < props.sale.length; ++i) {
-				const result = await API.graphql(
-					graphqlOperation(deleteSaleTransactionData2022, {
-						input: {
-							id: props.sale[i].sId,
+			for (let i = 0; i < props.sale.length; ++i) {
+				const response = await fetch(
+					`${process.env.REACT_APP_API_URL}/sales/${props.sale[i].sId}`,
+					{
+						method: "DELETE",
+						headers: {
+							Authorization: `Bearer ${token}`,
 						},
-					})
+					}
 				);
+
+				if (!response.ok) {
+					throw new Error("Failed to delete sale");
+				}
 			}
-			history.push("/item/" + props.currentItemId);
+
+			window.location.href = `/item/${props.currentItemId}`;
 		} catch (error) {
-			console.log("ERROR deleting Transaction -> ", error);
+			console.error("ERROR deleting Transaction -> ", error);
+			// Propagate the error or display an error message to the user
+			setError(`ERROR al borrar transaccion: ` + error);
 		}
 	};
 
@@ -100,6 +113,7 @@ export function DeleteTransaction(props: {
 				</div>
 
 				<div className="modal-data-container">
+					{error ? <p>{error}</p> : <></>}
 					{props.purchase.length + props.sale.length > 1 ? (
 						<p className="delete-warning">
 							Estas apunto de borrar las siguientes{" "}
