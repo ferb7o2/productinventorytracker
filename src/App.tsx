@@ -91,7 +91,6 @@ function Home(this: any) {
 		try {
 			//get user jwst token to query our API
 			const token = await getAccessToken();
-			console.log(token);
 			const data = await fetch(
 				`${process.env.REACT_APP_API_URL}/products/mostTransactions?rowNum=${rowIndex}&searchBy=${searchTxt}`,
 				{

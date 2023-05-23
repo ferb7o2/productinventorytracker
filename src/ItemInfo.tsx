@@ -22,6 +22,8 @@ import { AddSaleRow } from "./components/AddSaleRow";
 
 //Import AWS Cognito Authentication
 import { getAccessToken } from "./Cognito";
+import { TransactionNotes } from "./components/TransactionNotes";
+import { EditProduct } from "./components/EditProduct";
 
 interface YearList {
 	year: number;
@@ -293,6 +295,12 @@ function ItemInfo() {
 		}
 	}
 
+	function transactionNotesBtnTrigger() {
+		if (toDeleteSale.length + toDeletePurchase.length > 0) {
+			$("#product-item-modal-notes").removeAttr("hidden");
+		}
+	}
+
 	function addToDeleteArray(
 		IdInput: string,
 		dateInput: string,
@@ -521,6 +529,8 @@ function ItemInfo() {
 					currentItemId={pId || ""}
 				/>
 
+				<EditProduct productInfo={productData} />
+
 				<div className="container" id="container">
 					<div className="container-top-section">
 						<div className="container-top-first-row">
@@ -562,7 +572,7 @@ function ItemInfo() {
 										className="btn secondary-btn"
 										data-bs-toggle="button"
 										id="btn"
-										onClick={editBtnTrigger}
+										onClick={transactionNotesBtnTrigger}
 									>
 										editar producto
 									</button>
@@ -660,6 +670,7 @@ function ItemInfo() {
 									</th>
 								</tr>
 							</thead>
+
 							<tbody>
 								{purchasesYears.map(({ year }) => (
 									<PurchaseYearBox
@@ -677,6 +688,7 @@ function ItemInfo() {
 										addToDeleteArray={addToDeleteArray}
 									/>
 								))}
+
 								<AddPurchaseRow
 									vendorData={vendorData}
 									pId={pId}

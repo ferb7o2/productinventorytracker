@@ -830,16 +830,22 @@ a {
 	padding-left: 10px;
 	padding-right: 30px;
 }
-
+.modal-qty-row {
+}
 .modal-qty-weight {
-	width: 90px;
+	width: 17%;
 	height: 35px;
-	padding-left: 15px;
 }
 
-.modal-qty-row-left {
+.modal-qty-inner-row {
 	display: flex;
 	justify-content: space-between;
+}
+.modal-qty-row-left {
+	width: 80%;
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
 }
 
 .modal-btn {
