@@ -41,9 +41,9 @@ export function DeleteTransaction(props: {
 
 			for (let i = 0; i < props.purchase.length; ++i) {
 				const response = await fetch(
-					`${process.env.REACT_APP_API_URL}/purchases/${props.purchase[i].pId}`,
+					`${process.env.REACT_APP_API_URL}/purchases/${props.purchase[i].pId}/delete`,
 					{
-						method: "DELETE",
+						method: "PUT",
 						headers: {
 							Authorization: `Bearer ${token}`,
 						},
@@ -57,9 +57,9 @@ export function DeleteTransaction(props: {
 
 			for (let i = 0; i < props.sale.length; ++i) {
 				const response = await fetch(
-					`${process.env.REACT_APP_API_URL}/sales/${props.sale[i].sId}`,
+					`${process.env.REACT_APP_API_URL}/sales/${props.sale[i].sId}/delete`,
 					{
-						method: "DELETE",
+						method: "PUT",
 						headers: {
 							Authorization: `Bearer ${token}`,
 						},

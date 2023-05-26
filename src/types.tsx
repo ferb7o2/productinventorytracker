@@ -1,5 +1,4 @@
 export type ProductDataType = {
-	rowNum: number;
 	id: string;
 	name: string;
 	description?: string | null;

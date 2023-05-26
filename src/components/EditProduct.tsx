@@ -1,79 +1,139 @@
 import $ from "jquery";
-import { useHistory } from "react-router-dom";
-
-import "../css/homePageStyle.css";
+import React, { useEffect, useState } from "react";
+import { getAccessToken, getCurrentUserEmail } from "../Cognito";
 import { ProductDataType } from "../types";
-import { useEffect, useState } from "react";
-import { getAccessToken } from "../Cognito";
 
-interface editProductProps {
-	productInfo: ProductDataType | undefined;
+interface EditProductProps {
+	productInfo: ProductDataType;
+	updateInfo: (
+		newName: string,
+		newDesc: string,
+		newWeightQty: string,
+		newWeightType: string
+	) => void;
+	setEditMode: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export function EditProduct({ productInfo }: editProductProps) {
-	//Variables for keeping up with Page's Navigation
-	const history = useHistory();
+export function EditProduct({
+	productInfo,
+	updateInfo,
+	setEditMode,
+}: EditProductProps) {
 	const [weightTypes, setWeightTypes] = useState([]);
 	const [selectedType, setSelectedType] = useState("");
-
-	//Enables the textbox for Bulk information Input
-	function enableBulkTextBox() {
-		$("#inputQuantityType").removeAttr("disabled"); //enable the textbox right next to it
-	}
-
-	function disableBulkTextBox() {
-		$("#inputQuantityType").attr("disabled", 1); //enable the textbox right next to it
-	}
-
-	function blankAllFields() {
-		$(".modal-input").val("");
-		$(".radio-btn").prop("checked", false);
-	}
+	const [newName, setNewName] = useState("");
+	const [newDesc, setNewDesc] = useState("");
+	const [newWeightQty, setNewWeightQty] = useState("");
 
 	async function fetchWeightTypes() {
 		try {
-			//get user jwst token to query our API
 			const token = await getAccessToken();
 			const data = await fetch(`${process.env.REACT_APP_API_URL}/weightTypes`, {
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},
-			})
-				.then((res) => res.json())
-				.then((datax) => {
-					return datax;
-				});
+			}).then((res) => res.json());
 
 			if (data.length > 0) {
 				setWeightTypes(data);
 			}
-			console.log(data);
 		} catch (error) {
 			console.error(
-				`Error retrieving Weight Type data (fechWeightTypes) `,
+				"Error retrieving Weight Type data (fetchWeightTypes)",
 				error
 			);
 		}
 	}
+
+	const updateProduct = async () => {
+		// Check if required fields are empty
+		if (!newName || !newWeightQty || !selectedType) {
+			console.error("Favor de llenar toda la informacion necesaria");
+			return;
+		}
+
+		// Create an array to store the changed fields
+		const changedFields: string[] = [];
+
+		// Compare the new values with the original values
+		if (newName !== productInfo.name) {
+			changedFields.push("name");
+		}
+		if (newDesc !== productInfo.description) {
+			changedFields.push("description");
+		}
+		if (newWeightQty !== productInfo.weightQty.toString()) {
+			changedFields.push("weightQty");
+		}
+		if (selectedType !== productInfo.weightType) {
+			changedFields.push("weightType");
+		}
+
+		// Check if any fields have changed
+		if (changedFields.length === 0) {
+			console.log("No changes detected");
+			setEditMode(false);
+			return;
+		}
+
+		try {
+			const token = await getAccessToken();
+			const user = await getCurrentUserEmail();
+			const data = await fetch(
+				`${process.env.REACT_APP_API_URL}/products/${encodeURI(
+					productInfo?.id
+				)}`,
+				{
+					method: "PUT",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
+					body: JSON.stringify({
+						name: newName,
+						desc: newDesc,
+						weightQty: newWeightQty,
+						weightType: selectedType,
+						userEmail: user,
+						change: changedFields.join(", "), // Generate the comma-separated string of changed fields
+					}),
+				}
+			).then((res) => res.json());
+
+			// Assuming a successful update
+			setEditMode(false);
+
+			updateInfo(newName, newDesc, newWeightQty, selectedType);
+		} catch (error) {
+			console.error("Error on updateProduct()", error);
+		}
+	};
 
 	useEffect(() => {
 		fetchWeightTypes();
 	}, []);
 
 	useEffect(() => {
-		if (productInfo && productInfo.weightType) {
+		if (productInfo) {
+			setNewName(productInfo.name);
+			setNewDesc(productInfo.description || "");
+			setNewWeightQty(String(productInfo.weightQty));
 			setSelectedType(productInfo.weightType);
+			console.log(productInfo);
 		}
 	}, [productInfo]);
+
+	if (!productInfo) {
+		return null;
+	}
 
 	$(document).click(function (event) {
 		//if you click on anything except the modal itself or the "open modal" link, close the modal
 
 		if (
-			!$(event.target).closest(".product-modal-content, .editProductBtn").length
+			!$(event.target).closest(".product-modal-content, #editBtnProduct").length
 		) {
-			blankAllFields();
-			$("#product-modal").attr("hidden", 1);
+			setEditMode(false);
 		}
 	});
 
@@ -90,6 +150,7 @@ export function EditProduct({ productInfo }: editProductProps) {
 			>
 				This is a danger alert—check it out!
 			</div>
+
 			<div className="product-modal-content">
 				<div className="modal-title-row">
 					<h1 className="modal-title">Editar Producto</h1>
@@ -104,10 +165,11 @@ export function EditProduct({ productInfo }: editProductProps) {
 						<input
 							type="text"
 							className="modal-input"
-							id="productNameField"
-							value={productInfo?.name}
-							required
-							onChange={() => {}}
+							id="productNameFieldEdit"
+							value={newName}
+							onChange={(e) => {
+								setNewName(e.target.value);
+							}}
 						/>
 						<div className="form-group">
 							<label htmlFor="productDescriptionField" className="modal-text">
@@ -117,10 +179,12 @@ export function EditProduct({ productInfo }: editProductProps) {
 								<input
 									type="text"
 									className="modal-input"
-									id="productDescriptionField"
+									id="productDescriptionFieldEdit"
 									placeholder=" (opcional)"
-									value={productInfo?.description || ""}
-									onChange={() => {}}
+									value={newDesc}
+									onChange={(e) => {
+										setNewDesc(e.target.value);
+									}}
 								/>
 							</div>
 						</div>
@@ -155,17 +219,25 @@ export function EditProduct({ productInfo }: editProductProps) {
 								<input
 									type="number"
 									className="modal-qty-weight modal-input"
-									id="inputQuantityType"
+									id="inputQuantityType-edit"
 									placeholder="Peso (kg)"
-									disabled
+									value={newWeightQty}
+									onChange={(e) => {
+										setNewWeightQty(e.target.value);
+									}}
+									required
 								/>
 							</div>
 						</div>
 
 						<div className="fair-spacing" />
 						<div className="form-group row">
-							<button type="button" className="btn modal-btn">
-								Registrar Producto
+							<button
+								type="button"
+								className="btn modal-btn"
+								onClick={updateProduct}
+							>
+								Editar Producto
 							</button>
 						</div>
 					</form>

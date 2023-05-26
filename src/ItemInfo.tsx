@@ -52,6 +52,7 @@ function ItemInfo() {
 	const [difference, setDifference] = useState<number>(0);
 	const [vendorData, setVendorData] = useState<VendorDataType[]>([]);
 	const [DataLoaded, setDataLoaded] = useState<boolean>(false);
+	const [editMode, setEditMode] = useState(false);
 
 	const fetchProductData = async () => {
 		try {
@@ -225,15 +226,7 @@ function ItemInfo() {
 	}
 
 	const editBtnTrigger = () => {
-		$("#productTitle").removeAttr("readOnly");
-
-		$("#productDescription").removeAttr("readOnly");
-		$(".editable-input").css("border", "1px rgb(54, 54, 54, 0.6) solid");
-		$(".editable-input").css("border-radius", "4px");
-		$("#saveBtnProduct").removeAttr("hidden");
-		$("#productDescription").removeAttr("hidden");
-
-		$("#pDescriptionRow").removeAttr("hidden");
+		setEditMode(true);
 	};
 
 	const changeProductInfo = async () => {
@@ -514,6 +507,22 @@ function ItemInfo() {
 		setSTransactionData(updatedData);
 	};
 
+	function updateProductInfo(
+		newName: string,
+		newDesc: string,
+		newWeightQty: string,
+		newWeightType: string
+	) {
+		const productx = {
+			id: productData?.id || "0",
+			name: newName,
+			description: newDesc,
+			weightType: newWeightType,
+			weightQty: Number(newWeightQty),
+		};
+		setProductData(productx);
+	}
+
 	return (
 		<>
 			<div className="Application">
@@ -529,7 +538,15 @@ function ItemInfo() {
 					currentItemId={pId || ""}
 				/>
 
-				<EditProduct productInfo={productData} />
+				{productData?.id && editMode ? (
+					<EditProduct
+						productInfo={productData}
+						updateInfo={updateProductInfo}
+						setEditMode={setEditMode}
+					/>
+				) : (
+					<></>
+				)}
 
 				<div className="container" id="container">
 					<div className="container-top-section">
@@ -569,10 +586,10 @@ function ItemInfo() {
 								<div className="title-button-container vendor-btn">
 									<button
 										type="button"
-										className="btn secondary-btn"
+										className="btn secondary-btn editBtnProduct"
 										data-bs-toggle="button"
-										id="btn"
-										onClick={transactionNotesBtnTrigger}
+										id="editBtnProduct"
+										onClick={editBtnTrigger}
 									>
 										editar producto
 									</button>

@@ -36,3 +36,15 @@ export async function getAccessToken(): Promise<string | undefined> {
 		return undefined;
 	}
 }
+
+export async function getCurrentUserEmail(): Promise<string | undefined> {
+	try {
+		const user = await Auth.currentAuthenticatedUser();
+		const { attributes } = user;
+		const email = attributes.email;
+		return email;
+	} catch (error) {
+		console.log("Error getting current user email", error);
+		return undefined;
+	}
+}

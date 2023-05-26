@@ -208,13 +208,36 @@ function Home(this: any) {
 		}
 	}
 
+	const removeProductsByIds = (
+		productsToRemove: { pName: string; pId: string }[]
+	) => {
+		setProductData((prevData) => {
+			// Create a set of product IDs to remove
+			const idsToRemove = new Set(
+				productsToRemove.map((product) => product.pId)
+			);
+
+			// Filter out products whose IDs are present in the idsToRemove set
+			const updatedData = prevData.filter(
+				(product) => !idsToRemove.has(product.id)
+			);
+
+			return updatedData;
+		});
+
+		setProductCount(productCount - productsToRemove.length);
+	};
+
 	return (
 		<div className="Application">
 			<title>Facturación PJL 2022 - Productos </title>
 
 			<div className="container" id="container">
 				<AddProduct />
-				<DeleteProduct products={toDelete} />
+				<DeleteProduct
+					products={toDelete}
+					removeProductsByIds={removeProductsByIds}
+				/>
 				<div className="container-top-section">
 					<div className="container-top-first-row">
 						<div className="container-title-section">
