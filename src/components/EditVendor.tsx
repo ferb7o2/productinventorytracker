@@ -1,6 +1,5 @@
 import $ from "jquery";
-import { useHistory } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getAccessToken, getCurrentUserEmail } from "../Cognito";
 import { VendorDataType } from "../types";
 
@@ -9,15 +8,20 @@ interface AddVendorProps {
 	setVendorData: React.Dispatch<
 		React.SetStateAction<VendorDataType | undefined>
 	>;
+	setIsEditable: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function EditVendor({ vendorData, setVendorData }: AddVendorProps) {
-	const [vendorName, setVendorName] = useState(vendorData?.name);
-	const [vendorRFC, setVendorRFC] = useState(vendorData?.rfc);
-	const [vendorAddress, setVendorAddress] = useState(vendorData?.address);
-	const [vendorCity, setVendorCity] = useState(vendorData?.city);
-	const [vendorState, setVendorState] = useState(vendorData?.state);
-	const [vendorZipCode, setVendorZipCode] = useState(vendorData?.zipCode);
+function EditVendor({
+	vendorData,
+	setVendorData,
+	setIsEditable,
+}: AddVendorProps) {
+	const [vendorName, setVendorName] = useState("");
+	const [vendorRFC, setVendorRFC] = useState("");
+	const [vendorAddress, setVendorAddress] = useState("");
+	const [vendorCity, setVendorCity] = useState("");
+	const [vendorState, setVendorState] = useState("");
+	const [vendorZipCode, setVendorZipCode] = useState("");
 
 	function displayErrorMsg(
 		errorBannerId: JQuery<HTMLElement>,
@@ -49,7 +53,7 @@ function EditVendor({ vendorData, setVendorData }: AddVendorProps) {
 			const changedFields: string[] = [];
 
 			// Compare the new values with the original values and populate the changedFields array
-			if (uppercaseRFC.trim() !== vendorData?.rfc?.trim()) {
+			if (uppercaseRFC.trim() !== vendorData.rfc?.trim()) {
 				changedFields.push("rfc");
 			}
 			if (vendorName.trim() !== vendorData.name.trim()) {
@@ -71,7 +75,7 @@ function EditVendor({ vendorData, setVendorData }: AddVendorProps) {
 			if (changedFields.length === 0) {
 				// No changes detected, hide the modal
 				console.log("No changes");
-				$("#vendor-modal-edit").attr("hidden", 1);
+				setIsEditable(false);
 				return;
 			}
 
@@ -109,7 +113,7 @@ function EditVendor({ vendorData, setVendorData }: AddVendorProps) {
 					state: vendorState,
 					zipCode: vendorZipCode,
 				});
-				$("#vendor-modal-edit").attr("hidden", 1);
+				setIsEditable(false);
 			} else {
 				// Handle error response
 				throw new Error("No se pudo actualizar el distribuidor");
@@ -126,16 +130,23 @@ function EditVendor({ vendorData, setVendorData }: AddVendorProps) {
 		//if you click on anything except the modal itself or the "open modal" link, close the modal
 
 		if (!$(event.target).closest(".product-modal-content, .edit-btn").length) {
-			$("#vendor-modal-edit").attr("hidden", 1);
+			setIsEditable(false);
 		}
 	});
 
+	useEffect(() => {
+		if (vendorData) {
+			setVendorName(vendorData?.name);
+			setVendorRFC(vendorData.rfc || "");
+			setVendorAddress(vendorData.address || "");
+			setVendorCity(vendorData.city || "");
+			setVendorState(vendorData.state || "");
+			setVendorZipCode(vendorData.zipCode || "");
+		}
+	}, [vendorData]);
+
 	return (
-		<div
-			className="product-modal vendor-modal-edit"
-			id="vendor-modal-edit"
-			hidden
-		>
+		<div className="product-modal vendor-modal-edit" id="vendor-modal-edit">
 			<div
 				className="alert alert-danger"
 				role="alert"
@@ -223,6 +234,7 @@ function EditVendor({ vendorData, setVendorData }: AddVendorProps) {
 							</label>
 
 							<input
+								autoComplete="off"
 								type="text"
 								className="modal-input"
 								id="vendorStateField"
@@ -239,6 +251,7 @@ function EditVendor({ vendorData, setVendorData }: AddVendorProps) {
 							</label>
 
 							<input
+								autoComplete="off"
 								type="number"
 								className="modal-input"
 								id="vendorZipCodeField"

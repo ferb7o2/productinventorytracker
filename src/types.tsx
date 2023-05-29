@@ -37,7 +37,7 @@ export type PtransactionDataType = {
 	invoiceId: string;
 	qty: number;
 	price: number;
-	pName?: string;
+	pname?: string;
 	vName?: string;
 };
 

@@ -10,7 +10,6 @@ import {
 	urlPropVendorType,
 	VendorDataType,
 	PtransactionDataType,
-	ProductDataType,
 } from "./types";
 import { updateVendorData } from "./graphql/mutations";
 import { getAccessToken } from "./Cognito";
@@ -25,6 +24,7 @@ function VendorInfo() {
 	const [vendorData, setVendorData] = useState<VendorDataType>();
 	const [Ptransaction_data, setPtData] = useState<PtransactionDataType[]>([]);
 	const [DataLoaded, setDataLoaded] = useState<boolean>(false);
+	const [isEditable, setIsEditable] = useState<boolean>(false);
 
 	//auxiliary variables - for pagination
 	const [lastRowNum, SetLastRow] = useState(0);
@@ -142,75 +142,8 @@ function VendorInfo() {
 		}
 	}
 
-	const changeVendorInfo = async () => {
-		var errorTemplate = $("#error-template-vendor");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-
-		if ($("#vNameInput").val() != "") {
-			try {
-				const changeVendorData = (await API.graphql(
-					graphqlOperation(updateVendorData, {
-						input: {
-							id: vendorData?.id,
-							name: $("#vNameInput").val(),
-							address: $("#vAddressInput").val(),
-							city: $("#vCityInput").val(),
-							state: $("#vStateInput").val(),
-							country: $("#vCountryInput").val(),
-							zipCode: $("#vZipInput").val(),
-							rfc: $("#vRfcInput").val(),
-						},
-					})
-				)) as {
-					data: {
-						updateVendorData: VendorDataType[];
-					};
-				};
-
-				/*setProductData({
-					id: VendorData?.id,
-					name: $("#vNameInput").val(),
-					address: $("#vAddressInput")?.val(),
-					city: $("#vCityInput").val(),
-					state: $("#vStateInput").val(),
-					country: $("#vCountryInput").val(),
-					zipCode: $("#vZipInput").val(),
-					rfc: $("#vRfcInput").val(),
-				})*/
-			} catch (error) {
-				console.log("error on changVendorInfo() ", error);
-				errorTemplate.text(
-					"Error - al actualizar el la Informacion del distribuidor"
-				);
-				errorTemplate.removeAttr("hidden");
-			}
-		} else {
-			$("#vNameInput").val(vendorData?.name || "");
-			errorTemplate.text(
-				"Error - al actualizar el nombre del distribuidor no puede estar vacio"
-			);
-			errorTemplate.removeAttr("hidden");
-		}
-	};
-
-	function saveBtnTrigger() {
-		changeVendorInfo();
-		$("#vNameInput").attr("readOnly", 1);
-		$("#vAddressInput").attr("readOnly", 1);
-		$("#vCityInput").attr("readOnly", 1);
-		$("#vStateInput").attr("readOnly", 1);
-		$("#vCountryInput").attr("readOnly", 1);
-		$("#vZipInput").attr("readOnly", 1);
-		$("#vRfcInput").attr("readOnly", 1);
-		$(".editable-input").css("border", "none");
-		$(".editable-input").css("border-radius", "4px");
-		$("#saveBtn").attr("hidden", 1);
-
-		checkForMissingInfo();
-	}
-
 	const editBtnTrigger = () => {
-		$("#vendor-modal-edit").removeAttr("hidden");
+		setIsEditable(true);
 	};
 
 	const history = useHistory();
@@ -234,8 +167,12 @@ function VendorInfo() {
 		<div className="Application">
 			<title>Facturación PJL - {vendorData?.name}</title>
 			<div className="container" id="container">
-				{vendorData && vendorData.name ? (
-					<EditVendor vendorData={vendorData} setVendorData={setVendorData} />
+				{vendorData && vendorData.name && isEditable ? (
+					<EditVendor
+						vendorData={vendorData}
+						setVendorData={setVendorData}
+						setIsEditable={setIsEditable}
+					/>
 				) : (
 					<></>
 				)}
@@ -360,7 +297,6 @@ function VendorInfo() {
 								className="btn"
 								data-bs-toggle="button"
 								id="saveBtn"
-								onClick={() => saveBtnTrigger()}
 								hidden
 							>
 								Guardar
@@ -435,7 +371,7 @@ function VendorInfo() {
 
 						<tbody>
 							{Ptransaction_data.map(
-								({ id, productId, date, invoiceId, qty, price, pName }, i) => (
+								({ id, productId, date, invoiceId, qty, price, pname }, i) => (
 									<tr key={"vInfo-" + id}>
 										<td scope="col" className="vendor-date">
 											{moment(date).format("YYYY-MM-DD")}
@@ -445,7 +381,7 @@ function VendorInfo() {
 											className="vendor-pname"
 											onClick={() => goToProductPage(productId)}
 										>
-											{pName}
+											{pname}
 										</td>
 										<td scope="col" className="vendor-invoice">
 											{invoiceId}
