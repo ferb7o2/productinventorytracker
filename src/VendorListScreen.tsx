@@ -37,7 +37,7 @@ function VendorListScreen() {
 	const [preSearch, setPreSearch] = useState("");
 
 	//auxiliary variables - for pagination
-	const [lastRowNum, SetLastRow] = useState(0);
+	const [lastRowNum, setLastRow] = useState(0);
 	const [hasMore, setHasMore] = useState(false);
 
 	//auxiliary - for delete action
@@ -93,14 +93,17 @@ function VendorListScreen() {
 					return datax;
 				});
 
+			console.log(data);
+
 			//if statement
 			entered
 				? setvData(data) //if entered, forget all previous data and query new one (with search)
 				: setvData((prevData) => [...prevData, ...data]); //if not, keep on adding new data to existing one
 
-			if (data.length > 0) {
+			if (data.length > 0 && data[data.length - 1].rowNum !== null) {
+				setLastRow(data[data.length - 1].rowNum);
+
 				//for pagination, remember which index was the last one queried so new query can start from there
-				SetLastRow(data[data.length - 1].rowNum);
 			}
 			setHasMore(data.length > 0);
 		} catch (error) {
@@ -167,7 +170,7 @@ function VendorListScreen() {
 	return (
 		<div className="Application">
 			<header>
-				<AddVendor />
+				<AddVendor setVData={setvData} setVendorCount={setVendorCount} />
 				<DeleteVendor vendors={toDelete} />
 			</header>
 

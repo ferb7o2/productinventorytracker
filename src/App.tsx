@@ -42,7 +42,7 @@ Amplify.configure(awsconfig);
 function Home(this: any) {
 	//essential display data
 	const [productData, setProductData] = useState<ProductDataType[]>([]);
-	const [productCount, setProductCount] = useState<any>(0);
+	const [productCount, setProductCount] = useState<any>(-1);
 
 	//auxiliary variables - for search actions
 	const [searchTermProduct, setSearchTermProduct] = useState("");
@@ -188,24 +188,38 @@ function Home(this: any) {
 	// }
 
 	function addToDeleteArray(pIdInput: string, pNameInput: string) {
+		const checkboxId = `checkbox_${pIdInput}`;
+
 		const currentChecked = document.getElementById(
-			pNameInput
+			checkboxId
 		) as HTMLInputElement;
 
 		if (currentChecked.checked) {
-			var numberOfOcurrences = toDelete.filter(
-				({ pId, pName }) => pId == pIdInput
+			const hasOccurrences = toDelete.some(({ pId }) =>
+				compareIds(pId, pIdInput)
 			);
-			if (numberOfOcurrences.length == 0) {
+
+			if (!hasOccurrences) {
 				setToDelete((toDelete) => [
 					...toDelete,
 					{ pId: pIdInput, pName: pNameInput },
 				]);
 			}
 		} else {
-			let filtered_array = toDelete.filter(({ pId, pName }) => pId != pIdInput);
-			setToDelete(filtered_array);
+			const filteredArray = toDelete.filter(
+				({ pId }) => !compareIds(pId, pIdInput)
+			);
+			setToDelete(filteredArray);
 		}
+	}
+
+	function compareIds(id1: string, id2: string): boolean {
+		// Remove special characters from both IDs
+		const cleanId1 = id1.replace(/[^a-zA-Z0-9]/g, "");
+		const cleanId2 = id2.replace(/[^a-zA-Z0-9]/g, "");
+
+		// Compare the cleaned IDs
+		return cleanId1 === cleanId2;
 	}
 
 	const removeProductsByIds = (
@@ -228,12 +242,17 @@ function Home(this: any) {
 		setProductCount(productCount - productsToRemove.length);
 	};
 
+	const addProductTrigger = (product: ProductDataType) => {
+		setProductCount(productCount + 1);
+		setProductData((prev) => [product, ...prev]);
+	};
+
 	return (
 		<div className="Application">
 			<title>Facturación PJL 2022 - Productos </title>
 
 			<div className="container" id="container">
-				<AddProduct />
+				<AddProduct addProductTrigger={addProductTrigger} />
 				<DeleteProduct
 					products={toDelete}
 					removeProductsByIds={removeProductsByIds}
@@ -380,8 +399,8 @@ function Home(this: any) {
 											className="checkbox-table"
 											name={id}
 											onChange={() => addToDeleteArray(id, name)}
-											id={name}
-										></input>
+											id={`checkbox_${id}`}
+										/>
 									</td>
 									<td
 										id={id}

@@ -16,6 +16,7 @@ import { updateVendorData } from "./graphql/mutations";
 import { getAccessToken } from "./Cognito";
 import InfiniteScroll from "react-infinite-scroll-component";
 import moment from "moment";
+import EditVendor from "./components/EditVendor";
 
 function VendorInfo() {
 	let { vId_global } = useParams<urlPropVendorType>();
@@ -209,23 +210,7 @@ function VendorInfo() {
 	}
 
 	const editBtnTrigger = () => {
-		$("#vNameInput").removeAttr("readOnly");
-		$("#vAddressInput").removeAttr("readOnly");
-		$("#vCityInput").removeAttr("readOnly");
-		$("#vStateInput").removeAttr("readOnly");
-		$("#vCountryInput").removeAttr("readOnly");
-		$("#vZipInput").removeAttr("readOnly");
-		$("#vRfcInput").removeAttr("readOnly");
-		$(".editable-input").css("border", "1px rgb(54, 54, 54, 0.6) solid");
-		$(".editable-input").css("border-radius", "4px");
-		$("#saveBtn").removeAttr("hidden");
-
-		$("#vAddressInputRow").removeAttr("hidden");
-		$("#vCityInputRow").removeAttr("hidden");
-		$("#vStateInputRow").removeAttr("hidden");
-		$("#vCountryInputRow").removeAttr("hidden");
-		$("#vZipInputRow").removeAttr("hidden");
-		$("#vRfcInputRow").removeAttr("hidden");
+		$("#vendor-modal-edit").removeAttr("hidden");
 	};
 
 	const history = useHistory();
@@ -249,6 +234,11 @@ function VendorInfo() {
 		<div className="Application">
 			<title>Facturación PJL - {vendorData?.name}</title>
 			<div className="container" id="container">
+				{vendorData && vendorData.name ? (
+					<EditVendor vendorData={vendorData} setVendorData={setVendorData} />
+				) : (
+					<></>
+				)}
 				<div className="container-top-section">
 					<div className="container-top-first-row">
 						<div className="vInfo-section">
@@ -357,10 +347,10 @@ function VendorInfo() {
 						<div className="title-button-container vendor-btn vendor-btn-container">
 							<button
 								type="button"
-								className="btn secondary-btn"
+								className="btn secondary-btn edit-btn"
 								data-bs-toggle="button"
 								id="btn"
-								onClick={() => editBtnTrigger()}
+								onClick={editBtnTrigger}
 							>
 								editar distribuidor
 							</button>

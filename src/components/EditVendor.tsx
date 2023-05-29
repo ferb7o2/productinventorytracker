@@ -5,18 +5,19 @@ import { getAccessToken, getCurrentUserEmail } from "../Cognito";
 import { VendorDataType } from "../types";
 
 interface AddVendorProps {
-	setVData: React.Dispatch<React.SetStateAction<VendorDataType[]>>;
-	setVendorCount: React.Dispatch<React.SetStateAction<number>>;
+	vendorData: VendorDataType;
+	setVendorData: React.Dispatch<
+		React.SetStateAction<VendorDataType | undefined>
+	>;
 }
 
-function AddVendor({ setVData, setVendorCount }: AddVendorProps) {
-	const history = useHistory();
-	const [vendorName, setVendorName] = useState("");
-	const [vendorRFC, setVendorRFC] = useState("");
-	const [vendorAddress, setVendorAddress] = useState("");
-	const [vendorCity, setVendorCity] = useState("");
-	const [vendorState, setVendorState] = useState("");
-	const [vendorZipCode, setVendorZipCode] = useState("");
+function EditVendor({ vendorData, setVendorData }: AddVendorProps) {
+	const [vendorName, setVendorName] = useState(vendorData?.name);
+	const [vendorRFC, setVendorRFC] = useState(vendorData?.rfc);
+	const [vendorAddress, setVendorAddress] = useState(vendorData?.address);
+	const [vendorCity, setVendorCity] = useState(vendorData?.city);
+	const [vendorState, setVendorState] = useState(vendorData?.state);
+	const [vendorZipCode, setVendorZipCode] = useState(vendorData?.zipCode);
 
 	function displayErrorMsg(
 		errorBannerId: JQuery<HTMLElement>,
@@ -28,16 +29,12 @@ function AddVendor({ setVData, setVendorCount }: AddVendorProps) {
 		);
 	}
 
-	function blankAllFields() {
-		$(".modal-input").val("");
-	}
-
-	const registerVendor = async () => {
+	const updateVendor = async () => {
 		$("#error-vendor").attr("hidden", 1);
-		let uppercaseRFC: string;
+		let uppercaseRFC = "";
 
 		// Convert RFC to uppercase
-		uppercaseRFC = vendorRFC.toUpperCase();
+		if (vendorRFC) uppercaseRFC = vendorRFC.toUpperCase();
 
 		try {
 			// Validate the input values
@@ -48,15 +45,47 @@ function AddVendor({ setVData, setVendorCount }: AddVendorProps) {
 			const user = await getCurrentUserEmail();
 			const token = await getAccessToken();
 
+			// Create an array to store the changed fields
+			const changedFields: string[] = [];
+
+			// Compare the new values with the original values and populate the changedFields array
+			if (uppercaseRFC.trim() !== vendorData?.rfc?.trim()) {
+				changedFields.push("rfc");
+			}
+			if (vendorName.trim() !== vendorData.name.trim()) {
+				changedFields.push("name");
+			}
+			if (vendorAddress?.trim() !== vendorData.address?.trim()) {
+				changedFields.push("address");
+			}
+			if (vendorCity?.trim() !== vendorData.city?.trim()) {
+				changedFields.push("city");
+			}
+			if (vendorState?.trim() !== vendorData.state?.trim()) {
+				changedFields.push("state");
+			}
+			if (String(vendorZipCode).trim() !== String(vendorData.zipCode).trim()) {
+				changedFields.push("zipCode");
+			}
+
+			if (changedFields.length === 0) {
+				// No changes detected, hide the modal
+				console.log("No changes");
+				$("#vendor-modal-edit").attr("hidden", 1);
+				return;
+			}
+
+			// Make the API call only if changes were detected
 			const response = await fetch(
-				`${process.env.REACT_APP_API_URL}/vendors/registerVendor`,
+				`${process.env.REACT_APP_API_URL}/vendors/updateVendor`,
 				{
-					method: "POST",
+					method: "PUT",
 					headers: {
 						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,
 					},
 					body: JSON.stringify({
+						id: vendorData.id,
 						rfc: uppercaseRFC,
 						name: vendorName,
 						address: vendorAddress,
@@ -64,42 +93,29 @@ function AddVendor({ setVData, setVendorCount }: AddVendorProps) {
 						state: vendorState,
 						zipCode: vendorZipCode,
 						userEmail: user,
+						changedFields: changedFields.join(","),
 					}),
 				}
 			);
 
 			if (response.ok) {
-				const data = await response.json();
 				// Handle successful response
-				setVendorCount((prevState) => prevState + 1);
-				setVData((prevState) => [
-					{
-						id: data.id,
-						name: vendorName,
-						rfc: uppercaseRFC,
-						address: vendorAddress,
-						city: vendorCity,
-						state: vendorState,
-						zipCode: vendorZipCode,
-						rowNum: 0, // Add the missing property
-					},
-					...prevState,
-				]);
-
-				//clear fields
-				setVendorName("");
-				setVendorRFC("");
-				setVendorAddress("");
-				setVendorCity("");
-				setVendorState("");
-				setVendorZipCode("");
-				$("#vendor-modal").attr("hidden", 1);
+				setVendorData({
+					...vendorData,
+					name: vendorName,
+					rfc: uppercaseRFC,
+					address: vendorAddress,
+					city: vendorCity,
+					state: vendorState,
+					zipCode: vendorZipCode,
+				});
+				$("#vendor-modal-edit").attr("hidden", 1);
 			} else {
 				// Handle error response
-				throw new Error("No se pudo registrar el distribuidor");
+				throw new Error("No se pudo actualizar el distribuidor");
 			}
 		} catch (error) {
-			console.error("Error registering vendor:", error);
+			console.error("Error updating vendor:", error);
 			// Handle error
 			$("#error-vendor").text(`${error}`);
 			$("#error-vendor").removeAttr("hidden");
@@ -109,16 +125,17 @@ function AddVendor({ setVData, setVendorCount }: AddVendorProps) {
 	$(document).click(function (event) {
 		//if you click on anything except the modal itself or the "open modal" link, close the modal
 
-		if (
-			!$(event.target).closest(".product-modal-content, .addVendorBtn").length
-		) {
-			blankAllFields();
-			$("#vendor-modal").attr("hidden", 1);
+		if (!$(event.target).closest(".product-modal-content, .edit-btn").length) {
+			$("#vendor-modal-edit").attr("hidden", 1);
 		}
 	});
 
 	return (
-		<div className="product-modal vendor-modal" id="vendor-modal" hidden>
+		<div
+			className="product-modal vendor-modal-edit"
+			id="vendor-modal-edit"
+			hidden
+		>
 			<div
 				className="alert alert-danger"
 				role="alert"
@@ -132,7 +149,7 @@ function AddVendor({ setVData, setVendorCount }: AddVendorProps) {
 			</div>
 			<div className="product-modal-content">
 				<div className="modal-title-row">
-					<h1 className="modal-title">Registrar Distribuidor</h1>
+					<h1 className="modal-title">Editar Distribuidor</h1>
 				</div>
 
 				<div className="modal-data-container">
@@ -236,9 +253,9 @@ function AddVendor({ setVData, setVendorCount }: AddVendorProps) {
 							<button
 								type="button"
 								className="btn modal-btn"
-								onClick={registerVendor}
+								onClick={updateVendor}
 							>
-								Registrar
+								Editar
 							</button>
 						</div>
 					</form>
@@ -248,4 +265,4 @@ function AddVendor({ setVData, setVendorCount }: AddVendorProps) {
 	);
 }
 
-export default AddVendor;
+export default EditVendor;

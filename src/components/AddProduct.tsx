@@ -1,14 +1,36 @@
 import $ from "jquery";
-import { useHistory } from "react-router-dom";
-
-import Amplify, { API, graphqlOperation } from "aws-amplify";
-import { createProductData } from "../graphql/mutations";
 
 import "../css/homePageStyle.css";
+import { useEffect, useState } from "react";
+import { getAccessToken, getCurrentUserEmail } from "../Cognito";
+import { ProductDataType } from "../types";
 
-export function AddProduct() {
-	//Variables for keeping up with Page's Navigation
-	const history = useHistory();
+interface AddProductProps {
+	addProductTrigger: (product: ProductDataType) => void;
+}
+
+export function AddProduct({ addProductTrigger }: AddProductProps) {
+	const [weightTypes, setWeightTypes] = useState([]);
+
+	async function fetchWeightTypes() {
+		try {
+			const token = await getAccessToken();
+			const data = await fetch(`${process.env.REACT_APP_API_URL}/weightTypes`, {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			}).then((res) => res.json());
+
+			if (data.length > 0) {
+				setWeightTypes(data);
+			}
+		} catch (error) {
+			console.error(
+				"Error retrieving Weight Type data (fetchWeightTypes)",
+				error
+			);
+		}
+	}
 
 	//Enables the textbox for Bulk information Input
 	function enableBulkTextBox() {
@@ -24,76 +46,72 @@ export function AddProduct() {
 		$(".radio-btn").prop("checked", false);
 	}
 
-	//Triggered when (register) product button is pressed
-	//Checks that product name is non-NULL && non-empty
-	//Checks that if Bulk checkbox option is pressed, there exists a non-empty numeric value on the textBox
-	const registerProduct = async (e: { preventDefault: () => void }) => {
+	const registerProduct = async (
+		e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+	) => {
 		e.preventDefault();
+		$("#error-product").attr("hidden", 1);
 
-		//check if both (name and Bulk textbox, if applicable) fields have been entered
-		if ($("#productNameField").val()?.toString()?.length === 0) {
-			//if (product name) field is blank
-			$("#error-product").removeAttr("hidden"); //display warning banner
-			$("#error-product").text(
-				"Error - el NOMBRE del producto no puede estar VACIO"
-			); //with custom (no empty name) message
-		} else {
-			if (
-				$("#gridCheckBulto").is(":checked") ||
-				$("#gridCheckCaja").is(":checked")
-			) {
-				//if bulk checkbox is selected
-				if ($("#inputQuantityType").val()?.toString().length !== 0) {
-					//check that it's textbox input is non-empty
+		const productName = (
+			document.getElementById("productNameField") as HTMLInputElement
+		)?.value;
+		const productDescription = (
+			document.getElementById("productDescriptionField") as HTMLInputElement
+		)?.value;
+		const selectedType = (
+			document.querySelector(
+				'input[name="bulk_type"]:checked'
+			) as HTMLInputElement
+		)?.value;
+		const weightQuantity = (
+			document.getElementById("inputQuantityType-edit") as HTMLInputElement
+		)?.value;
 
-					try {
-						const result = await API.graphql(
-							graphqlOperation(createProductData, {
-								input: {
-									name: $("#productNameField").val(),
-									description: $("#productDescriptionField").val(),
-									weightType: $("#gridCheckBulto").is(":checked")
-										? "Bulto"
-										: "Caja",
-									weightQuantity: $("#inputQuantityType").val(),
-								},
-							})
-						);
-						history.push("/");
-					} catch (error) {
-						console.log("ERROR -> ", error);
-					}
-				} //if (bulk) textbox is empty
-				else {
-					$("#error-product").removeAttr("hidden");
-					$("#error-product").text(
-						"Error - PESO de el bulto/caja no puede estar VACIO"
-					);
-				}
-			} //if (kg) checkbox is selected
-			else {
-				if ($("#gridCheckKg").is(":checked")) {
-					//add Product to DB
-					try {
-						const result = await API.graphql(
-							graphqlOperation(createProductData, {
-								input: {
-									name: $("#productNameField").val(),
-									description: $("#productDescriptionField").val(),
-									weightType: "Kg",
-									weightQuantity: 1,
-								},
-							})
-						);
-						history.push("/");
-					} catch (error) {
-						console.log("ERROR -> ", error);
-					}
-				} else {
-					$("#error-product").removeAttr("hidden");
-					$("#error-product").text("Error - Debes escoger un tipo de peso");
-				}
+		try {
+			if (!productName || !selectedType) {
+				throw new Error("Favor de llenar toda la informacion necesaria");
 			}
+
+			const user = await getCurrentUserEmail();
+			const token = await getAccessToken();
+			const response = await fetch(
+				`${process.env.REACT_APP_API_URL}/products/registerProduct`,
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
+					body: JSON.stringify({
+						name: productName,
+						description: productDescription,
+						weightType: selectedType,
+						weightQty: weightQuantity ? weightQuantity : "1",
+						userEmail: user,
+					}),
+				}
+			);
+
+			if (response.ok) {
+				const data = await response.json();
+				const product = {
+					id: data.id,
+					name: productName,
+					description: productDescription,
+					weightType: selectedType,
+					weightQty: weightQuantity ? Number(weightQuantity) : 1,
+				};
+				addProductTrigger(product);
+				blankAllFields();
+				$("#product-modal").attr("hidden", 1);
+			} else {
+				// Product registration failed, handle the error
+				throw new Error("No se pudo registrar el producto");
+			}
+		} catch (error) {
+			console.error("Error registering product:", error);
+			$("#error-product").text(`${error}`);
+			$("#error-product").removeAttr("hidden");
 		}
 	};
 
@@ -107,6 +125,10 @@ export function AddProduct() {
 			$("#product-modal").attr("hidden", 1);
 		}
 	});
+
+	useEffect(() => {
+		fetchWeightTypes();
+	}, []);
 
 	return (
 		<div className="product-modal" id="product-modal" hidden>
@@ -149,55 +171,39 @@ export function AddProduct() {
 
 						<div className="modal-qty-row">
 							<div className="">Cantidad/Peso</div>
-							<div className="modal-qty-row-left">
-								<div>
-									<input
-										type="radio"
-										id="gridCheckKg"
-										name="bulk_type"
-										value="kg"
-										className="radio-btn"
-										onClick={disableBulkTextBox}
-									/>
-									<label htmlFor="gridCheckKg" className="radio-label">
-										Kg
-									</label>
+							<div className="modal-qty-inner-row">
+								<div className="modal-qty-row-left">
+									{weightTypes.map(({ type }) => (
+										<div key={`radio-${type}`}>
+											<input
+												required
+												type="radio"
+												id={`gridCheck${type}`}
+												name="bulk_type"
+												value={type}
+												className="radio-btn"
+												onChange={() => {
+													//setSelectedType(type);
+												}}
+											/>
+											<label
+												htmlFor={`gridCheck${type}`}
+												className="radio-label"
+											>
+												{type}
+											</label>
+										</div>
+									))}
 								</div>
-
-								<div>
-									<input
-										type="radio"
-										id="gridCheckBulto"
-										name="bulk_type"
-										value="bulto"
-										className="radio-btn"
-										onClick={enableBulkTextBox}
-									/>
-									<label htmlFor="gridCheckBulto" className="radio-label">
-										Bulto
-									</label>
-								</div>
-
-								<div>
-									<input
-										type="radio"
-										id="gridCheckCaja"
-										name="bulk_type"
-										value="caja"
-										className="radio-btn"
-										onClick={enableBulkTextBox}
-									/>
-									<label htmlFor="gridCheckCaja" className="radio-label">
-										Caja
-									</label>
-								</div>
-
 								<input
 									type="number"
 									className="modal-qty-weight modal-input"
-									id="inputQuantityType"
+									id="inputQuantityType-edit"
 									placeholder="Peso (kg)"
-									disabled
+									onChange={(e) => {
+										//setNewWeightQty(e.target.value);
+									}}
+									required
 								/>
 							</div>
 						</div>
@@ -205,7 +211,7 @@ export function AddProduct() {
 						<div className="fair-spacing" />
 						<div className="form-group row">
 							<button
-								type="submit"
+								type="button"
 								className="btn modal-btn"
 								onClick={registerProduct}
 							>
