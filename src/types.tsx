@@ -18,6 +18,7 @@ export type VendorDataType = {
 	state?: string;
 	country?: string;
 	zipCode?: string;
+	isDeleted?: boolean;
 };
 
 export type urlPropType = {
@@ -56,8 +57,8 @@ export type toDeleteType = {
 };
 
 export type toDeleteVendorType = {
-	vId: string;
-	vName: string;
+	id: string;
+	vname: string;
 };
 
 export const allowedWeightTypes = ["Kg", "Caja", "Bulto"];

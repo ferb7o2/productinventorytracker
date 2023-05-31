@@ -145,33 +145,37 @@ function VendorListScreen() {
 
 	function addToDeleteArray(vIdInput: string, vNameInput: string) {
 		const currentChecked = document.getElementById(
-			"vname-" + vNameInput
+			"vId-" + vIdInput
 		) as HTMLInputElement;
 
 		if (currentChecked.checked) {
-			var numberOfOcurrences = toDelete.filter(
-				({ vId, vName }) => vId == vIdInput
-			);
-			if (numberOfOcurrences.length == 0) {
+			const hasOccurrences = toDelete.some(({ id, vname }) => id === vIdInput);
+
+			if (!hasOccurrences) {
 				setToDelete((toDelete) => [
 					...toDelete,
-					{ vId: vIdInput, vName: vNameInput },
+					{ id: vIdInput, vname: vNameInput },
 				]);
+			} else {
+				// If the item is already in the toDelete array, no action is needed
+				return;
 			}
 		} else {
-			let filtered_array = toDelete.filter(({ vId, vName }) => vId != vIdInput);
-			setToDelete(filtered_array);
+			setToDelete((toDelete) =>
+				toDelete.filter(({ id, vname }) => !(id === vIdInput))
+			);
 		}
-		let display = toDelete;
-
-		console.log(display);
 	}
 
 	return (
 		<div className="Application">
 			<header>
 				<AddVendor setVData={setvData} setVendorCount={setVendorCount} />
-				<DeleteVendor vendors={toDelete} />
+				<DeleteVendor
+					vendors={toDelete}
+					setvData={setvData}
+					setVendorCount={setVendorCount}
+				/>
 			</header>
 
 			<title>Facturación PJL 2022 - Distribuidores </title>
@@ -310,7 +314,7 @@ function VendorListScreen() {
 												className="checkbox-table"
 												name={id}
 												onChange={() => addToDeleteArray(id, name)}
-												id={"vname-" + name}
+												id={"vId-" + id}
 											></input>
 										</td>
 										<td
