@@ -31,6 +31,7 @@ function VendorListScreen() {
 	//essential display data
 	const [vData, setvData] = useState<VendorDataType[]>([]);
 	const [vendorCount, setVendorCount] = useState(0);
+	let isMounted = true;
 
 	//auxiliary variables - for search actions
 	const [searchTermVendor, setSearchTermVendor] = useState("");
@@ -42,6 +43,7 @@ function VendorListScreen() {
 
 	//auxiliary - for delete action
 	const [toDelete, setToDelete] = useState<toDeleteVendorType[]>([]);
+	const [showDelete, setShowDelete] = useState<boolean>(false);
 
 	const fetchVendorCount = async () => {
 		try {
@@ -95,17 +97,19 @@ function VendorListScreen() {
 
 			console.log(data);
 
-			//if statement
-			entered
-				? setvData(data) //if entered, forget all previous data and query new one (with search)
-				: setvData((prevData) => [...prevData, ...data]); //if not, keep on adding new data to existing one
+			if (isMounted) {
+				//if statement
+				entered
+					? setvData(data) //if entered, forget all previous data and query new one (with search)
+					: setvData((prevData) => [...prevData, ...data]); //if not, keep on adding new data to existing one
 
-			if (data.length > 0 && data[data.length - 1].rowNum !== null) {
-				setLastRow(data[data.length - 1].rowNum);
+				if (data.length > 0 && data[data.length - 1].rowNum !== null) {
+					setLastRow(data[data.length - 1].rowNum);
 
-				//for pagination, remember which index was the last one queried so new query can start from there
+					//for pagination, remember which index was the last one queried so new query can start from there
+				}
+				setHasMore(data.length > 0);
 			}
-			setHasMore(data.length > 0);
 		} catch (error) {
 			console.error(
 				"Error retrieving Product data (fetchVendorDataByTransactionsData) ",
@@ -123,7 +127,13 @@ function VendorListScreen() {
 		fetchVendorCount();
 		$("#vendorTabBtn").addClass("nav-selected");
 		$("#productTabBtn").removeClass("nav-selected");
+		// Cleanup function
+		return () => {
+			isMounted = false; // Set the flag to false when the component is unmounting
+		};
 	}, []);
+
+	useEffect(() => {}, []);
 
 	const history = useHistory();
 
@@ -139,7 +149,7 @@ function VendorListScreen() {
 
 	function deleteVendorBtnTrigger() {
 		if (toDelete.length > 0) {
-			$("#vendor-modal-delete").removeAttr("hidden");
+			setShowDelete(true);
 		}
 	}
 
@@ -171,11 +181,14 @@ function VendorListScreen() {
 		<div className="Application">
 			<header>
 				<AddVendor setVData={setvData} setVendorCount={setVendorCount} />
-				<DeleteVendor
-					vendors={toDelete}
-					setvData={setvData}
-					setVendorCount={setVendorCount}
-				/>
+				{showDelete && (
+					<DeleteVendor
+						vendors={toDelete}
+						setvData={setvData}
+						setVendorCount={setVendorCount}
+						setShowDelete={setShowDelete}
+					/>
+				)}
 			</header>
 
 			<title>Facturación PJL 2022 - Distribuidores </title>

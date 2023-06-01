@@ -1,8 +1,7 @@
 import $ from "jquery";
-import { useHistory } from "react-router-dom";
 
 import "../css/homePageStyle.css";
-import { useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { VendorDataType, toDeleteVendorType } from "../types";
 import { getAccessToken, getCurrentUserEmail } from "../Cognito";
 
@@ -10,16 +9,23 @@ interface DeleteVendorProps {
 	vendors: toDeleteVendorType[];
 	setvData: React.Dispatch<React.SetStateAction<VendorDataType[]>>;
 	setVendorCount: React.Dispatch<React.SetStateAction<number>>;
+	setShowDelete: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export function DeleteVendor({
 	vendors,
 	setvData,
 	setVendorCount,
+	setShowDelete,
 }: DeleteVendorProps) {
 	const [failedDeletions, setFailedDeletions] = useState<string[]>([]);
+	let isMounted = true; // Add a boolean flag to track whether the component is still mounted
 
-	function blankAllFields() {}
+	useEffect(() => {
+		return () => {
+			isMounted = false; // Set the flag to false when the component is unmounting
+		};
+	}, []);
 
 	$(document).click(function (event) {
 		//if you click on anything except the modal itself or the "open modal" link, close the modal
@@ -28,14 +34,13 @@ export function DeleteVendor({
 			!$(event.target).closest(".product-modal-content, #deleteVendorBtn")
 				.length
 		) {
-			blankAllFields();
-			$("#vendor-modal-delete").attr("hidden", 1);
+			// Only update the state if the component is still mounted
+			if (isMounted) {
+				setFailedDeletions([]);
+			}
+			setShowDelete(false);
 		}
 	});
-
-	function closeModal() {
-		$("#vendor-modal-delete").attr("hidden", 1);
-	}
 
 	const deleteMethod = async () => {
 		console.log("DELETE TRIGGER");
@@ -93,7 +98,10 @@ export function DeleteVendor({
 				);
 				setFailedDeletions(failedDeletionsX);
 			} else {
-				closeModal();
+				if (isMounted) {
+					setFailedDeletions([]);
+				}
+				setShowDelete(false);
 			}
 		} catch (error) {
 			console.error("ERROR deleting vendor -> ", error);
@@ -118,7 +126,7 @@ export function DeleteVendor({
 	}
 
 	return (
-		<div className="product-modal" id="vendor-modal-delete" hidden>
+		<div className="product-modal" id="vendor-modal-delete">
 			<div
 				className="alert alert-danger"
 				role="alert"
@@ -194,7 +202,12 @@ export function DeleteVendor({
 					</form>
 
 					<div className="delete-confirm-btn-div">
-						<p className="product-cancel-btn" onClick={closeModal}>
+						<p
+							className="product-cancel-btn"
+							onClick={() => {
+								setShowDelete(false);
+							}}
+						>
 							Cancelar
 						</p>
 						<button
