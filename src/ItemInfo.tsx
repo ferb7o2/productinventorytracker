@@ -24,6 +24,7 @@ import { AddSaleRow } from "./components/AddSaleRow";
 import { getAccessToken } from "./Cognito";
 import { TransactionNotes } from "./components/TransactionNotes";
 import { EditProduct } from "./components/EditProduct";
+import EditNotes from "./components/EditNotes";
 
 interface YearList {
 	year: number;
@@ -703,6 +704,7 @@ function ItemInfo() {
 										setDiff={setDifferenceFUNC}
 										updatePurchase={updatePurchase}
 										addToDeleteArray={addToDeleteArray}
+										setPTransactionData={setPTransactionData}
 									/>
 								))}
 
@@ -763,6 +765,7 @@ function ItemInfo() {
 										updateSale={updateSale}
 										setDiff={setDifferenceFUNC}
 										addToDeleteArray={addToDeleteArray}
+										setSTransactionData={setSTransactionData}
 									/>
 								))}
 								<AddSaleRow

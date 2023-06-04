@@ -3,6 +3,7 @@ import "../css/YearBox.css";
 import $ from "jquery";
 import { StransactionDataType } from "../types";
 import { getAccessToken } from "../Cognito";
+import EditNotes from "./EditNotes";
 
 interface SaleYearBoxProps {
 	year: number;
@@ -23,6 +24,9 @@ interface SaleYearBoxProps {
 		invoiceInput: string,
 		type: string
 	) => void;
+	setSTransactionData: React.Dispatch<
+		React.SetStateAction<StransactionDataType[]>
+	>;
 }
 
 export function SaleYearBox({
@@ -33,12 +37,17 @@ export function SaleYearBox({
 	updateSale,
 	addToDeleteArray,
 	setDiff,
+	setSTransactionData,
 }: SaleYearBoxProps) {
 	var errorTemplate = $("#error-template");
 
 	const [triggeredOpen, setTriggeredOpen] = useState(false);
 	const [rowIndex, setRowIndex] = useState(-1);
 	const [hasMore, setHasMore] = useState(true);
+	const [viewNotes, setViewNotes] = useState(false);
+	const [currNotes, setCurrNotes] = useState("");
+	const [currEnBodega, setCurrEnBodega] = useState(false);
+	const [currSaleId, setCurrSaleId] = useState("");
 
 	function focusOut(e: React.KeyboardEvent<HTMLInputElement>) {
 		if (e.keyCode === 13 || e.keyCode === 9) {
@@ -220,6 +229,13 @@ export function SaleYearBox({
 		}
 	}
 
+	function notesBtnTrigger(notes: string, tId: string) {
+		setViewNotes(true);
+		setCurrNotes(notes);
+		setCurrSaleId(tId);
+		console.log("true");
+	}
+
 	useEffect(() => {
 		const currYear = new Date().getFullYear();
 		if (Number(year) === currYear) {
@@ -229,6 +245,16 @@ export function SaleYearBox({
 
 	return (
 		<>
+			{viewNotes && (
+				<EditNotes
+					tId={currSaleId}
+					notes={currNotes}
+					enBodega={false}
+					setSTransactionData={setSTransactionData}
+					setViewNotes={setViewNotes}
+					type="sales"
+				/>
+			)}
 			{hasMore ? (
 				<tr className="yearbox">
 					{triggeredOpen ? (
@@ -261,7 +287,7 @@ export function SaleYearBox({
 				.reverse()
 				.map(
 					(
-						{ id, date, invoiceId, qty, price } //Data driven display of rows in data
+						{ id, date, invoiceId, qty, price, notes } //Data driven display of rows in data
 					) => (
 						<tr key={"s" + id} className="table-row">
 							<td scope="col" className="select-col">
@@ -326,6 +352,9 @@ export function SaleYearBox({
 							</td>
 							<td className="notes-col" scope="col">
 								<img
+									className="edit-trigger-img"
+									style={{ opacity: notes ? 1 : 0.175 }}
+									onClick={() => notesBtnTrigger(notes, id)}
 									src={require("../assets/icons/blank-notes-attributed.png")}
 								/>
 							</td>

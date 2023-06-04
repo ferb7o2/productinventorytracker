@@ -40,6 +40,8 @@ export type PtransactionDataType = {
 	price: number;
 	pname?: string;
 	vName?: string;
+	notes: string;
+	enBodega: boolean;
 };
 
 export type StransactionDataType = {
@@ -49,6 +51,7 @@ export type StransactionDataType = {
 	invoiceId: string;
 	qty: number;
 	price: number;
+	notes: string;
 };
 
 export type toDeleteType = {

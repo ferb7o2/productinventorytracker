@@ -3,6 +3,7 @@ import "../css/YearBox.css";
 import $ from "jquery";
 import { PtransactionDataType, VendorDataType } from "../types";
 import { getAccessToken } from "../Cognito";
+import EditNotes from "./EditNotes";
 
 interface PurchaseYearBoxProps {
 	year: number;
@@ -24,6 +25,9 @@ interface PurchaseYearBoxProps {
 		invoiceInput: string,
 		type: string
 	) => void;
+	setPTransactionData: React.Dispatch<
+		React.SetStateAction<PtransactionDataType[]>
+	>;
 }
 
 export function PurchaseYearBox({
@@ -35,12 +39,18 @@ export function PurchaseYearBox({
 	setDiff,
 	updatePurchase,
 	addToDeleteArray,
+	setPTransactionData,
 }: PurchaseYearBoxProps) {
 	var errorTemplate = $("#error-template");
 
 	const [triggeredOpen, setTriggeredOpen] = useState(false);
 	const [rowIndex, setRowIndex] = useState(-1);
 	const [hasMore, setHasMore] = useState(true);
+
+	const [viewNotes, setViewNotes] = useState(false);
+	const [currNotes, setCurrNotes] = useState("");
+	const [currEnBodega, setCurrEnBodega] = useState(false);
+	const [currPurchaseId, setCurrPurchaseId] = useState("");
 
 	function focusOut(e: React.KeyboardEvent<HTMLInputElement>) {
 		if (e.keyCode === 13 || e.keyCode === 9) {
@@ -285,6 +295,13 @@ export function PurchaseYearBox({
 		}
 	};
 
+	function notesBtnTrigger(notes: string, checked: boolean, tId: string) {
+		setViewNotes(true);
+		setCurrNotes(notes);
+		setCurrEnBodega(checked);
+		setCurrPurchaseId(tId);
+	}
+
 	useEffect(() => {
 		const currYear = new Date().getFullYear();
 		if (Number(year) === currYear) {
@@ -294,6 +311,16 @@ export function PurchaseYearBox({
 
 	return (
 		<>
+			{viewNotes && (
+				<EditNotes
+					tId={currPurchaseId}
+					notes={currNotes}
+					enBodega={currEnBodega}
+					setPTransactionData={setPTransactionData}
+					setViewNotes={setViewNotes}
+					type="purchases"
+				/>
+			)}
 			{hasMore ? (
 				<tr className="yearbox">
 					{triggeredOpen ? (
@@ -326,10 +353,23 @@ export function PurchaseYearBox({
 				.reverse()
 				.map(
 					(
-						{ id, date, invoiceId, qty, price, vName, vendorId } //Data driven display of rows in data
+						{
+							id,
+							date,
+							invoiceId,
+							qty,
+							price,
+							vName,
+							vendorId,
+							notes,
+							enBodega,
+						} //Data driven display of rows in data
 					) => (
 						<tr key={id} className="table-row">
-							<td className="select-col select-vendor">
+							<td
+								className="select-col select-vendor"
+								style={{ backgroundColor: enBodega ? "" : "lightcoral" }}
+							>
 								<input
 									type="checkbox"
 									className="checkbox-table"
@@ -419,7 +459,10 @@ export function PurchaseYearBox({
 							<td className="pId-col id-col-data">{id}</td>
 							<td className="notes-col">
 								<img
+									className="edit-trigger-img"
 									src={require("../assets/icons/blank-notes-attributed.png")}
+									style={{ opacity: notes ? 1 : 0.175 }}
+									onClick={() => notesBtnTrigger(notes, enBodega, id)}
 								></img>
 							</td>
 						</tr>
