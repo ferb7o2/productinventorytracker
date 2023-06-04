@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "../css/YearBox.css";
 import $ from "jquery";
 import { PtransactionDataType, VendorDataType } from "../types";
-import { getAccessToken } from "../Cognito";
+import { getAccessToken, getCurrentUserEmail } from "../Cognito";
 import EditNotes from "./EditNotes";
 
 interface PurchaseYearBoxProps {
@@ -64,6 +64,7 @@ export function PurchaseYearBox({
 		lastValue: number,
 		toChangeId: string
 	) => {
+		errorTemplate.attr("hidden", 1); //keep it hidden
 		let newVal = parseFloat(e.target.value);
 
 		try {
@@ -71,13 +72,21 @@ export function PurchaseYearBox({
 				throw new Error("numero negativo / numero invalido");
 			if (newVal == lastValue) return;
 			const token = await getAccessToken();
+			const user = await getCurrentUserEmail();
 			const data = await fetch(
-				`${process.env.REACT_APP_API_URL}/purchases/${toChangeId}/weight?newWeight=${newVal}`,
+				`${process.env.REACT_APP_API_URL}/purchases/${encodeURI(
+					toChangeId
+				)}/weight`,
 				{
 					method: "PUT",
 					headers: {
+						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,
 					},
+					body: JSON.stringify({
+						userEmail: user,
+						newWeight: newVal,
+					}),
 				}
 			)
 				.then((res) => res.json())
@@ -109,13 +118,21 @@ export function PurchaseYearBox({
 		try {
 			if (isNaN(newVal)) throw new Error("numero invalido");
 			const token = await getAccessToken();
+			const user = await getCurrentUserEmail();
 			const data = await fetch(
-				`${process.env.REACT_APP_API_URL}/purchases/${toChangeId}/price?newPrice=${newVal}`,
+				`${process.env.REACT_APP_API_URL}/purchases/${encodeURI(
+					toChangeId
+				)}/price`,
 				{
 					method: "PUT",
 					headers: {
+						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,
 					},
+					body: JSON.stringify({
+						userEmail: user,
+						newPrice: newVal,
+					}),
 				}
 			)
 				.then((res) => res.json())
@@ -141,13 +158,21 @@ export function PurchaseYearBox({
 
 		try {
 			const token = await getAccessToken();
+			const user = await getCurrentUserEmail();
 			const data = await fetch(
-				`${process.env.REACT_APP_API_URL}/purchases/${toChangeId}/InvoiceId?newId=${newVal}`,
+				`${process.env.REACT_APP_API_URL}/purchases/${encodeURI(
+					toChangeId
+				)}/InvoiceId`,
 				{
 					method: "PUT",
 					headers: {
+						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,
 					},
+					body: JSON.stringify({
+						userEmail: user,
+						newId: newVal,
+					}),
 				}
 			)
 				.then((res) => res.json())
@@ -174,13 +199,19 @@ export function PurchaseYearBox({
 		if (newVal === lastValue) return;
 		try {
 			const token = await getAccessToken();
+			const user = await getCurrentUserEmail();
 			const data = await fetch(
-				`${process.env.REACT_APP_API_URL}/purchases/${toChangeId}/date?newDate=${newVal}`,
+				`${process.env.REACT_APP_API_URL}/purchases/${toChangeId}/date`,
 				{
 					method: "PUT",
 					headers: {
+						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,
 					},
+					body: JSON.stringify({
+						userEmail: user,
+						newDate: newVal,
+					}),
 				}
 			)
 				.then((res) => res.json())
@@ -273,13 +304,19 @@ export function PurchaseYearBox({
 
 		try {
 			const token = await getAccessToken();
+			const user = await getCurrentUserEmail();
 			const data = await fetch(
-				`${process.env.REACT_APP_API_URL}/purchases/${toChangeId}/vendor?newVendor=${vendorId}`,
+				`${process.env.REACT_APP_API_URL}/purchases/${toChangeId}/vendor`,
 				{
 					method: "PUT",
 					headers: {
+						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,
 					},
+					body: JSON.stringify({
+						userEmail: user,
+						newVendor: vendorId,
+					}),
 				}
 			)
 				.then((res) => res.json())

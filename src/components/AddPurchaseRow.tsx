@@ -1,7 +1,7 @@
 import * as moment from "moment";
 import $ from "jquery";
 import { PtransactionDataType, VendorDataType } from "../types";
-import { getAccessToken } from "../Cognito";
+import { getAccessToken, getCurrentUserEmail } from "../Cognito";
 
 interface AddPurchaseRowProps {
 	vendorData: VendorDataType[];
@@ -71,13 +71,24 @@ export function AddPurchaseRow(props: AddPurchaseRowProps) {
 			if (Number(purchase.qty) <= 0)
 				throw Error("Checa que la cantidad sea valida");
 			const token = await getAccessToken();
+			const user = await getCurrentUserEmail();
 			const response = await fetch(
-				`${process.env.REACT_APP_API_URL}/purchases?productId=${purchase.productId}&date=${purchase.date}&invoiceId=${purchase.invoiceId}&price=${purchase.price}&qty=${purchase.qty}&vendorId=${purchase.vendorId}&enBodega=${purchase.enBodega}`,
+				`${process.env.REACT_APP_API_URL}/purchases`,
 				{
 					method: "POST",
 					headers: {
+						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,
 					},
+					body: JSON.stringify({
+						userEmail: user,
+						productId: purchase.productId,
+						date: purchase.date,
+						invoiceId: purchase.invoiceId,
+						price: purchase.price,
+						qty: purchase.qty,
+						vendorId: purchase.vendorId,
+					}),
 				}
 			);
 			if (response.ok) {

@@ -3,10 +3,11 @@ import $ from "jquery";
 import "../css/homePageStyle.css";
 import { useLayoutEffect, useState } from "react";
 import { toDeleteType } from "../types";
-import { getAccessToken } from "../Cognito";
+import { getAccessToken, getCurrentUserEmail } from "../Cognito";
 
 export function DeleteProduct(props: {
 	products: toDeleteType[];
+	setToDelete: React.Dispatch<React.SetStateAction<toDeleteType[]>>;
 	removeProductsByIds: (idsToRemove: { pId: string; pName: string }[]) => void;
 }) {
 	const [failedDeletions, setFailedDeletions] = useState<string[]>([]);
@@ -36,7 +37,8 @@ export function DeleteProduct(props: {
 
 		try {
 			const token = await getAccessToken();
-			console.log(token);
+			const user = await getCurrentUserEmail();
+
 			const failedDeletions: string[] = [];
 			const updatedProducts: toDeleteType[] = [];
 
@@ -45,12 +47,18 @@ export function DeleteProduct(props: {
 
 				try {
 					const response = await fetch(
-						`${process.env.REACT_APP_API_URL}/products/${pId}/delete`,
+						`${process.env.REACT_APP_API_URL}/products/${encodeURI(
+							pId
+						)}/delete`,
 						{
-							method: "PUT",
+							method: "DELETE",
 							headers: {
+								"Content-Type": "application/json",
 								Authorization: `Bearer ${token}`,
 							},
+							body: JSON.stringify({
+								userEmail: user,
+							}),
 						}
 					);
 
@@ -75,6 +83,7 @@ export function DeleteProduct(props: {
 				);
 			} else {
 				closeModal();
+				props.setToDelete([]);
 			}
 		} catch (error) {
 			console.error("ERROR deleting product -> ", error);

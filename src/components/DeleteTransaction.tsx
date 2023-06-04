@@ -8,7 +8,7 @@ import "../css/homePageStyle.css";
 import { toDeletePurchaseType, toDeleteSaleType } from "../types";
 
 //Import AWS Cognito - Authentication
-import { getAccessToken } from "../Cognito";
+import { getAccessToken, getCurrentUserEmail } from "../Cognito";
 
 export function DeleteTransaction(props: {
 	purchase: toDeletePurchaseType[];
@@ -38,15 +38,22 @@ export function DeleteTransaction(props: {
 	const deleteMethod = async () => {
 		try {
 			const token = await getAccessToken();
+			const user = await getCurrentUserEmail();
 
 			for (let i = 0; i < props.purchase.length; ++i) {
 				const response = await fetch(
-					`${process.env.REACT_APP_API_URL}/purchases/${props.purchase[i].pId}/delete`,
+					`${process.env.REACT_APP_API_URL}/purchases/${encodeURI(
+						props.purchase[i].pId
+					)}/delete`,
 					{
-						method: "PUT",
+						method: "DELETE",
 						headers: {
+							"Content-Type": "application/json",
 							Authorization: `Bearer ${token}`,
 						},
+						body: JSON.stringify({
+							userEmail: user,
+						}),
 					}
 				);
 
@@ -57,12 +64,18 @@ export function DeleteTransaction(props: {
 
 			for (let i = 0; i < props.sale.length; ++i) {
 				const response = await fetch(
-					`${process.env.REACT_APP_API_URL}/sales/${props.sale[i].sId}/delete`,
+					`${process.env.REACT_APP_API_URL}/sales/${encodeURI(
+						props.sale[i].sId
+					)}/delete`,
 					{
-						method: "PUT",
+						method: "DELETE",
 						headers: {
+							"Content-Type": "application/json",
 							Authorization: `Bearer ${token}`,
 						},
+						body: JSON.stringify({
+							userEmail: user,
+						}),
 					}
 				);
 
