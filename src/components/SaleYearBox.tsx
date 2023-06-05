@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "../css/YearBox.css";
 import $ from "jquery";
 import { StransactionDataType } from "../types";
-import { getAccessToken } from "../Cognito";
+import { getAccessToken, getCurrentUserEmail } from "../Cognito";
 import EditNotes from "./EditNotes";
 
 interface SaleYearBoxProps {
@@ -61,6 +61,7 @@ export function SaleYearBox({
 		lastValue: number,
 		toChangeId: string
 	) => {
+		errorTemplate.attr("hidden", 1); //keep it hidden
 		let newVal = parseFloat(e.target.value);
 
 		try {
@@ -68,13 +69,21 @@ export function SaleYearBox({
 				throw new Error("numero negativo / numero invalido");
 			if (newVal == lastValue) return;
 			const token = await getAccessToken();
+			const user = await getCurrentUserEmail();
 			const data = await fetch(
-				`${process.env.REACT_APP_API_URL}/sales/${toChangeId}/weight?newWeight=${newVal}`,
+				`${process.env.REACT_APP_API_URL}/sales/${encodeURI(
+					toChangeId
+				)}/weight`,
 				{
 					method: "PUT",
 					headers: {
+						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,
 					},
+					body: JSON.stringify({
+						userEmail: user,
+						newWeight: newVal,
+					}),
 				}
 			)
 				.then((res) => res.json())
@@ -86,6 +95,7 @@ export function SaleYearBox({
 			setDiff(-diff);
 			updateSale(transactionData, newVal, "qty", toChangeId);
 		} catch (error) {
+			window.scrollTo(0, 0);
 			console.error("error on changeSaleWeight() ", error);
 			errorTemplate.text("Error - al actualizar el Peso - " + error);
 			errorTemplate.removeAttr("hidden");
@@ -106,13 +116,19 @@ export function SaleYearBox({
 		try {
 			if (isNaN(newVal)) throw new Error("numero invalido");
 			const token = await getAccessToken();
+			const user = await getCurrentUserEmail();
 			const data = await fetch(
-				`${process.env.REACT_APP_API_URL}/sales/${toChangeId}/price?newPrice=${newVal}`,
+				`${process.env.REACT_APP_API_URL}/sales/${encodeURI(toChangeId)}/price`,
 				{
 					method: "PUT",
 					headers: {
+						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,
 					},
+					body: JSON.stringify({
+						userEmail: user,
+						newPrice: newVal,
+					}),
 				}
 			)
 				.then((res) => res.json())
@@ -121,6 +137,7 @@ export function SaleYearBox({
 				});
 			updateSale(transactionData, newVal, "price", toChangeId);
 		} catch (error) {
+			window.scrollTo(0, 0);
 			console.error("error on changeSalePrice() ", error);
 			errorTemplate.text("Error - al actualizar el Precio - " + error);
 			errorTemplate.removeAttr("hidden");
@@ -138,13 +155,21 @@ export function SaleYearBox({
 
 		try {
 			const token = await getAccessToken();
+			const user = await getCurrentUserEmail();
 			const data = await fetch(
-				`${process.env.REACT_APP_API_URL}/sales/${toChangeId}/InvoiceId?newId=${newVal}`,
+				`${process.env.REACT_APP_API_URL}/sales/${encodeURI(
+					toChangeId
+				)}/invoiceId`,
 				{
 					method: "PUT",
 					headers: {
+						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,
 					},
+					body: JSON.stringify({
+						userEmail: user,
+						newId: newVal,
+					}),
 				}
 			)
 				.then((res) => res.json())
@@ -153,6 +178,7 @@ export function SaleYearBox({
 				});
 			updateSale(transactionData, newVal, "invoiceId", toChangeId);
 		} catch (error) {
+			window.scrollTo(0, 0);
 			console.error("error on changeInvoiceId() - Sale", error);
 			errorTemplate.text("Error - al actualizar el numero de Invoice");
 			errorTemplate.removeAttr("hidden");
@@ -171,13 +197,19 @@ export function SaleYearBox({
 		if (newVal === lastValue) return;
 		try {
 			const token = await getAccessToken();
+			const user = await getCurrentUserEmail();
 			const data = await fetch(
-				`${process.env.REACT_APP_API_URL}/sales/${toChangeId}/date?newDate=${newVal}`,
+				`${process.env.REACT_APP_API_URL}/sales/${encodeURI(toChangeId)}/date`,
 				{
 					method: "PUT",
 					headers: {
+						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,
 					},
+					body: JSON.stringify({
+						userEmail: user,
+						newDate: newVal,
+					}),
 				}
 			)
 				.then((res) => res.json())
@@ -186,6 +218,7 @@ export function SaleYearBox({
 				});
 			updateSale(transactionData, newVal, "date", toChangeId);
 		} catch (error) {
+			window.scrollTo(0, 0);
 			console.error("error on changeSaleDate() ", error);
 			errorTemplate.text("Error - al actualizar la fecha");
 			errorTemplate.removeAttr("hidden");
@@ -233,7 +266,6 @@ export function SaleYearBox({
 		setViewNotes(true);
 		setCurrNotes(notes);
 		setCurrSaleId(tId);
-		console.log("true");
 	}
 
 	useEffect(() => {

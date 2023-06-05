@@ -98,6 +98,7 @@ export function PurchaseYearBox({
 			setDiff(diff);
 			updatePurchase(transactionData, newVal, "qty", toChangeId);
 		} catch (error) {
+			window.scrollTo(0, 0);
 			console.error("error on changePurchaseWeight() ", error);
 			errorTemplate.text("Error - al actualizar el Peso - " + error);
 			errorTemplate.removeAttr("hidden");
@@ -141,6 +142,7 @@ export function PurchaseYearBox({
 				});
 			updatePurchase(transactionData, newVal, "price", toChangeId);
 		} catch (error) {
+			window.scrollTo(0, 0);
 			console.error("error on changePurchasePrice() ", error);
 			errorTemplate.text("Error - al actualizar el Precio - " + error);
 			errorTemplate.removeAttr("hidden");
@@ -181,6 +183,7 @@ export function PurchaseYearBox({
 				});
 			updatePurchase(transactionData, newVal, "invoiceId", toChangeId);
 		} catch (error) {
+			window.scrollTo(0, 0);
 			console.log("error on changeInvoiceId() ", error);
 			errorTemplate.text("Error - al actualizar el numero de Invoice");
 			errorTemplate.removeAttr("hidden");
@@ -220,6 +223,7 @@ export function PurchaseYearBox({
 				});
 			updatePurchase(transactionData, newVal, "date", toChangeId);
 		} catch (error) {
+			window.scrollTo(0, 0);
 			console.error("error on changePurchaseDate() ", error);
 			errorTemplate.text("Error - al actualizar la fecha");
 			errorTemplate.removeAttr("hidden");

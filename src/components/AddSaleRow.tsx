@@ -1,6 +1,6 @@
 import * as moment from "moment";
 import $ from "jquery";
-import { getAccessToken } from "../Cognito";
+import { getAccessToken, getCurrentUserEmail } from "../Cognito";
 
 interface AddSaleRowProps {
 	pId?: string;
@@ -42,15 +42,22 @@ export function AddSaleRow(props: AddSaleRowProps) {
 			if (Number(sale.price) <= 0)
 				throw Error("Checa que el precio sea valido");
 			const token = await getAccessToken();
-			const response = await fetch(
-				`${process.env.REACT_APP_API_URL}/sales?productId=${sale.productId}&date=${sale.date}&invoiceId=${sale.invoiceId}&price=${sale.price}&qty=${sale.qty}`,
-				{
-					method: "POST",
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				}
-			);
+			const user = await getCurrentUserEmail();
+			const response = await fetch(`${process.env.REACT_APP_API_URL}/sales`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify({
+					userEmail: user,
+					productId: sale.productId,
+					date: sale.date,
+					invoiceId: sale.invoiceId,
+					price: sale.price,
+					qty: sale.qty,
+				}),
+			});
 			if (response.ok) {
 				const datax = await response.json();
 				// Access the new record information from `datax` here
