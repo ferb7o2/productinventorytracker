@@ -5,117 +5,126 @@ import $ from "jquery";
 
 import { useHistory } from "react-router-dom";
 
-//Queries
-import {
-	getVendorData,
-	listProductData,
-	listPurchaseTransactionData2022svId,
-} from "./graphql/queries";
-
-//Components
-
 //Types
 import {
 	urlPropVendorType,
 	VendorDataType,
 	PtransactionDataType,
-	ProductDataType,
 } from "./types";
 import { updateVendorData } from "./graphql/mutations";
+import { getAccessToken } from "./Cognito";
+import InfiniteScroll from "react-infinite-scroll-component";
+import moment from "moment";
+import EditVendor from "./components/EditVendor";
 
 function VendorInfo() {
 	let { vId_global } = useParams<urlPropVendorType>();
 
-	const [ProductData, setProductData] = useState<ProductDataType[]>([]);
-	const [VendorData, setVendorData] = useState<VendorDataType>();
+	const [transactionCount, setTransactionCount] = useState(-1);
+	const [vendorData, setVendorData] = useState<VendorDataType>();
 	const [Ptransaction_data, setPtData] = useState<PtransactionDataType[]>([]);
 	const [DataLoaded, setDataLoaded] = useState<boolean>(false);
+	const [isEditable, setIsEditable] = useState<boolean>(false);
+
+	//auxiliary variables - for pagination
+	const [lastRowNum, SetLastRow] = useState(0);
+	const [hasMore, setHasMore] = useState(false);
 
 	const fetchVendorData = async () => {
 		try {
-			const vendorData = (await API.graphql(
-				graphqlOperation(getVendorData, { id: vId_global })
-			)) as { data: { getVendorData: VendorDataType } };
+			//get user jwst token to query our API
+			const token = await getAccessToken();
+			console.log(token);
+			const data = await fetch(
+				`${process.env.REACT_APP_API_URL}/vendors/info/${vId_global}`,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			)
+				.then((res) => res.json())
+				.then((datax) => {
+					return datax;
+				});
 
-			//console.log(vendorData.data.listVendorData.items);
-			setVendorData(vendorData.data.getVendorData);
-			setDataLoaded(true);
+			if (data.length > 0) setVendorData(data[0]);
 		} catch (error) {
-			console.log("error on fetchVendorData() ", error);
-			window.alert("ERROR: error al cargar DISTRIBUIDORES de la base de datos");
+			console.error("Error retrieving Vendor data (fetchVendorData) ", error);
+			window.alert("Error retrieving Vendor data (fetchVendorData) " + error);
+		}
+	};
+
+	const fetchTransactionCount = async () => {
+		try {
+			//get user jwst token to query our API
+			const token = await getAccessToken();
+			const data = await fetch(
+				`${process.env.REACT_APP_API_URL}/vendors/info/${vId_global}/count`,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			)
+				.then((res) => res.json())
+				.then((datax) => {
+					return datax;
+				});
+
+			if (data.length > 0) {
+				setTransactionCount(data[0].COUNT);
+			}
+		} catch (error) {
+			console.log(
+				"Error retrieving COUNT data (fetchTransactionCount) ",
+				error
+			);
 		}
 	};
 
 	const fetchPTransactionData = async () => {
-		let nextToken = null;
-		let tempArray = [] as PtransactionDataType[];
+		//we use local rowIndex variable to prevent delays on global
+		//if we triggered search, start searching from index 0 else, keep pagination from last variable's index
+		var rowIndex = lastRowNum;
 
 		try {
-			do {
-				const pTransactionData = (await API.graphql(
-					graphqlOperation(listPurchaseTransactionData2022svId, {
-						vId: vId_global,
-						nextToken: nextToken,
-					})
-				)) as {
-					data: {
-						listPurchaseTransactionData2022s: {
-							items: PtransactionDataType[];
-							nextToken: string | null;
-						};
-					};
-				};
+			//get user jwst token to query our API
+			const token = await getAccessToken();
+			const data = await fetch(
+				`${process.env.REACT_APP_API_URL}/vendors/info/${vId_global}/transactions?rowNum=${rowIndex}`,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			)
+				.then((res) => res.json())
+				.then((datax) => {
+					return datax;
+				});
 
-				let only_data =
-					pTransactionData.data.listPurchaseTransactionData2022s.items;
-
-				nextToken =
-					pTransactionData.data.listPurchaseTransactionData2022s.nextToken;
-
-				tempArray = tempArray.concat(only_data);
-			} while (nextToken !== null);
-
-			setPtData(tempArray.sort((a, b) => a.date.localeCompare(b.date)));
+			if (data.length > 0) {
+				//for pagination, remember which index was the last one queried so new query can start from there
+				SetLastRow(data[data.length - 1].rowNum);
+				setPtData((prevData) => [...prevData, ...data]);
+			}
+			setHasMore(data.length > 0);
 		} catch (error) {
-			console.log("error on fetchPTransactionData() ", error);
-			window.alert("ERROR: error al cargar COMPRAS de la base de datos");
-		}
-	};
-
-	const fetchProductData = async () => {
-		let nextToken = null;
-		let tempArray = [] as ProductDataType[];
-
-		try {
-			do {
-				const productDatas = (await API.graphql(
-					graphqlOperation(listProductData, { nextToken: nextToken })
-				)) as {
-					data: {
-						listProductData: {
-							items: ProductDataType[];
-							nextToken: string | null;
-						};
-					};
-				};
-
-				let only_data = productDatas.data.listProductData.items;
-
-				nextToken = productDatas.data.listProductData.nextToken;
-				tempArray = tempArray.concat(only_data);
-			} while (nextToken !== null);
-
-			setProductData(tempArray);
-		} catch (error) {
-			console.log("Error retrieving vendor data (fetchProductData) ", error);
-			window.alert("ERROR: error al cargar PRODUCTOS de la base de datos");
+			console.error(
+				"Error retrieving Product data (fetchPTransactionsData) ",
+				error
+			);
+			window.alert(
+				"Error retrieving Product data (fetchPTransactionsData) " + error
+			);
 		}
 	};
 
 	useEffect(() => {
 		fetchVendorData();
 		fetchPTransactionData();
-		fetchProductData();
+		fetchTransactionCount();
 		$("#vendorTabBtn").addClass("nav-selected");
 		$("#productTabBtn").removeClass("nav-selected");
 	}, []);
@@ -126,11 +135,6 @@ function VendorInfo() {
 		}
 	}, [DataLoaded]);
 
-	function idForName(pIdPassed: string) {
-		const product = ProductData.find(({ id }, i) => pIdPassed == id);
-		if (product != undefined) return product.name;
-	}
-
 	function focusOut(e: React.KeyboardEvent<HTMLInputElement>) {
 		if (e.keyCode === 13 || e.keyCode === 9) {
 			$("#" + $(e.target).attr("id")).prop("disabled", true);
@@ -138,91 +142,8 @@ function VendorInfo() {
 		}
 	}
 
-	const changeVendorInfo = async () => {
-		var errorTemplate = $("#error-template-vendor");
-		errorTemplate.attr("hidden", 1); //keep it hidden
-
-		if ($("#vNameInput").val() != "") {
-			try {
-				const changeVendorData = (await API.graphql(
-					graphqlOperation(updateVendorData, {
-						input: {
-							id: VendorData?.id,
-							name: $("#vNameInput").val(),
-							address: $("#vAddressInput").val(),
-							city: $("#vCityInput").val(),
-							state: $("#vStateInput").val(),
-							country: $("#vCountryInput").val(),
-							zipCode: $("#vZipInput").val(),
-							rfc: $("#vRfcInput").val(),
-						},
-					})
-				)) as {
-					data: {
-						updateVendorData: VendorDataType[];
-					};
-				};
-
-				/*setProductData({
-					id: VendorData?.id,
-					name: $("#vNameInput").val(),
-					address: $("#vAddressInput")?.val(),
-					city: $("#vCityInput").val(),
-					state: $("#vStateInput").val(),
-					country: $("#vCountryInput").val(),
-					zipCode: $("#vZipInput").val(),
-					rfc: $("#vRfcInput").val(),
-				})*/
-			} catch (error) {
-				console.log("error on changVendorInfo() ", error);
-				errorTemplate.text(
-					"Error - al actualizar el la Informacion del distribuidor"
-				);
-				errorTemplate.removeAttr("hidden");
-			}
-		} else {
-			$("#vNameInput").val(VendorData?.name || "");
-			errorTemplate.text(
-				"Error - al actualizar el nombre del distribuidor no puede estar vacio"
-			);
-			errorTemplate.removeAttr("hidden");
-		}
-	};
-
-	function saveBtnTrigger() {
-		changeVendorInfo();
-		$("#vNameInput").attr("readOnly", 1);
-		$("#vAddressInput").attr("readOnly", 1);
-		$("#vCityInput").attr("readOnly", 1);
-		$("#vStateInput").attr("readOnly", 1);
-		$("#vCountryInput").attr("readOnly", 1);
-		$("#vZipInput").attr("readOnly", 1);
-		$("#vRfcInput").attr("readOnly", 1);
-		$(".editable-input").css("border", "none");
-		$(".editable-input").css("border-radius", "4px");
-		$("#saveBtn").attr("hidden", 1);
-
-		checkForMissingInfo();
-	}
-
 	const editBtnTrigger = () => {
-		$("#vNameInput").removeAttr("readOnly");
-		$("#vAddressInput").removeAttr("readOnly");
-		$("#vCityInput").removeAttr("readOnly");
-		$("#vStateInput").removeAttr("readOnly");
-		$("#vCountryInput").removeAttr("readOnly");
-		$("#vZipInput").removeAttr("readOnly");
-		$("#vRfcInput").removeAttr("readOnly");
-		$(".editable-input").css("border", "1px rgb(54, 54, 54, 0.6) solid");
-		$(".editable-input").css("border-radius", "4px");
-		$("#saveBtn").removeAttr("hidden");
-
-		$("#vAddressInputRow").removeAttr("hidden");
-		$("#vCityInputRow").removeAttr("hidden");
-		$("#vStateInputRow").removeAttr("hidden");
-		$("#vCountryInputRow").removeAttr("hidden");
-		$("#vZipInputRow").removeAttr("hidden");
-		$("#vRfcInputRow").removeAttr("hidden");
+		setIsEditable(true);
 	};
 
 	const history = useHistory();
@@ -234,18 +155,27 @@ function VendorInfo() {
 	}
 
 	function checkForMissingInfo() {
-		VendorData?.address ? <></> : $("#vAddressInputRow").attr("hidden", 1);
-		VendorData?.city ? <></> : $("#vCityInputRow").attr("hidden", 1);
-		VendorData?.state ? <></> : $("#vStateInputRow").attr("hidden", 1);
-		VendorData?.country ? <></> : $("#vCountryInputRow").attr("hidden", 1);
-		VendorData?.zipCode ? <></> : $("#vZipInputRow").attr("hidden", 1);
-		VendorData?.rfc ? <></> : $("#vRfcInputRow").attr("hidden", 1);
+		vendorData?.address ? <></> : $("#vAddressInputRow").attr("hidden", 1);
+		vendorData?.city ? <></> : $("#vCityInputRow").attr("hidden", 1);
+		vendorData?.state ? <></> : $("#vStateInputRow").attr("hidden", 1);
+		vendorData?.country ? <></> : $("#vCountryInputRow").attr("hidden", 1);
+		vendorData?.zipCode ? <></> : $("#vZipInputRow").attr("hidden", 1);
+		vendorData?.rfc ? <></> : $("#vRfcInputRow").attr("hidden", 1);
 	}
 
 	return (
 		<div className="Application">
-			<title>Facturación PJL - {VendorData?.name}</title>
+			<title>Facturación PJL - {vendorData?.name}</title>
 			<div className="container" id="container">
+				{vendorData && vendorData.name && isEditable ? (
+					<EditVendor
+						vendorData={vendorData}
+						setVendorData={setVendorData}
+						setIsEditable={setIsEditable}
+					/>
+				) : (
+					<></>
+				)}
 				<div className="container-top-section">
 					<div className="container-top-first-row">
 						<div className="vInfo-section">
@@ -255,7 +185,7 @@ function VendorInfo() {
 										type="text"
 										id="vNameInput"
 										className="editable-input"
-										defaultValue={VendorData?.name}
+										defaultValue={vendorData?.name}
 										onKeyDown={(e) => focusOut(e)}
 										readOnly
 									/>
@@ -271,7 +201,7 @@ function VendorInfo() {
 										type="text"
 										id="vAddressInput"
 										className="product-description editable-input"
-										defaultValue={VendorData?.address}
+										defaultValue={vendorData?.address}
 										placeholder="Direccion"
 										onKeyDown={(e) => focusOut(e)}
 										readOnly
@@ -284,13 +214,13 @@ function VendorInfo() {
 										type="text"
 										id="vCityInput"
 										className="product-description editable-input city-exemption"
-										defaultValue={VendorData?.city}
+										defaultValue={vendorData?.city}
 										placeholder="Ciudad"
 										onKeyDown={(e) => focusOut(e)}
 										readOnly
 									/>
 								</h4>
-								{VendorData?.city ? (
+								{vendorData?.city ? (
 									<p className="product-description separator">,</p>
 								) : (
 									<></>
@@ -300,7 +230,7 @@ function VendorInfo() {
 										type="text"
 										id="vStateInput"
 										className="product-description editable-input"
-										defaultValue={VendorData?.state}
+										defaultValue={vendorData?.state}
 										placeholder="Estado"
 										onKeyDown={(e) => focusOut(e)}
 										readOnly
@@ -313,13 +243,13 @@ function VendorInfo() {
 										type="text"
 										id="vCountryInput"
 										className="product-description editable-input city-exemption"
-										defaultValue={VendorData?.country}
+										defaultValue={vendorData?.country}
 										placeholder="Pais"
 										onKeyDown={(e) => focusOut(e)}
 										readOnly
 									/>
 								</h4>
-								{VendorData?.zipCode ? (
+								{vendorData?.zipCode ? (
 									<p className="product-description separator">,</p>
 								) : (
 									<></>
@@ -329,7 +259,7 @@ function VendorInfo() {
 										type="text"
 										id="vZipInput"
 										className="product-description editable-input"
-										defaultValue={VendorData?.zipCode}
+										defaultValue={vendorData?.zipCode}
 										placeholder="Codigo Postal"
 										onKeyDown={(e) => focusOut(e)}
 										readOnly
@@ -342,7 +272,7 @@ function VendorInfo() {
 										type="text"
 										id="vRfcInput"
 										className="product-description editable-input"
-										defaultValue={VendorData?.rfc}
+										defaultValue={vendorData?.rfc}
 										placeholder="RFC"
 										onKeyDown={(e) => focusOut(e)}
 										readOnly
@@ -354,10 +284,10 @@ function VendorInfo() {
 						<div className="title-button-container vendor-btn vendor-btn-container">
 							<button
 								type="button"
-								className="btn secondary-btn"
+								className="btn secondary-btn edit-btn"
 								data-bs-toggle="button"
 								id="btn"
-								onClick={() => editBtnTrigger()}
+								onClick={editBtnTrigger}
 							>
 								editar distribuidor
 							</button>
@@ -367,7 +297,6 @@ function VendorInfo() {
 								className="btn"
 								data-bs-toggle="button"
 								id="saveBtn"
-								onClick={() => saveBtnTrigger()}
 								hidden
 							>
 								Guardar
@@ -376,9 +305,9 @@ function VendorInfo() {
 					</div>
 
 					<div className="product-third-row">
-						<p className="product-id-subtitle">Vendor Id: {VendorData?.id}</p>
+						<p className="product-id-subtitle">Vendor Id: {vendorData?.id}</p>
 						<p className="product-qty-count">
-							Numero de compras: {Ptransaction_data?.length}
+							Numero de compras: {transactionCount}
 						</p>
 					</div>
 					<div className="sub-section-container remove-top-pad">
@@ -403,7 +332,15 @@ function VendorInfo() {
 					This is a danger alert—check it out!
 				</div>
 				<div className="fair-spacing" />
-				<div className="row">
+				<InfiniteScroll
+					dataLength={Ptransaction_data.length}
+					next={() => {
+						fetchPTransactionData();
+					}}
+					hasMore={hasMore}
+					loader={<h4>Loading...</h4>}
+					className="row"
+				>
 					<table className="tble">
 						<thead>
 							<tr key={"heading-row"}>
@@ -434,36 +371,26 @@ function VendorInfo() {
 
 						<tbody>
 							{Ptransaction_data.map(
-								(
-									{
-										id,
-										pId,
-										date,
-										purchaseInvoiceId,
-										purchaseWeight,
-										purchasePrice,
-									},
-									i
-								) => (
+								({ id, productId, date, invoiceId, qty, price, pname }, i) => (
 									<tr key={"vInfo-" + id}>
 										<td scope="col" className="vendor-date">
-											{date}
+											{moment(date).format("YYYY-MM-DD")}
 										</td>
 										<td
 											scope="col"
 											className="vendor-pname"
-											onClick={() => goToProductPage(pId)}
+											onClick={() => goToProductPage(productId)}
 										>
-											{idForName(pId)}
+											{pname}
 										</td>
 										<td scope="col" className="vendor-invoice">
-											{purchaseInvoiceId}
+											{invoiceId}
 										</td>
 										<td scope="col" className="vendor-weight">
-											{purchaseWeight}
+											{qty}
 										</td>
 										<td scope="col" className="vendor-price">
-											{purchaseWeight}
+											{price}
 										</td>
 										<td
 											scope="col"
@@ -477,7 +404,7 @@ function VendorInfo() {
 							)}
 						</tbody>
 					</table>
-				</div>
+				</InfiniteScroll>
 			</div>
 		</div>
 	);

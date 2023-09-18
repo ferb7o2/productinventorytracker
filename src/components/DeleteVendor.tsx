@@ -1,18 +1,31 @@
 import $ from "jquery";
-import { useHistory } from "react-router-dom";
-
-import { API, graphqlOperation } from "aws-amplify";
-import { deleteVendorData } from "../graphql/mutations";
 
 import "../css/homePageStyle.css";
-import { useLayoutEffect } from "react";
-import { toDeleteVendorType } from "../types";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { VendorDataType, toDeleteVendorType } from "../types";
+import { getAccessToken, getCurrentUserEmail } from "../Cognito";
 
-export function DeleteVendor(props: { vendors: toDeleteVendorType[] }) {
-	//Variables for keeping up with Page's Navigation
-	const history = useHistory();
+interface DeleteVendorProps {
+	vendors: toDeleteVendorType[];
+	setvData: React.Dispatch<React.SetStateAction<VendorDataType[]>>;
+	setVendorCount: React.Dispatch<React.SetStateAction<number>>;
+	setShowDelete: React.Dispatch<React.SetStateAction<boolean>>;
+}
 
-	function blankAllFields() {}
+export function DeleteVendor({
+	vendors,
+	setvData,
+	setVendorCount,
+	setShowDelete,
+}: DeleteVendorProps) {
+	const [failedDeletions, setFailedDeletions] = useState<string[]>([]);
+	let isMounted = true; // Add a boolean flag to track whether the component is still mounted
+
+	useEffect(() => {
+		return () => {
+			isMounted = false; // Set the flag to false when the component is unmounting
+		};
+	}, []);
 
 	$(document).click(function (event) {
 		//if you click on anything except the modal itself or the "open modal" link, close the modal
@@ -21,30 +34,77 @@ export function DeleteVendor(props: { vendors: toDeleteVendorType[] }) {
 			!$(event.target).closest(".product-modal-content, #deleteVendorBtn")
 				.length
 		) {
-			blankAllFields();
-			$("#vendor-modal-delete").attr("hidden", 1);
+			// Only update the state if the component is still mounted
+			if (isMounted) {
+				setFailedDeletions([]);
+			}
+			setShowDelete(false);
 		}
 	});
-
-	function closeModal() {
-		$("#vendor-modal-delete").attr("hidden", 1);
-	}
 
 	const deleteMethod = async () => {
 		console.log("DELETE TRIGGER");
 		try {
-			for (var i = 0; i < props.vendors.length; ++i) {
-				const result = await API.graphql(
-					graphqlOperation(deleteVendorData, {
-						input: {
-							id: props.vendors[i].vId,
-						},
-					})
-				);
+			const token = await getAccessToken(); // Assuming you have a function to retrieve the authentication token
+			const user = await getCurrentUserEmail();
+			const failedDeletionsX: string[] = [];
+			const updatedVendors: toDeleteVendorType[] = [];
+
+			for (let i = 0; i < vendors.length; i++) {
+				const { id, vname } = vendors[i];
+
+				try {
+					// Perform the delete operation for each vendor
+					const response = await fetch(
+						`${process.env.REACT_APP_API_URL}/vendors/${encodeURI(id)}`,
+						{
+							method: "DELETE",
+							headers: {
+								Authorization: `Bearer ${token}`,
+								"Content-Type": "application/json",
+							},
+							body: JSON.stringify({ userEmail: user }),
+						}
+					);
+
+					if (response.status >= 400 && response.status <= 599) {
+						// Vendor deletion failed
+						failedDeletionsX.push(vname);
+					} else {
+						// Vendor deletion was successful
+						updatedVendors.push(vendors[i]);
+					}
+				} catch (error) {
+					console.error(error);
+					// Vendor deletion failed
+					failedDeletionsX.push(vname);
+				}
 			}
-			history.push("/vendor");
+
+			// Remove the successfully deleted vendors from the state
+			setvData((prevData) =>
+				prevData.filter(
+					(vendor) =>
+						!updatedVendors.some((updated) => updated.id === vendor.id)
+				)
+			);
+
+			setVendorCount((prevCount) => prevCount - updatedVendors.length);
+
+			if (failedDeletionsX.length > 0) {
+				console.error(
+					"Failed to delete the following vendors:",
+					failedDeletions
+				);
+				setFailedDeletions(failedDeletionsX);
+			} else {
+				if (isMounted) {
+					setFailedDeletions([]);
+				}
+				setShowDelete(false);
+			}
 		} catch (error) {
-			console.log("ERROR deleting product -> ", error);
+			console.error("ERROR deleting vendor -> ", error);
 		}
 	};
 
@@ -66,7 +126,7 @@ export function DeleteVendor(props: { vendors: toDeleteVendorType[] }) {
 	}
 
 	return (
-		<div className="product-modal" id="vendor-modal-delete" hidden>
+		<div className="product-modal" id="vendor-modal-delete">
 			<div
 				className="alert alert-danger"
 				role="alert"
@@ -84,9 +144,17 @@ export function DeleteVendor(props: { vendors: toDeleteVendorType[] }) {
 				</div>
 
 				<div className="modal-data-container">
-					{props.vendors.length > 1 ? (
+					{failedDeletions.length > 0 && (
+						<>
+							<p>Ocurrió un error al borrar:</p>
+							{failedDeletions.map((vendorName) => (
+								<p key={`failed-map-item-${vendorName}`}>{vendorName}</p>
+							))}
+						</>
+					)}
+					{vendors.length > 1 ? (
 						<p className="delete-warning">
-							Estas apunto de borrar los {props.vendors.length} siguientes
+							Estas apunto de borrar los {vendors.length} siguientes
 							distribuidores:
 						</p>
 					) : (
@@ -109,10 +177,10 @@ export function DeleteVendor(props: { vendors: toDeleteVendorType[] }) {
 							</tr>
 						</thead>
 						<tbody>
-							{props.vendors.map(({ vId, vName }) => (
-								<tr key={"todelvendor-" + vId}>
-									<td className="product-delete-col">{vName}</td>
-									<td className="id-delete-col id-col-data">{vId}</td>
+							{vendors.map(({ id, vname }) => (
+								<tr key={"todelvendor-" + id}>
+									<td className="product-delete-col">{vname}</td>
+									<td className="id-delete-col id-col-data">{id}</td>
 								</tr>
 							))}
 						</tbody>
@@ -134,7 +202,12 @@ export function DeleteVendor(props: { vendors: toDeleteVendorType[] }) {
 					</form>
 
 					<div className="delete-confirm-btn-div">
-						<p className="product-cancel-btn" onClick={closeModal}>
+						<p
+							className="product-cancel-btn"
+							onClick={() => {
+								setShowDelete(false);
+							}}
+						>
 							Cancelar
 						</p>
 						<button

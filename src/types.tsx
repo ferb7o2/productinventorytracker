@@ -3,12 +3,13 @@ export type ProductDataType = {
 	name: string;
 	description?: string | null;
 	weightType: string;
-	weightQuantity: number;
+	weightQty: number;
 	createdAt?: string | null;
 	updatedAt?: string | null;
 };
 
 export type VendorDataType = {
+	rowNum?: number;
 	id: string;
 	name: string;
 	rfc?: string;
@@ -17,6 +18,7 @@ export type VendorDataType = {
 	state?: string;
 	country?: string;
 	zipCode?: string;
+	isDeleted?: boolean;
 };
 
 export type urlPropType = {
@@ -30,21 +32,26 @@ export type urlPropVendorType = {
 
 export type PtransactionDataType = {
 	id: string;
-	pId: string;
+	productId: string;
 	date: string;
-	vId: string;
-	purchaseInvoiceId: string;
-	purchaseWeight: number;
-	purchasePrice: number;
+	vendorId: string;
+	invoiceId: string;
+	qty: number;
+	price: number;
+	pname?: string;
+	vName?: string;
+	notes: string;
+	enBodega: boolean;
 };
 
 export type StransactionDataType = {
 	id: string;
-	pId: string;
+	productId: string;
 	date: string;
-	saleInvoiceId: string;
-	saleWeight: number;
-	salePrice: number;
+	invoiceId: string;
+	qty: number;
+	price: number;
+	notes: string;
 };
 
 export type toDeleteType = {
@@ -53,8 +60,8 @@ export type toDeleteType = {
 };
 
 export type toDeleteVendorType = {
-	vId: string;
-	vName: string;
+	id: string;
+	vname: string;
 };
 
 export const allowedWeightTypes = ["Kg", "Caja", "Bulto"];

@@ -1,0 +1,12 @@
+.notes-textarea {
+	width: 100%;
+	min-height: 280px;
+}
+
+.form-check-input {
+	color: red;
+}
+
+.save-edit-trigger {
+	margin-top: 20px;
+}

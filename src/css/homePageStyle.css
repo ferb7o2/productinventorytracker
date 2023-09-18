@@ -371,6 +371,18 @@ input[type="number"] {
 	-webkit-appearance: none;
 }
 
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+	-moz-appearance: textfield;
+}
+
 input[type="search"]:focus,
 input[type="text"]:focus {
 	outline: none;
@@ -823,16 +835,22 @@ a {
 	padding-left: 10px;
 	padding-right: 30px;
 }
-
+.modal-qty-row {
+}
 .modal-qty-weight {
-	width: 90px;
+	width: 17%;
 	height: 35px;
-	padding-left: 15px;
 }
 
-.modal-qty-row-left {
+.modal-qty-inner-row {
 	display: flex;
 	justify-content: space-between;
+}
+.modal-qty-row-left {
+	width: 80%;
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
 }
 
 .modal-btn {
@@ -878,6 +896,11 @@ a {
 	font-weight: normal;
 	text-decoration: underline;
 	text-underline-offset: 3px;
+	cursor: pointer;
+}
+
+product-cancel-btn:hover {
+	cursor: pointer;
 }
 
 .authy {

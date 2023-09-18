@@ -15,7 +15,6 @@ import AddVendor from "./components/AddVendor";
 //Database- AMPLIFY
 import { Amplify, API, graphqlOperation } from "aws-amplify";
 import awsconfig from "./aws-exports";
-import { listVendorData } from "./graphql/queries";
 
 //Components
 import "@aws-amplify/ui-react/styles.css";
@@ -23,50 +22,118 @@ import "@aws-amplify/ui-react/styles.css";
 //Types
 import { toDeleteVendorType, VendorDataType } from "./types";
 import { DeleteVendor } from "./components/DeleteVendor";
+import { getAccessToken } from "./Cognito";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 Amplify.configure(awsconfig);
 
 function VendorListScreen() {
+	//essential display data
 	const [vData, setvData] = useState<VendorDataType[]>([]);
+	const [vendorCount, setVendorCount] = useState(0);
+	let isMounted = true;
+
+	//auxiliary variables - for search actions
 	const [searchTermVendor, setSearchTermVendor] = useState("");
+	const [preSearch, setPreSearch] = useState("");
+
+	//auxiliary variables - for pagination
+	const [lastRowNum, setLastRow] = useState(0);
+	const [hasMore, setHasMore] = useState(false);
+
+	//auxiliary - for delete action
 	const [toDelete, setToDelete] = useState<toDeleteVendorType[]>([]);
+	const [showDelete, setShowDelete] = useState<boolean>(false);
 
-	const fetchVendorData = async () => {
-		let nextToken = null;
-		let tempArray = [] as VendorDataType[];
+	const fetchVendorCount = async () => {
 		try {
-			do {
-				const vendorData = (await API.graphql(
-					graphqlOperation(listVendorData, { nextToken: nextToken })
-				)) as {
-					data: {
-						listVendorData: {
-							items: VendorDataType[];
-							nextToken: string | null;
-						};
-					};
-				};
+			//get user jwst token to query our API
+			const token = await getAccessToken();
+			const data = await fetch(
+				`${process.env.REACT_APP_API_URL}/vendors/count`,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			)
+				.then((res) => res.json())
+				.then((datax) => {
+					return datax;
+				});
 
-				let only_data = vendorData.data.listVendorData.items;
-
-				nextToken = vendorData.data.listVendorData.nextToken;
-				tempArray = tempArray.concat(only_data);
-			} while (nextToken !== null);
-
-			//console.log(vendorData.data.listVendorData.items);
-			setvData(tempArray);
+			if (data.length > 0) {
+				setVendorCount(data[0].COUNT);
+			}
 		} catch (error) {
-			console.log("error on fetchVendorData() ", error);
+			console.log("Error retrieving COUNT data (fetchVendorCount) ", error);
+			window.alert("Error retrieving COUNT data (fetchVendorCount) " + error);
+		}
+	};
 
-			window.alert("ERROR: error al cargar DISTRIBUIDORES de la base de datos");
+	const fetchVendorDataByTransactions = async (
+		searchTxt: string,
+		entered = false
+	) => {
+		//we use local rowIndex variable to prevent delays on global
+		//if we triggered search, start searching from index 0 else, keep pagination from last variable's index
+		var rowIndex = entered ? 0 : lastRowNum;
+
+		try {
+			//get user jwst token to query our API
+			const token = await getAccessToken();
+			const data = await fetch(
+				`${process.env.REACT_APP_API_URL}/vendors/mostTransactions?rowNum=${rowIndex}&searchBy=${searchTxt}`,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			)
+				.then((res) => res.json())
+				.then((datax) => {
+					return datax;
+				});
+
+			console.log(data);
+
+			if (isMounted) {
+				//if statement
+				entered
+					? setvData(data) //if entered, forget all previous data and query new one (with search)
+					: setvData((prevData) => [...prevData, ...data]); //if not, keep on adding new data to existing one
+
+				if (data.length > 0 && data[data.length - 1].rowNum !== null) {
+					setLastRow(data[data.length - 1].rowNum);
+
+					//for pagination, remember which index was the last one queried so new query can start from there
+				}
+				setHasMore(data.length > 0);
+			}
+		} catch (error) {
+			console.error(
+				"Error retrieving Product data (fetchVendorDataByTransactionsData) ",
+				error
+			);
+			window.alert(
+				"Error retrieving Product data (fetchVendorDataByTransactionsData) " +
+					error
+			);
 		}
 	};
 
 	useEffect(() => {
-		fetchVendorData();
+		fetchVendorDataByTransactions(searchTermVendor);
+		fetchVendorCount();
 		$("#vendorTabBtn").addClass("nav-selected");
 		$("#productTabBtn").removeClass("nav-selected");
+		// Cleanup function
+		return () => {
+			isMounted = false; // Set the flag to false when the component is unmounting
+		};
 	}, []);
+
+	useEffect(() => {}, []);
 
 	const history = useHistory();
 
@@ -82,39 +149,46 @@ function VendorListScreen() {
 
 	function deleteVendorBtnTrigger() {
 		if (toDelete.length > 0) {
-			$("#vendor-modal-delete").removeAttr("hidden");
+			setShowDelete(true);
 		}
 	}
 
 	function addToDeleteArray(vIdInput: string, vNameInput: string) {
 		const currentChecked = document.getElementById(
-			"vname-" + vNameInput
+			"vId-" + vIdInput
 		) as HTMLInputElement;
 
 		if (currentChecked.checked) {
-			var numberOfOcurrences = toDelete.filter(
-				({ vId, vName }) => vId == vIdInput
-			);
-			if (numberOfOcurrences.length == 0) {
+			const hasOccurrences = toDelete.some(({ id, vname }) => id === vIdInput);
+
+			if (!hasOccurrences) {
 				setToDelete((toDelete) => [
 					...toDelete,
-					{ vId: vIdInput, vName: vNameInput },
+					{ id: vIdInput, vname: vNameInput },
 				]);
+			} else {
+				// If the item is already in the toDelete array, no action is needed
+				return;
 			}
 		} else {
-			let filtered_array = toDelete.filter(({ vId, vName }) => vId != vIdInput);
-			setToDelete(filtered_array);
+			setToDelete((toDelete) =>
+				toDelete.filter(({ id, vname }) => !(id === vIdInput))
+			);
 		}
-		let display = toDelete;
-
-		console.log(display);
 	}
 
 	return (
 		<div className="Application">
 			<header>
-				<AddVendor />
-				<DeleteVendor vendors={toDelete} />
+				<AddVendor setVData={setvData} setVendorCount={setVendorCount} />
+				{showDelete && (
+					<DeleteVendor
+						vendors={toDelete}
+						setvData={setvData}
+						setVendorCount={setVendorCount}
+						setShowDelete={setShowDelete}
+					/>
+				)}
 			</header>
 
 			<title>Facturación PJL 2022 - Distribuidores </title>
@@ -124,7 +198,7 @@ function VendorListScreen() {
 					<div className="container-top-first-row">
 						<div className="container-title-section">
 							<p className="container-title">Distribuidores</p>
-							<p className="container-title-count">({vData.length})</p>
+							<p className="container-title-count">({vendorCount})</p>
 						</div>
 						<div className="title-button-container">
 							<button
@@ -201,15 +275,32 @@ function VendorListScreen() {
 							type="search"
 							placeholder=" Buscar Distribuidor"
 							aria-label="Search"
+							onKeyDown={(event) => {
+								if (event.key === "Enter") {
+									fetchVendorDataByTransactions(preSearch, true);
+									setSearchTermVendor(preSearch);
+								}
+							}}
 							onChange={(event) => {
-								setSearchTermVendor(event.target.value);
+								setPreSearch(event.target.value);
+								if (event.target.value.length == 0) {
+									setSearchTermVendor("");
+								}
 							}}
 						/>
 						{/*<button className="btn btn-outline-success" id='search-btn' type="submit">Buscar</button>*/}
 					</div>
 				</div>
 
-				<div className="row">
+				<InfiniteScroll
+					dataLength={vData.length}
+					next={() => {
+						fetchVendorDataByTransactions(searchTermVendor);
+					}}
+					hasMore={hasMore}
+					loader={<h4>Loading...</h4>}
+					className="row"
+				>
 					<table className="tble">
 						<thead>
 							<tr className="thead-row">
@@ -225,52 +316,41 @@ function VendorListScreen() {
 							</tr>
 						</thead>
 						<tbody>
-							{vData
-								.filter((val) => {
-									if (searchTermVendor === "") return val;
-									else if (
-										val.name
-											.toLowerCase()
-											.includes(searchTermVendor.toLowerCase())
-									)
-										return val;
-									else return null;
-								})
-								.map(
-									(
-										{ id, name } //Data driven display of rows in data
-									) => (
-										<tr key={"v-" + id} /*onClick={vendorTableRowClicked}*/>
-											<td className="select-col">
-												<input
-													type="checkbox"
-													className="checkbox-table"
-													name={id}
-													onChange={() => addToDeleteArray(id, name)}
-													id={"vname-" + name}
-												></input>
-											</td>
-											<td
-												id={id}
-												className="vName-col"
-												onClick={(e) => vendorTableRowClicked(e)}
-											>
-												{name}
-											</td>
-											<td
-												scope="row"
-												id={id}
-												className="id-col-data vId-col"
-												onClick={(e) => vendorTableRowClicked(e)}
-											>
-												{id}
-											</td>
-										</tr>
-									)
-								)}
+							{vData.map(
+								(
+									{ id, name } //Data driven display of rows in data
+								) => (
+									<tr key={"v-" + id} /*onClick={vendorTableRowClicked}*/>
+										<td className="select-col">
+											<input
+												type="checkbox"
+												className="checkbox-table"
+												name={id}
+												onChange={() => addToDeleteArray(id, name)}
+												id={"vId-" + id}
+											></input>
+										</td>
+										<td
+											id={id}
+											className="vName-col"
+											onClick={(e) => vendorTableRowClicked(e)}
+										>
+											{name}
+										</td>
+										<td
+											scope="row"
+											id={id}
+											className="id-col-data vId-col"
+											onClick={(e) => vendorTableRowClicked(e)}
+										>
+											{id}
+										</td>
+									</tr>
+								)
+							)}
 						</tbody>
 					</table>
-				</div>
+				</InfiniteScroll>
 			</div>
 		</div>
 	);

@@ -1,18 +1,16 @@
 import $ from "jquery";
-import { useHistory } from "react-router-dom";
-
-import Amplify, { API, graphqlOperation } from "aws-amplify";
-import { createProductData, deleteProductData } from "../graphql/mutations";
 
 import "../css/homePageStyle.css";
-import { ChangeEvent, useEffect, useLayoutEffect } from "react";
+import { useLayoutEffect, useState } from "react";
 import { toDeleteType } from "../types";
+import { getAccessToken, getCurrentUserEmail } from "../Cognito";
 
-export function DeleteProduct(props: { products: toDeleteType[] }) {
-	//Variables for keeping up with Page's Navigation
-	const history = useHistory();
-
-	function blankAllFields() {}
+export function DeleteProduct(props: {
+	products: toDeleteType[];
+	setToDelete: React.Dispatch<React.SetStateAction<toDeleteType[]>>;
+	removeProductsByIds: (idsToRemove: { pId: string; pName: string }[]) => void;
+}) {
+	const [failedDeletions, setFailedDeletions] = useState<string[]>([]);
 
 	$(document).click(function (event) {
 		//if you click on anything except the modal itself or the "open modal" link, close the modal
@@ -22,7 +20,6 @@ export function DeleteProduct(props: { products: toDeleteType[] }) {
 				".product-modal-content, .deleteProductBtn, .product-cancel-btn"
 			).length
 		) {
-			blankAllFields();
 			$("#product-modal-delete").attr("hidden", 1);
 		}
 	});
@@ -32,20 +29,64 @@ export function DeleteProduct(props: { products: toDeleteType[] }) {
 	}
 
 	const deleteMethod = async () => {
-		console.log("DELETE TRIGGER");
+		const testProducts = [
+			{ pName: "Hoja P/Tamal Chisemex", pId: "2aes" },
+			{ pName: "Caja Cacahuate Cantinero 8 Kg.", pId: "324sd5" },
+			{ pName: "Hoja P/isemex", pId: "2aes" },
+		];
+
 		try {
-			for (var i = 0; i < props.products.length; ++i) {
-				const result = await API.graphql(
-					graphqlOperation(deleteProductData, {
-						input: {
-							id: props.products[i].pId,
-						},
-					})
-				);
+			const token = await getAccessToken();
+			const user = await getCurrentUserEmail();
+
+			const failedDeletions: string[] = [];
+			const updatedProducts: toDeleteType[] = [];
+
+			for (let i = 0; i < props.products.length; i++) {
+				const { pId, pName } = props.products[i];
+
+				try {
+					const response = await fetch(
+						`${process.env.REACT_APP_API_URL}/products/${encodeURI(
+							pId
+						)}/delete`,
+						{
+							method: "DELETE",
+							headers: {
+								"Content-Type": "application/json",
+								Authorization: `Bearer ${token}`,
+							},
+							body: JSON.stringify({
+								userEmail: user,
+							}),
+						}
+					);
+
+					if (!response.ok) {
+						failedDeletions.push(pName);
+					} else {
+						updatedProducts.push(props.products[i]);
+					}
+				} catch (error) {
+					console.error(error);
+					failedDeletions.push(pName);
+				}
 			}
-			history.push("/");
+
+			setFailedDeletions(failedDeletions);
+			props.removeProductsByIds(updatedProducts);
+
+			if (failedDeletions.length > 0) {
+				console.error(
+					"Failed to delete the following products:",
+					failedDeletions
+				);
+			} else {
+				closeModal();
+				props.setToDelete([]);
+			}
 		} catch (error) {
-			console.log("ERROR deleting product -> ", error);
+			console.error("ERROR deleting product -> ", error);
 		}
 	};
 
@@ -85,14 +126,22 @@ export function DeleteProduct(props: { products: toDeleteType[] }) {
 				</div>
 
 				<div className="modal-data-container">
+					{failedDeletions.length > 0 && (
+						<>
+							<p>Ocurrió un error al borrar:</p>
+							{failedDeletions.map((productName) => (
+								<p key={`failed-map-item-${productName}`}>{productName}</p>
+							))}
+						</>
+					)}
 					{props.products.length > 1 ? (
 						<p className="delete-warning">
-							Estas apunto de borrar los {props.products.length} siguientes
+							Estás a punto de borrar los {props.products.length} siguientes
 							productos:
 						</p>
 					) : (
 						<p className="delete-warning">
-							Estas apunto de borrar el siguiente producto:
+							Estás a punto de borrar el siguiente producto:
 						</p>
 					)}
 				</div>

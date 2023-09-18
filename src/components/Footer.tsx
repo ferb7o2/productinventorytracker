@@ -1,3 +1,4 @@
+import moment from "moment";
 import { Component } from "react";
 
 class Footer extends Component {
@@ -8,7 +9,7 @@ class Footer extends Component {
 
 				<footer className="footer text-center text-white">
 					<div className="text-center p-3">
-						© 2022 Copyright: <a href="./"> </a>
+						© {moment().year()} Copyright: <a href="./"> </a>
 						<a className="text-white" href="https://github.com/JoseJaramillo04">
 							Fernando Jaramillo
 						</a>
