@@ -24,3 +24,4 @@ Internal logic to display and "connect" data was all created by me
 
 ![PJL-PIT-DB-Schema](https://user-images.githubusercontent.com/71108160/229438798-999ba791-3019-421f-9b44-b199914545ad.png)
 trigger
+trigger 2.0
