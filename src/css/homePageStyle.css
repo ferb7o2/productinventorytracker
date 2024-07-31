@@ -1,6 +1,6 @@
 /* Hide Create Account Button on the Sign in Screen */
 .amplify-tabs-item:nth-child(2) {
-  display: none;
+	display: none;
 }
 
 .fair-spacing {
@@ -624,6 +624,18 @@ td {
 tr {
 	border-bottom: #dcdfe2 0.5px solid;
 	border-collapse: collapse;
+}
+
+table {
+	table-layout: fixed;
+	width: 100%;
+}
+td {
+	vertical-align: top;
+}
+
+.none-col {
+	width: 0%;
 }
 
 table:last-child {

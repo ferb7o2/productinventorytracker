@@ -658,6 +658,7 @@ function ItemInfo() {
 						<table className="tble">
 							<thead>
 								<tr>
+									<th scope="col" className="none-col"></th>
 									<th
 										scope="col"
 										className="thead-row select-col select-vendor"
@@ -728,6 +729,7 @@ function ItemInfo() {
 						<table className="tble">
 							<thead>
 								<tr className="table-row">
+									<th scope="col" className="none-col"></th>
 									<th scope="col" className="thead-row select-col">
 										{/*<input type="checkbox" className="checkbox-table" />*/}
 									</th>

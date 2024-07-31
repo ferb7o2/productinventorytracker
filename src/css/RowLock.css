@@ -1,0 +1,17 @@
+.row-lock {
+	position: absolute;
+	width: 100%;
+	opacity: 0.03;
+	background-color: black;
+	height: inherit;
+	margin-top: -1px;
+	box-sizing: border-box;
+}
+
+.editLock {
+	position: absolute;
+	right: 10px; /* Adjust as needed */
+	margin-top: 15px;
+	transform: translateY(-50%); /* Center vertically */
+	cursor: pointer;
+}
