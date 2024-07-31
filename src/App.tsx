@@ -57,8 +57,6 @@ function Home(this: any) {
 
 	const fetchProductCount = async () => {
 		try {
-			const tokena = await getAccessToken();
-			console.log(tokena);
 			//get user jwst token to query our API
 			const token = await getAccessToken();
 			const data = await fetch(
