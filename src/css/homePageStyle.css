@@ -628,10 +628,6 @@ tr {
 
 table {
 	table-layout: fixed;
-	width: 100%;
-}
-td {
-	vertical-align: top;
 }
 
 .none-col {

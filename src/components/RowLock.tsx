@@ -19,9 +19,9 @@ const RowLock: React.FC<RowLockProps> = ({
 			{isLocked ? (
 				<>
 					<td className="none-col">
-						<Tooltip placement="right">
-							<div className="row-lock"></div>
-						</Tooltip>
+						{/*<Tooltip placement="top"> */}
+						<div className="row-lock"></div>
+						{/*</Tooltip>*/}
 						<FaEdit size={"18px"} className="editLock" onClick={onEditClick} />
 					</td>
 					{children}
