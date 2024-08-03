@@ -1,0 +1,50 @@
+# This "input" configures a global authorization rule to enable public access to
+# all models in this schema. Learn more about authorization rules here: https://docs.amplify.aws/cli/graphql/authorization-rules
+
+type OurBusinessInfo @model @auth(rules: [{ allow: private }]) {
+	id: ID!
+	name: String!
+	address: String
+	rfc: String
+	city: String
+	state: String
+	zipCode: String
+}
+
+type ProductData @model @auth(rules: [{ allow: private }]) {
+	id: ID!
+	name: String!
+	description: String
+	weightType: String!
+	weightQuantity: Float!
+}
+
+type PurchaseTransactionData2022 @model @auth(rules: [{ allow: private }]) {
+	id: ID!
+	pId: String!
+	date: AWSDate!
+	vId: String!
+	purchaseInvoiceId: String!
+	purchaseWeight: Float!
+	purchasePrice: Float!
+}
+
+type SaleTransactionData2022 @model @auth(rules: [{ allow: private }]) {
+	id: ID!
+	pId: String!
+	date: AWSDate!
+	saleInvoiceId: String!
+	saleWeight: Float!
+	salePrice: Float!
+}
+
+type VendorData @model @auth(rules: [{ allow: private }]) {
+	id: ID!
+	name: String!
+	rfc: String
+	address: String
+	city: String
+	state: String
+	country: String
+	zipCode: String
+}
