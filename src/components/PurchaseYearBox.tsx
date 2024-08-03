@@ -4,6 +4,7 @@ import $ from "jquery";
 import { PtransactionDataType, VendorDataType } from "../types";
 import { getAccessToken, getCurrentUserEmail } from "../Cognito";
 import EditNotes from "./EditNotes";
+import RowLock from "./RowLock";
 
 interface PurchaseYearBoxProps {
 	year: number;
@@ -51,6 +52,8 @@ export function PurchaseYearBox({
 	const [currNotes, setCurrNotes] = useState("");
 	const [currEnBodega, setCurrEnBodega] = useState(false);
 	const [currPurchaseId, setCurrPurchaseId] = useState("");
+
+	const [selectedRowId, setSelectedRowId] = useState("");
 
 	function focusOut(e: React.KeyboardEvent<HTMLInputElement>) {
 		if (e.keyCode === 13 || e.keyCode === 9) {
@@ -407,105 +410,115 @@ export function PurchaseYearBox({
 						} //Data driven display of rows in data
 					) => (
 						<tr key={id} className="table-row">
-							<td
-								className="select-col select-vendor"
-								style={{ backgroundColor: enBodega ? "" : "lightcoral" }}
+							<RowLock
+								key={"rowlock-" + id}
+								isLocked={!(id === selectedRowId)}
+								onEditClick={() => setSelectedRowId(id)}
 							>
-								<input
-									type="checkbox"
-									className="checkbox-table"
-									id={"tid-" + id}
-									onChange={() => {
-										addToDeleteArray(id, date, invoiceId, "purchase");
-									}}
-								/>
-							</td>
-							<td className="date-col">
-								<input
-									required
-									type="text"
-									id={"row" + id + "date"}
-									className="tableInput tableDate"
-									defaultValue={date}
-									onBlur={(e) => {
-										changePurchaseDate(e, date, id);
-									}}
-									onKeyDown={(e) => focusOut(e)}
-								/>
-							</td>
-
-							<td className="vendor-col">
-								<input
-									required
-									type="text"
-									id={"row" + id + "vId"}
-									className="tableInput vendor-input"
-									defaultValue={vName ? vName : getNameById(vendorId)}
-									list="vendors"
-									onBlur={(e) => {
-										changeVendor(e, id, vName);
-									}}
-									onKeyDown={(e) => focusOut(e)}
-								/>
-								<datalist id="vendors">
-									{vendorData.map(({ id, name }) => (
-										<option key={id} value={name} id={id} />
-									))}
-								</datalist>
-							</td>
-							<td className="factura-col">
-								<div className="tableData">
+								<td
+									className="select-col select-vendor"
+									style={{ backgroundColor: enBodega ? "" : "lightcoral" }}
+								>
 									<input
+										type="checkbox"
+										className="checkbox-table"
+										id={"tid-" + id}
+										onChange={() => {
+											addToDeleteArray(id, date, invoiceId, "purchase");
+										}}
+									/>
+								</td>
+								<td className="date-col">
+									<input
+										required
 										type="text"
-										id={"row" + id + "purchaseInvoiceId"}
-										className="tableInput"
-										defaultValue={invoiceId}
+										id={"row" + id + "date"}
+										className="tableInput tableDate"
+										defaultValue={date}
 										onBlur={(e) => {
-											changeInvoiceId(e, invoiceId, id);
+											changePurchaseDate(e, date, id);
 										}}
 										onKeyDown={(e) => focusOut(e)}
 									/>
-								</div>
-							</td>
-							<td className="weight-col">
-								<div className="tableData">
+								</td>
+
+								<td className="vendor-col">
 									<input
 										required
-										type="number"
-										id={"row" + id + "purchaseWeight"}
-										className="tableInput"
-										defaultValue={qty}
+										type="text"
+										id={"row" + id + "vId"}
+										className="tableInput vendor-input"
+										defaultValue={vName ? vName : getNameById(vendorId)}
+										list="vendors"
 										onBlur={(e) => {
-											changePurchaseWeight(e, qty, id);
+											changeVendor(e, id, vName);
 										}}
 										onKeyDown={(e) => focusOut(e)}
 									/>
-								</div>
-							</td>
-							<td className="price-col">
-								<div className="tableData">
-									<input
-										required
-										type="number"
-										id={"row" + id + "purchasePrice"}
-										className="tableInput"
-										defaultValue={price}
-										onBlur={(e) => {
-											changePurchasePrice(e, qty, id);
+									<datalist id="vendors">
+										{vendorData.map(({ id, name }) => (
+											<option key={id} value={name} id={id} />
+										))}
+									</datalist>
+								</td>
+								<td className="factura-col">
+									<div className="tableData">
+										<input
+											type="text"
+											id={"row" + id + "purchaseInvoiceId"}
+											className="tableInput"
+											defaultValue={invoiceId}
+											onBlur={(e) => {
+												changeInvoiceId(e, invoiceId, id);
+											}}
+											onKeyDown={(e) => focusOut(e)}
+										/>
+									</div>
+								</td>
+								<td className="weight-col">
+									<div className="tableData">
+										<input
+											required
+											type="number"
+											id={"row" + id + "purchaseWeight"}
+											className="tableInput"
+											defaultValue={qty}
+											onBlur={(e) => {
+												changePurchaseWeight(e, qty, id);
+											}}
+											onKeyDown={(e) => focusOut(e)}
+										/>
+									</div>
+								</td>
+								<td className="price-col">
+									<div className="tableData">
+										<input
+											required
+											type="number"
+											id={"row" + id + "purchasePrice"}
+											className="tableInput"
+											defaultValue={price}
+											onBlur={(e) => {
+												changePurchasePrice(e, qty, id);
+											}}
+											onKeyDown={(e) => focusOut(e)}
+										/>
+									</div>
+								</td>
+								<td className="pId-col id-col-data">{id}</td>
+								<td className="notes-col">
+									<img
+										className="edit-trigger-img"
+										src={require("../assets/icons/blank-notes-attributed.png")}
+										style={{ opacity: notes ? 1 : 0.175 }}
+										onClick={() => {
+											if (id === selectedRowId) {
+												notesBtnTrigger(notes, enBodega, id);
+											}
 										}}
-										onKeyDown={(e) => focusOut(e)}
-									/>
-								</div>
-							</td>
-							<td className="pId-col id-col-data">{id}</td>
-							<td className="notes-col">
-								<img
-									className="edit-trigger-img"
-									src={require("../assets/icons/blank-notes-attributed.png")}
-									style={{ opacity: notes ? 1 : 0.175 }}
-									onClick={() => notesBtnTrigger(notes, enBodega, id)}
-								></img>
-							</td>
+									></img>
+								</td>
+							</RowLock>
 						</tr>
 					)
 				)}

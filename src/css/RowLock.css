@@ -1,0 +1,38 @@
+.row-lock {
+	position: absolute;
+	width: 100%;
+	opacity: 0.03;
+	background-color: black;
+	height: inherit;
+	z-index: 1;
+	transform: translateY(-50%); /* Center vertically */
+}
+
+.editLock {
+	position: absolute;
+	right: 10px;
+	transform: translateY(-50%); /* Center vertically */
+	cursor: pointer;
+	opacity: 0.7;
+	visibility: hidden;
+	z-index: 2;
+}
+
+.none-col:hover .editLock {
+	visibility: visible;
+}
+
+.tooltip {
+	position: fixed;
+	background-color: #333;
+	color: #fff;
+	text-align: center;
+	padding: 5px;
+	border-radius: 5px;
+	visibility: hidden;
+	width: 200px;
+	font-size: 12px;
+	z-index: 10;
+	opacity: 0;
+	transition: opacity 0.3s;
+}

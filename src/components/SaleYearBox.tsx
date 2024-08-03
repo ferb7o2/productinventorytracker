@@ -4,6 +4,7 @@ import $ from "jquery";
 import { StransactionDataType } from "../types";
 import { getAccessToken, getCurrentUserEmail } from "../Cognito";
 import EditNotes from "./EditNotes";
+import RowLock from "./RowLock";
 
 interface SaleYearBoxProps {
 	year: number;
@@ -48,6 +49,8 @@ export function SaleYearBox({
 	const [currNotes, setCurrNotes] = useState("");
 	const [currEnBodega, setCurrEnBodega] = useState(false);
 	const [currSaleId, setCurrSaleId] = useState("");
+
+	const [selectedRowId, setSelectedRowId] = useState("");
 
 	function focusOut(e: React.KeyboardEvent<HTMLInputElement>) {
 		if (e.keyCode === 13 || e.keyCode === 9) {
@@ -322,74 +325,82 @@ export function SaleYearBox({
 						{ id, date, invoiceId, qty, price, notes } //Data driven display of rows in data
 					) => (
 						<tr key={"s" + id} className="table-row">
-							<td scope="col" className="select-col">
-								<input
-									type="checkbox"
-									className="checkbox-table"
-									id={"tid-" + id}
-									onChange={() => addToDeleteArray(id, date, invoiceId, "sale")}
-								/>
-							</td>
-							<td className="sale-date-col" scope="col">
-								<input
-									type="text"
-									id={"row" + id + "Sdate"}
-									className="tableInput"
-									defaultValue={date}
-									onBlur={(e) => {
-										changeSaleDate(e, date, id);
-									}}
-									onKeyDown={(e) => focusOut(e)}
-								/>
-							</td>
+							<RowLock
+								key={"rowlock-" + id}
+								isLocked={!(id === selectedRowId)}
+								onEditClick={() => setSelectedRowId(id)}
+							>
+								<td scope="col" className="select-col">
+									<input
+										type="checkbox"
+										className="checkbox-table"
+										id={"tid-" + id}
+										onChange={() =>
+											addToDeleteArray(id, date, invoiceId, "sale")
+										}
+									/>
+								</td>
+								<td className="sale-date-col" scope="col">
+									<input
+										type="text"
+										id={"row" + id + "Sdate"}
+										className="tableInput"
+										defaultValue={date}
+										onBlur={(e) => {
+											changeSaleDate(e, date, id);
+										}}
+										onKeyDown={(e) => focusOut(e)}
+									/>
+								</td>
 
-							<td className="sale-invoice-col" scope="col">
-								<input
-									type="text"
-									id={"row" + id + "saleInvoiceId"}
-									className="tableInput vendor-col"
-									defaultValue={invoiceId}
-									onBlur={(e) => {
-										changeInvoiceId(e, invoiceId, id);
-									}}
-									onKeyDown={(e) => focusOut(e)}
-								/>
-							</td>
-							<td className="sale-weight-col" scope="col">
-								<input
-									type="number"
-									id={"row" + id + "saleWeight"}
-									className="tableInput"
-									defaultValue={qty}
-									onBlur={(e) => {
-										changeSaleWeight(e, qty, id);
-									}}
-									onKeyDown={(e) => focusOut(e)}
-								/>
-							</td>
-							<td className="sale-price-col" scope="col">
-								<input
-									type="number"
-									id={"row" + id + "salePrice"}
-									className="tableInput vendor-col"
-									defaultValue={price}
-									onBlur={(e) => {
-										changeSalePrice(e, price, id);
-									}}
-									onKeyDown={(e) => focusOut(e)}
-								/>
-							</td>
-							<td className="pId-col id-col-data" scope="col">
-								{id}
-							</td>
-							<td className="notes-col" scope="col">
-								<img
-									className="edit-trigger-img"
-									style={{ opacity: notes ? 1 : 0.175 }}
-									onClick={() => notesBtnTrigger(notes, id)}
-									src={require("../assets/icons/blank-notes-attributed.png")}
-								/>
-							</td>
+								<td className="sale-invoice-col" scope="col">
+									<input
+										type="text"
+										id={"row" + id + "saleInvoiceId"}
+										className="tableInput vendor-col"
+										defaultValue={invoiceId}
+										onBlur={(e) => {
+											changeInvoiceId(e, invoiceId, id);
+										}}
+										onKeyDown={(e) => focusOut(e)}
+									/>
+								</td>
+								<td className="sale-weight-col" scope="col">
+									<input
+										type="number"
+										id={"row" + id + "saleWeight"}
+										className="tableInput"
+										defaultValue={qty}
+										onBlur={(e) => {
+											changeSaleWeight(e, qty, id);
+										}}
+										onKeyDown={(e) => focusOut(e)}
+									/>
+								</td>
+								<td className="sale-price-col" scope="col">
+									<input
+										type="number"
+										id={"row" + id + "salePrice"}
+										className="tableInput vendor-col"
+										defaultValue={price}
+										onBlur={(e) => {
+											changeSalePrice(e, price, id);
+										}}
+										onKeyDown={(e) => focusOut(e)}
+									/>
+								</td>
+								<td className="pId-col id-col-data" scope="col">
+									{id}
+								</td>
+								<td className="notes-col" scope="col">
+									<img
+										className="edit-trigger-img"
+										style={{ opacity: notes ? 1 : 0.175 }}
+										onClick={() => notesBtnTrigger(notes, id)}
+										src={require("../assets/icons/blank-notes-attributed.png")}
+									/>
+								</td>
+							</RowLock>
 						</tr>
 					)
 				)}
