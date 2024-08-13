@@ -88,6 +88,7 @@ export function AddSaleRow(props: AddSaleRowProps) {
 				hidden
 			>
 				<th scope="row"></th>
+				<td className="none-col"></td>
 				<td>
 					<input
 						type="text"
@@ -125,6 +126,7 @@ export function AddSaleRow(props: AddSaleRowProps) {
 			<tr hidden></tr>
 			{/* just a hidden element to not break the color scheme on the next table row*/}
 			<tr className="input-new-data-row">
+				<td className="none-col"></td>
 				<th scope="row">
 					<img
 						src={require("../assets/icons/add-attributed.png")}

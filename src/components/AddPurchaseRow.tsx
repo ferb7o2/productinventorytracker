@@ -119,6 +119,7 @@ export function AddPurchaseRow(props: AddPurchaseRowProps) {
 				hidden
 			>
 				<th scope="row"></th>
+				<td className="none-col"></td>
 				<td>
 					<input
 						required
@@ -180,6 +181,7 @@ export function AddPurchaseRow(props: AddPurchaseRowProps) {
 			<tr hidden></tr>
 			{/* just a hidden element to not break the color scheme on the next table row*/}
 			<tr className="input-new-data-row">
+				<td className="none-col"></td>
 				<td scope="row" className="select-col">
 					<img
 						src={require("../assets/icons/add-attributed.png")}

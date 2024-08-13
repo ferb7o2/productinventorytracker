@@ -1,56 +1,45 @@
 {
   "auth": {
-    "sanangelmxf40ba236": {
-      "service": "Cognito",
-      "providerPlugin": "awscloudformation",
-      "dependsOn": [],
+    "mexicoinventory1a528fbc": {
       "customAuth": false,
-      "frontendAuthConfig": {
-        "socialProviders": [],
-        "usernameAttributes": [
-          "EMAIL"
-        ],
-        "signupAttributes": [
-          "EMAIL"
-        ],
-        "passwordProtectionSettings": {
-          "passwordPolicyMinLength": 8,
-          "passwordPolicyCharacters": []
-        },
-        "mfaConfiguration": "OFF",
-        "mfaTypes": [
-          "SMS"
-        ],
-        "verificationMechanisms": [
-          "EMAIL"
-        ]
-      }
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito",
+      "serviceType": "imported"
     }
   },
-  "api": {
-    "sanangelmxAPI": {
-      "service": "AppSync",
-      "providerPlugin": "awscloudformation",
-      "dependsOn": [
+  "parameters": {
+    "AMPLIFY_auth_mexicoinventory1a528fbc_nativeClientId": {
+      "usedBy": [
         {
           "category": "auth",
-          "resourceName": "sanangelmxf40ba236",
-          "attributes": [
-            "UserPoolId"
-          ]
+          "resourceName": "mexicoinventory1a528fbc"
         }
-      ],
-      "output": {
-        "authConfig": {
-          "defaultAuthentication": {
-            "authenticationType": "AMAZON_COGNITO_USER_POOLS",
-            "userPoolConfig": {
-              "userPoolId": "authsanangelmxf40ba236"
-            }
-          },
-          "additionalAuthenticationProviders": []
+      ]
+    },
+    "AMPLIFY_auth_mexicoinventory1a528fbc_userPoolId": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "mexicoinventory1a528fbc"
         }
-      }
+      ]
+    },
+    "AMPLIFY_auth_mexicoinventory1a528fbc_userPoolName": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "mexicoinventory1a528fbc"
+        }
+      ]
+    },
+    "AMPLIFY_auth_mexicoinventory1a528fbc_webClientId": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "mexicoinventory1a528fbc"
+        }
+      ]
     }
   }
 }
