@@ -13,7 +13,7 @@ import $ from "jquery";
 import AddVendor from "./components/AddVendor";
 
 //Database- AMPLIFY
-import { Amplify, API, graphqlOperation } from "aws-amplify";
+import { Amplify } from "aws-amplify";
 import awsconfig from "./aws-exports";
 
 //Components

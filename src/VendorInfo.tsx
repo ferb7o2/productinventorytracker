@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { API, graphqlOperation } from "aws-amplify";
 import $ from "jquery";
 
 import { useHistory } from "react-router-dom";

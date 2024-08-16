@@ -1,35 +1,10 @@
-import { Auth } from "aws-amplify";
-import { CognitoUserSession } from "amazon-cognito-identity-js";
-
-// call this function wherever you need to access the user session
-export async function getUserSession() {
-	try {
-		const userSession = await Auth.currentSession();
-		return userSession;
-	} catch (error) {
-		console.log("Error getting user session", error);
-	}
-}
+import { fetchAuthSession, fetchUserAttributes } from "aws-amplify/auth";
 
 export async function getAccessToken(): Promise<string | undefined> {
 	try {
-		let currentSession: CognitoUserSession | null = await Auth.currentSession();
-		if (!currentSession || !currentSession.isValid()) {
-			currentSession = await (Auth as any).refreshSession(
-				currentSession?.getRefreshToken()?.getToken()
-			);
-		} else {
-			const expiresIn = currentSession.getAccessToken()?.getExpiration() || 0;
-			const currentTime = Math.floor(Date.now() / 1000);
-			if (expiresIn < currentTime) {
-				currentSession = await (Auth as any).refreshSession(
-					currentSession.getRefreshToken().getToken()
-				);
-			}
-		}
-		const token = (
-			(await currentSession?.getAccessToken()?.getJwtToken()) || ""
-		).toString();
+		let currentSession = await fetchAuthSession();
+
+		const token = (currentSession.tokens?.accessToken || "").toString();
 		return token;
 	} catch (error) {
 		console.log("Error getting user session", error);
@@ -39,9 +14,7 @@ export async function getAccessToken(): Promise<string | undefined> {
 
 export async function getCurrentUserEmail(): Promise<string | undefined> {
 	try {
-		const user = await Auth.currentAuthenticatedUser();
-		const { attributes } = user;
-		const email = attributes.email;
+		const email = (await fetchUserAttributes()).email;
 		return email;
 	} catch (error) {
 		console.log("Error getting current user email", error);
